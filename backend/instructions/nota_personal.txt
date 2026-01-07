@@ -1,0 +1,8 @@
+¡Excelentes noticias! La versión de tu hosting es MariaDB 10.6.20.
+
+Análisis de Compatibilidad:
+
+Compatibilidad: ✅ TOTAL. Django 6 requiere MariaDB 10.4 o superior. Tu versión 10.6 funcionará perfectamente sin advertencias.
+Juego de Caracteres: Veo que dice cp1252 West European. Django prefiere utf8mb4.
+Acción: Cuando crees la base de datos en el cPanel (sección "Bases de Datos MySQL"), 
+asegúrate de seleccionar Intercalamiento (Collation): utf8mb4_unicode_ci para evitar problemas con tildes o emojis.
