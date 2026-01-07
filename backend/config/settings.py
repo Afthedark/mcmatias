@@ -35,6 +35,8 @@ INSTALLED_APPS = [
     # Third party apps
     'rest_framework',
     'corsheaders',
+    'drf_spectacular',
+
     
     # Local apps
     'api',
@@ -132,8 +134,17 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny', # Changing to AllowAny for dev, or IsAuthenticated
-    ]
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'MCMatias API',
+    'DESCRIPTION': 'API REST para gestión de inventario y ventas',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
+
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True # For dev
