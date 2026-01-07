@@ -25,15 +25,15 @@ Sistema de gestión completo para tienda multicentro, incluyendo control de inve
 │   ├── routes/             # Definición de Endpoints (Rutas)
 │   ├── utils/              # Utilidades y helpers
 │   └── app.js              # Punto de entrada principal
-├── frontend_vanilla/       # Frontend (MPA)
+├── frontend/               # Frontend (MPA) - Ver README completo en frontend/README_frontend.md
 │   ├── index.html          # Landing page del negocio
 │   ├── login.html          # Página de autenticación
 │   ├── dashboard.html      # Dashboard principal
-│   ├── css/                # Estilos globales
-│   └── js/                 # Lógica JavaScript modular
-│       ├── core/           # Módulos centrales (API, UI)
-│       ├── login.js        # Lógica de login
-│       └── dashboard.js    # Lógica del dashboard
+│   ├── assets/             # Recursos estáticos
+│   │   ├── css/            # Estilos AdminLTE, componentes y responsive
+│   │   ├── js/             # Módulos JavaScript (core, components, pages)
+│   │   └── img/            # Imágenes del sistema
+│   └── pages/              # Páginas de módulos específicos
 └── public/
     └── uploads/            # Archivos subidos (imágenes/videos)
         ├── images/
@@ -76,10 +76,76 @@ Sistema de gestión completo para tienda multicentro, incluyendo control de inve
 
 5. **Iniciar el servidor**:
    ```bash
-   npm run dev
+   npm run dev  # Iniciar backend (API)
    ```
-   
-   El servidor estará disponible en `http://localhost:3000`
+
+## 🚀 Desarrollo Local (Arquitectura Separada)
+
+Para desarrollo local, usamos una arquitectura separada con Live Server para el frontend:
+
+### Configuración Requerida
+
+1. **Backend**: Iniciar servidor Node.js
+   ```bash
+   npm run dev  # Backend en http://localhost:3000
+   ```
+
+2. **Frontend**: Iniciar Live Server desde VS Code
+   - Abre `frontend/login.html` en VS Code
+   - Haz clic derecho → "Open with Live Server"
+   - O usa la extensión Live Server
+
+### URLs de Acceso Local
+- **Frontend**: `http://127.0.0.1:5500/frontend/login.html` (Live Server)
+- **Backend API**: `http://localhost:3000/api/` (Node.js)
+- **Archivos subidos**: `http://localhost:3000/uploads/`
+
+### Ventajas de esta arquitectura:
+- ✅ Hot reload automático en el frontend
+- ✅ Depuración independiente (dos consolas)
+- ✅ Desarrollo tradicional y familiar
+- ✅ CORS configurado para desarrollo local
+- ✅ Más flexible para diferentes entornos
+- ✅ Sin necesidad de reiniciar servidor para cambios en frontend
+- ✅ Optimizado para desarrollo frontend
+
+## 🔧 Configuración de Entorno
+
+### Desarrollo (.env)
+```env
+PORT=3000
+DB_NAME=tienda_multicentro_matias
+DB_USER=root
+DB_PASSWORD=tu_contraseña
+DB_HOST=localhost
+JWT_SECRET=clave_secreta_desarrollo
+NODE_ENV=development
+CORS_ORIGIN=http://localhost:3000
+```
+
+### Producción (.env)
+```env
+PORT=3000
+DB_NAME=tienda_multicentro_matias
+DB_USER=tu_usuario_cpanel
+DB_PASSWORD=tu_contraseña_mysql
+DB_HOST=localhost
+JWT_SECRET=clave_muy_segura_para_produccion
+NODE_ENV=production
+CORS_ORIGIN=https://tu-dominio.com
+```
+
+## 🌐 Integración Frontend-Backend
+
+### Desarrollo Local
+- Backend sirve frontend estático desde `../frontend/`
+- Todo en el mismo dominio: `localhost:3000`
+- Sin configuración CORS adicional
+
+### Producción (cPanel)
+- Frontend: `https://tu-dominio.com/` (servido por Apache/Nginx)
+- Backend API: `https://api.tu-dominio.com/api/` (subdominio)
+- CORS configurado para dominio específico
 
 ## 🛣️ API Endpoints
 
@@ -152,27 +218,34 @@ http://tudominio.com/uploads/images/nombre-archivo.jpg
 
 ## 🎨 Frontend
 
-El proyecto incluye un frontend vanilla (HTML, CSS, JS) con arquitectura MPA (Multi-Page Application):
+El proyecto incluye un frontend moderno y completo con arquitectura MPA (Multi-Page Application). Para documentación detallada del frontend, ver: **[frontend/README_frontend.md](frontend/README_frontend.md)**
 
-- **Landing Page** (`index.html`): Página de presentación del negocio.
-- **Sistema de Login** (`login.html`): Autenticación con JWT.
-- **Dashboard** (`dashboard.html`): Panel de control principal (versión base).
+### Características Principales:
+- **Diseño AdminLTE-inspired** con Bootstrap 5
+- **JavaScript ES6+ modular** sin frameworks pesados
+- **Sistema completo de autenticación** con JWT
+- **Componentes reutilizables** y tabla de datos avanzadas
+- **Responsive design** para todos los dispositivos
+- **Integración completa** con backend API
 
-### Características del Frontend:
-- Diseño AdminLTE-inspired con Bootstrap 5
-- Comunicación con API mediante Axios
-- Sistema de inyección dinámica de componentes (sidebar/navbar)
-- Manejo automático de autenticación JWT
-- Responsive design
+### Módulos del Frontend:
+- ✅ **Landing Page** profesional
+- ✅ **Sistema de Login** con validación completa
+- ✅ **Dashboard** con KPIs y gráficos
+- 🔄 **Gestión de Clientes** (en desarrollo)
+- 🔄 **Gestión de Productos** (en desarrollo)
+- 🔄 **Control de Inventario** (en desarrollo)
+- 🔄 **Sistema de Ventas** (en desarrollo)
+- 🔄 **Servicios Técnicos** (en desarrollo)
 
 ## ☁️ Despliegue (cPanel)
 
 Para instrucciones detalladas sobre cómo subir y actualizar este backend en un hosting con cPanel, consulta la guía interna:
 `./deploy/workflows/deploy-cpanel.md`
 
-## 📝 Módulos Implementados
+## 📝 Estado de Implementación
 
-### Backend (API)
+### Backend (API) - ✅ COMPLETO
 1. ✅ **Autenticación**: Login/Register con JWT
 2. ✅ **Roles y Usuarios**: Control de acceso por roles (cajero, técnico, administrador)
 3. ✅ **Sucursales**: Gestión de múltiples sucursales
@@ -183,11 +256,15 @@ Para instrucciones detalladas sobre cómo subir y actualizar este backend en un 
 8. ✅ **Ventas**: Sistema transaccional con descuento automático de inventario
 9. ✅ **Servicios Técnicos**: Con carga de 3 fotos y gestión de estados
 
-### Frontend (Base)
-1. ✅ **Landing Page**: Presentación del negocio
-2. ✅ **Login**: Autenticación con JWT
-3. ✅ **Dashboard**: Vista principal con estadísticas básicas
-4. ✅ **Core Modules**: API client y UI injection system
+### Frontend (Ver documentación completa en frontend/README_frontend.md)
+1. ✅ **Arquitectura Base**: Estructura modular completa
+2. ✅ **Sistema de Autenticación**: JWT con refresh automático
+3. ✅ **Dashboard Principal**: KPIs y gráficos con Chart.js
+4. ✅ **Core JavaScript Modules**: API, Auth, Storage, UI, Router
+5. ✅ **Diseño Responsivo**: Mobile-first con breakpoints completos
+6. ✅ **Componentes UI**: Modals, tables, forms, alerts
+7. 🔄 **Módulos de Negocio**: Clientes, Productos, Ventas, etc.
+8. ⏳ **Perfiles y Configuración**: Usuarios avanzados y settings
 
 ## 🔒 Notas de Seguridad
 

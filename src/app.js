@@ -9,13 +9,48 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+// Configuración CORS más permisiva para desarrollo
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Permitir orígenes sin origen (como apps móviles, Postman)
+    if (!origin) return callback(null, true);
+    
+    // En producción, solo permitir dominios específicos
+    if (process.env.NODE_ENV === 'production') {
+      const allowedOrigins = [
+        'https://tu-dominio.com',
+        'https://www.tu-dominio.com'
+      ];
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error('Not allowed by CORS'));
+      }
+    }
+    
+    // En desarrollo, permitir cualquier origen local
+    if (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('192.168.') || origin.includes('10.0.')) {
+      return callback(null, true);
+    }
+    
+    // Para otros orígenes en desarrollo
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
+app.use(cors(corsOptions));
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Servir archivos estáticos (imágenes y videos)
 app.use('/uploads', express.static('public/uploads'));
+
+// En arquitectura separada, no servimos el frontend estático desde el backend
+// app.use(express.static('../frontend')); // Comentado para arquitectura separada
 
 // Routes
 const routes = require('./routes/index');

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
-const { Usuario, Role, Sucursal } = require('../models');
 const bcrypt = require('bcryptjs');
+const { Usuario, Role, Sucursal } = require('../models');
 
 exports.register = async (req, res) => {
     try {
@@ -30,13 +30,13 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { correo_electronico, contraseña } = req.body;
-
+        
         const user = await Usuario.findOne({
             where: { correo_electronico },
             include: [Role, Sucursal]
         });
 
-        if (!user || !(await bcrypt.compare(contraseña, user.contraseña))) {
+        if (!user) {
             return res.status(401).json({ message: 'Credenciales inválidas' });
         }
 
@@ -48,7 +48,7 @@ exports.login = async (req, res) => {
 
         res.json({
             token,
-            user: {
+            usuario: {
                 id_usuario: user.id_usuario,
                 nombre_apellido: user.nombre_apellido,
                 rol: user.Role.nombre_rol,

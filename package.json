@@ -7,6 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
+    "dev:backend": "nodemon src/app.js",
+    "dev:frontend": "echo 'Inicia Live Server desde VS Code'",
     "seed": "node src/db_test/seed.js"
   },
   "keywords": [],
