@@ -140,7 +140,7 @@ class Producto(models.Model):
     codigo_barras = models.CharField(max_length=100, unique=True, blank=True, null=True)
     id_categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, db_column='id_categoria')
     precio = models.DecimalField(max_digits=10, decimal_places=2)
-    foto_producto = models.CharField(max_length=255, blank=True, null=True)
+    foto_producto = models.ImageField(upload_to='uploads/images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -206,9 +206,9 @@ class ServicioTecnico(models.Model):
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='En Reparación')
     id_sucursal = models.ForeignKey(Sucursal, on_delete=models.RESTRICT, db_column='id_sucursal')
     id_categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, db_column='id_categoria')
-    foto_1 = models.CharField(max_length=255, blank=True, null=True)
-    foto_2 = models.CharField(max_length=255, blank=True, null=True)
-    foto_3 = models.CharField(max_length=255, blank=True, null=True)
+    foto_1 = models.ImageField(upload_to='uploads/images/', blank=True, null=True)
+    foto_2 = models.ImageField(upload_to='uploads/images/', blank=True, null=True)
+    foto_3 = models.ImageField(upload_to='uploads/images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

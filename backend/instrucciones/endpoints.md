@@ -4,8 +4,15 @@ Esta guía detalla los cuerpos JSON requeridos para operar cada uno de los endpo
 
 ## Configuración Global
 - **Base URL**: `http://127.0.0.1:8000/api`
-- **Headers**:
-    - `Content-Type`: `application/json`
+- **Headers Globales**:
+    - `Content-Type`: `application/json` (Excepto al subir archivos)
+    - `Accept`: `application/json`
+
+> **IMPORTANTE PARA SUBIDA DE IMÁGENES**:
+> Cuando uses endpoints que requieren subir fotos (`/productos/` o `/servicios_tecnicos/`), **NO** uses JSON.
+> En Postman, selecciona **Body** -> **form-data**.
+> - Escribe los campos de texto (ej. `nombre_producto`) como texto.
+> - Escribe el campo de imagen (ej. `foto_producto`) y cambia el tipo de "Text" a **"File"** para seleccionar tu archivo.
 
 ---
 
