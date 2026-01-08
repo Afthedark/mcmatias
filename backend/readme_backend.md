@@ -7,6 +7,7 @@ Este es el proyecto backend para el sistema de gestión **MCMatias**, desarrolla
 - **Lenguaje**: Python 3.10+
 - **Framework**: Django 6.0
 - **API**: Django REST Framework
+- **Autenticación**: JWT (JSON Web Tokens) vía `django-rest-framework-simplejwt`
 - **Documentación**: Swagger UI (`drf-spectacular`)
 - **Base de Datos**: MySQL / MariaDB
 - **Driver**: **PyMySQL** (Universal y compatible con cPanel)
@@ -33,6 +34,11 @@ backend/
 3.  **BD**: Configurar `.env` + `python manage.py migrate`.
 4.  **Correr**: `python manage.py runserver`.
 
+## 🔑 Autenticación (JWT)
+
+El sistema utiliza JWT para proteger los endpoints. Puedes obtener tus tokens en:
+👉 **POST** `/api/token/` (Ver `instrucciones/endpoints.md` para detalles).
+
 ## 📚 Documentación de API (Swagger)
 
 Una vez corriendo el servidor, visita:
@@ -42,8 +48,4 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
 
 ## ☁️ Despliegue en Productos
 
-Consulta `instrucciones/deployment_cpanel.md` para la guía completa de subida a producción, que cubre:
-- Compresión de archivos.
-- Configuración de "Setup Python App".
-- Archivo `passenger_wsgi.py`.
-- Enlaces simbólicos para imágenes.
+Consulta `instrucciones/deployment_cpanel.md` para la guía completa de subida a producción.

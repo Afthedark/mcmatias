@@ -7,6 +7,35 @@ Esta guía detalla los cuerpos JSON requeridos para operar cada uno de los endpo
 - **Headers Globales**:
     - `Content-Type`: `application/json` (Excepto al subir archivos)
     - `Accept`: `application/json`
+    - `Authorization`: `Bearer <tu_access_token>` (Para endpoints protegidos)
+
+## 🔑 Autenticación (JWT)
+
+Para acceder a los recursos, primero debes obtener un token.
+
+### Login (Obtener Token)
+**POST** `/token/`
+```json
+{
+  "correo_electronico": "admin@mcmatias.com",
+  "password": "tu_password_aqui"
+}
+```
+**Respuesta:**
+```json
+{
+  "access": "eyJhbG...",
+  "refresh": "eyJhbG..."
+}
+```
+
+### Refrescar Token
+**POST** `/token/refresh/`
+```json
+{
+  "refresh": "tu_refresh_token_aqui"
+}
+```
 
 > **IMPORTANTE PARA SUBIDA DE IMÁGENES**:
 > Cuando uses endpoints que requieren subir fotos (`/productos/` o `/servicios_tecnicos/`), **NO** uses JSON.

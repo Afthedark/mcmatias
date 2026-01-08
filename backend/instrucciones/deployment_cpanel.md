@@ -11,7 +11,7 @@ Antes de subir nada, asegúrate de tener todo listo:
     ```bash
     pip freeze > requirements.txt
     ```
-    *(Verifica que `drf-spectacular`, `Pillow` y `PyMySQL` estén ahí).*
+    *(Verifica que `djangorestframework-simplejwt`, `drf-spectacular`, `Pillow` y `PyMySQL` estén ahí).*
 3.  **Archivos Estáticos**:
     En `settings.py`, asegúrate de tener:
     ```python

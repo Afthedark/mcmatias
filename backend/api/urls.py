@@ -18,6 +18,13 @@ router.register(r'ventas', VentaViewSet)
 router.register(r'detalle_ventas', DetalleVentaViewSet)
 router.register(r'servicios_tecnicos', ServicioTecnicoViewSet)
 
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+
 urlpatterns = [
     path('', include(router.urls)),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
