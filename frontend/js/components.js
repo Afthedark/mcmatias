@@ -25,9 +25,34 @@ const SIDEBAR_CONFIG = [
  * Render Main Header
  * @param {string} containerSelector - CSS selector for header container
  */
-function renderHeader(containerSelector = '#header-container') {
-    const userEmail = getCurrentUserEmail() || 'usuario@ejemplo.com';
-    const userName = userEmail.split('@')[0];
+async function renderHeader(containerSelector = '#header-container') {
+    // Get user data from API or fallback to localStorage
+    let userName = 'Usuario';
+    let userEmail = getCurrentUserEmail() || '';
+
+    // Try to fetch real user data from API
+    try {
+        const userData = await apiGet('/perfil/');
+        userName = userData.nombre_apellido || userData.correo_electronico?.split('@')[0] || 'Usuario';
+        userEmail = userData.correo_electronico || userEmail;
+
+        // Update localStorage with fresh data
+        if (userEmail) {
+            localStorage.setItem('user_email', userEmail);
+        }
+        if (userName) {
+            localStorage.setItem('user_name', userName);
+        }
+    } catch (error) {
+        // If API fails, try to use localStorage
+        const storedName = localStorage.getItem('user_name');
+        if (storedName) {
+            userName = storedName;
+        } else if (userEmail) {
+            userName = userEmail.split('@')[0];
+        }
+    }
+
     const userInitial = userName.charAt(0).toUpperCase();
     const pageTitle = document.title.split(' - ')[0];
 
@@ -206,7 +231,7 @@ function toggleSidebarCollapse() {
  * Initialize page components
  * @param {string} pageName - Current page filename
  */
-function initializePage(pageName) {
+async function initializePage(pageName) {
     // Check authentication
     checkAuth();
 
@@ -216,7 +241,7 @@ function initializePage(pageName) {
         document.body.classList.add('sidebar-collapsed');
     }
 
-    // Render components
-    renderHeader();
+    // Render components (await header to load user data first)
+    await renderHeader();
     renderSidebar('#sidebar-container', pageName);
 }
