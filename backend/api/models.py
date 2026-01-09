@@ -167,12 +167,17 @@ class Inventario(models.Model):
 
 # 8. Tabla de Ventas
 class Venta(models.Model):
+    METODO_PAGO_CHOICES = [
+        ('Efectivo', 'Efectivo'),
+        ('QR', 'QR'),
+    ]
     id_venta = models.AutoField(primary_key=True)
     numero_boleta = models.CharField(max_length=20, unique=True, blank=True, null=True)
     id_cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True, db_column='id_cliente')
     id_usuario = models.ForeignKey(Usuario, on_delete=models.RESTRICT, db_column='id_usuario')
     fecha_venta = models.DateTimeField(auto_now_add=True)
     total_venta = models.DecimalField(max_digits=10, decimal_places=2)
+    tipo_pago = models.CharField(max_length=20, choices=METODO_PAGO_CHOICES, default='Efectivo')
 
     class Meta:
         db_table = 'ventas'

@@ -2,7 +2,38 @@
 
 ## 📋 Estructura del Proyecto
 
-Proyecto Multi-Page Application (MPA) con autenticación JWT y diseño AdminLTE-like.
+```
+frontend/
+├── index.html              # Página de Login
+├── dashboard.html          # Vista principal
+├── productos.html          # Gestión de productos
+├── clientes.html           # Gestión de clientes
+├── ventas.html             # Gestión de ventas
+├── inventario.html         # Control de inventario
+├── servicios_tecnicos.html # Órdenes de servicio
+├── categorias.html         # Gestión de categorías
+├── sucursales.html         # Gestión de sucursales
+├── roles.html              # Gestión de roles
+├── usuarios.html           # Gestión de usuarios
+├── unauthorized.html       # Página 403
+│
+├── css/
+│   └── styles.css          # Estilos personalizados AdminLTE-like
+│
+├── js/
+│   ├── api.js              # Configuración de Axios e Interceptores JWT
+│   ├── auth.js             # Lógica de Login, Tokens y protección de rutas
+│   ├── components.js       # Inyección de Header y Sidebar reutilizables
+│   ├── utils.js            # Helpers (formateo, toasts, loaders)
+│   └── pages/              # Lógica específica por página
+│       ├── dashboard.js
+│       ├── productos.js
+│       └── clientes.js
+│
+└── assets/                 # Logos, imágenes (opcional)
+```
+
+**Nota**: Bootstrap 5 y Bootstrap Icons se cargan vía CDN.
 
 ## 🚀 Iniciando el Proyecto
 

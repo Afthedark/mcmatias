@@ -3,36 +3,116 @@
  * Header and Sidebar injection for all protected pages
  */
 
+// Configuration Object for Sidebar Navigation
+// Easy to maintain and scale without touching the HTML generation logic
+const SIDEBAR_CONFIG = [
+    { type: 'item', href: 'dashboard.html', icon: 'bi-grid-1x2', text: 'Dashboard' },
+    { type: 'section', text: 'Logística' },
+    { type: 'item', href: 'productos.html', icon: 'bi-box-seam', text: 'Productos' },
+    { type: 'item', href: 'inventario.html', icon: 'bi-boxes', text: 'Inventario' },
+    { type: 'section', text: 'Ventas & Clientes' },
+    { type: 'item', href: 'ventas.html', icon: 'bi-cart-check', text: 'Ventas' },
+    { type: 'item', href: 'clientes.html', icon: 'bi-people', text: 'Clientes' },
+    { type: 'item', href: 'servicios_tecnicos.html', icon: 'bi-tools', text: 'Servicios Técnicos' },
+    { type: 'section', text: 'Configuración' },
+    { type: 'item', href: 'categorias.html', icon: 'bi-tags', text: 'Categorías' },
+    { type: 'item', href: 'sucursales.html', icon: 'bi-shop', text: 'Sucursales' },
+    { type: 'item', href: 'usuarios.html', icon: 'bi-person-badge', text: 'Usuarios' },
+    { type: 'item', href: 'roles.html', icon: 'bi-shield-check', text: 'Roles' }
+];
+
 /**
  * Render Main Header
  * @param {string} containerSelector - CSS selector for header container
  */
 function renderHeader(containerSelector = '#header-container') {
     const userEmail = getCurrentUserEmail() || 'usuario@ejemplo.com';
-    const userName = userEmail.split('@')[0]; // Extract name from email
+    const userName = userEmail.split('@')[0];
+    const userInitial = userName.charAt(0).toUpperCase();
+    const pageTitle = document.title.split(' - ')[0];
 
     const headerHTML = `
-        <div class="main-header">
-            <button class="sidebar-toggle" onclick="toggleSidebar()">
-                <i class="bi bi-list"></i>
-            </button>
-            
-            <div class="user-menu">
-                <div class="user-info">
-                    <div class="user-name">${userName}</div>
-                    <div class="user-role">Administrador</div>
-                </div>
-                <button class="logout-btn" onclick="logout()">
-                    <i class="bi bi-box-arrow-right"></i> Salir
+        <header class="main-header">
+            <div class="header-left">
+                <!-- Mobile Toggle -->
+                <button class="sidebar-toggle sidebar-toggle-mobile" onclick="toggleSidebar()" aria-label="Abrir Menú">
+                    <i class="bi bi-list"></i>
                 </button>
+                <!-- Desktop Collapse -->
+                <button class="sidebar-toggle sidebar-toggle-desktop" onclick="toggleSidebarCollapse()" aria-label="Colapsar Menú">
+                    <i class="bi bi-list"></i>
+                </button>
+                
+                <div class="breadcrumb-container d-none d-md-block">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="dashboard.html">Inicio</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">${pageTitle}</li>
+                        </ol>
+                    </nav>
+                </div>
             </div>
-        </div>
+            
+            <div class="header-right">
+                <div class="user-menu-dropdown">
+                    <button class="user-menu-btn" onclick="toggleUserDropdown(event)" aria-expanded="false" aria-haspopup="true">
+                        <div class="user-avatar">${userInitial}</div>
+                        <div class="user-details d-none d-sm-block">
+                            <span class="user-name">${userName}</span>
+                            <span class="user-role">Administrador</span>
+                        </div>
+                        <i class="bi bi-chevron-down ms-2 text-muted" style="font-size: 0.8rem;"></i>
+                    </button>
+                    
+                    <div id="userDropdown" class="user-dropdown-menu">
+                        <div class="px-3 py-2 border-bottom d-sm-none">
+                            <div class="fw-bold">${userName}</div>
+                            <div class="small text-muted">Administrador</div>
+                        </div>
+                        <a href="#" class="dropdown-item-custom">
+                            <i class="bi bi-person"></i> Mi Perfil
+                        </a>
+                        <a href="#" class="dropdown-item-custom">
+                            <i class="bi bi-gear"></i> Configuración
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="javascript:void(0)" class="dropdown-item-custom logout-link" onclick="logout()">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
     `;
 
     const container = document.querySelector(containerSelector);
     if (container) {
         container.innerHTML = headerHTML;
+        setupHeaderEventListeners();
     }
+}
+
+/**
+ * Setup event listeners for header components
+ */
+function setupHeaderEventListeners() {
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function (e) {
+        const dropdown = document.getElementById('userDropdown');
+        if (dropdown && dropdown.classList.contains('show')) {
+            if (!e.target.closest('.user-menu-dropdown')) {
+                dropdown.classList.remove('show');
+            }
+        }
+    });
+
+    // Close dropdown on Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) dropdown.classList.remove('show');
+        }
+    });
 }
 
 /**
@@ -41,31 +121,23 @@ function renderHeader(containerSelector = '#header-container') {
  * @param {string} activePage - Current page name to highlight
  */
 function renderSidebar(containerSelector = '#sidebar-container', activePage = '') {
+    const navItemsHTML = SIDEBAR_CONFIG.map(config => {
+        if (config.type === 'section') {
+            return `<li class="nav-section-title">${config.text}</li>`;
+        }
+        return createNavItem(config.href, config.icon, config.text, activePage);
+    }).join('');
+
     const sidebarHTML = `
         <aside class="sidebar">
             <div class="sidebar-brand">
-                <i class="bi bi-shop-window" style="font-size: 2rem; color: #007bff;"></i>
+                <i class="bi bi-shop-window"></i>
                 <h3>MCMatias</h3>
             </div>
             
             <nav class="sidebar-nav">
                 <ul class="nav flex-column">
-                    ${createNavItem('dashboard.html', 'bi-speedometer2', 'Dashboard', activePage)}
-                    
-                    <li class="nav-section-title">GESTIÓN</li>
-                    ${createNavItem('productos.html', 'bi-box-seam', 'Productos', activePage)}
-                    ${createNavItem('clientes.html', 'bi-people', 'Clientes', activePage)}
-                    ${createNavItem('inventario.html', 'bi-boxes', 'Inventario', activePage)}
-                    
-                    <li class="nav-section-title">OPERACIONES</li>
-                    ${createNavItem('ventas.html', 'bi-cart-check', 'Ventas', activePage)}
-                    ${createNavItem('servicios_tecnicos.html', 'bi-tools', 'Servicios Técnicos', activePage)}
-                    
-                    <li class="nav-section-title">CONFIGURACIÓN</li>
-                    ${createNavItem('categorias.html', 'bi-tags', 'Categorías', activePage)}
-                    ${createNavItem('sucursales.html', 'bi-shop', 'Sucursales', activePage)}
-                    ${createNavItem('roles.html', 'bi-shield-check', 'Roles', activePage)}
-                    ${createNavItem('usuarios.html', 'bi-person-badge', 'Usuarios', activePage)}
+                    ${navItemsHTML}
                 </ul>
             </nav>
         </aside>
@@ -84,18 +156,30 @@ function renderSidebar(containerSelector = '#sidebar-container', activePage = ''
  * @param {string} icon - Bootstrap icon class
  * @param {string} text - Link text
  * @param {string} activePage - Current active page
- * @returns {string} - HTML string
  */
 function createNavItem(href, icon, text, activePage) {
     const isActive = activePage === href ? 'active' : '';
     return `
         <li class="nav-item">
-            <a href="${href}" class="nav-link ${isActive}">
+            <a href="${href}" class="nav-link ${isActive}" title="${text}">
                 <i class="bi ${icon}"></i>
                 <span>${text}</span>
             </a>
         </li>
     `;
+}
+
+/**
+ * Toggle user dropdown menu
+ */
+function toggleUserDropdown(event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById('userDropdown');
+    const btn = event.currentTarget;
+    if (dropdown) {
+        const isShowing = dropdown.classList.toggle('show');
+        btn.setAttribute('aria-expanded', isShowing);
+    }
 }
 
 /**
@@ -105,22 +189,32 @@ function toggleSidebar() {
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
 
-    if (sidebar) {
-        sidebar.classList.toggle('show');
-    }
-    if (overlay) {
-        overlay.classList.toggle('show');
-    }
+    if (sidebar) sidebar.classList.toggle('show');
+    if (overlay) overlay.classList.toggle('show');
+}
+
+/**
+ * Toggle sidebar width (for desktop)
+ */
+function toggleSidebarCollapse() {
+    document.body.classList.toggle('sidebar-collapsed');
+    const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+    localStorage.setItem('sidebarCollapsed', isCollapsed);
 }
 
 /**
  * Initialize page components
- * Call this on every protected page
- * @param {string} pageName - Current page filename (e.g., 'dashboard.html')
+ * @param {string} pageName - Current page filename
  */
 function initializePage(pageName) {
     // Check authentication
     checkAuth();
+
+    // Apply sidebar collapse preference immediately
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (isCollapsed) {
+        document.body.classList.add('sidebar-collapsed');
+    }
 
     // Render components
     renderHeader();
