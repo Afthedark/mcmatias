@@ -18,6 +18,10 @@ Este es el proyecto backend para el sistema de gestión **MCMatias**, desarrolla
 ```
 backend/
 ├── api/                 # Aplicación principal
+│   ├── models.py        # Modelos de datos
+│   ├── views.py         # Vistas y endpoints
+│   ├── serializers.py   # Serializadores
+│   └── urls.py          # Rutas de API
 ├── config/              # Configuraciones de Django
 ├── instrucciones/       # Guías: Setup, Despliegue, Endpoints
 │   ├── deployment_cpanel.md # GUÍA PASO A PASO PARA CPANEL
@@ -39,6 +43,19 @@ backend/
 El sistema utiliza JWT para proteger los endpoints. Puedes obtener tus tokens en:
 👉 **POST** `/api/token/` (Ver `instrucciones/endpoints.md` para detalles).
 
+## 📋 Endpoints Principales
+
+### Autenticación
+- **POST** `/api/token/` - Obtener tokens de acceso
+- **POST** `/api/token/refresh/` - Refrescar token de acceso
+
+### Perfil de Usuario
+- **GET** `/api/perfil/` - Obtener datos del usuario autenticado
+- **PATCH** `/api/perfil/` - Actualizar perfil (nombre, email, contraseña)
+
+### Gestión de Datos
+- **CRUD completo** para: Roles, Sucursales, Categorías, Usuarios, Clientes, Productos, Inventario, Ventas, Detalle de Ventas, Servicios Técnicos
+
 ## 📚 Documentación de API (Swagger)
 
 Una vez corriendo el servidor, visita:
@@ -46,6 +63,14 @@ Una vez corriendo el servidor, visita:
 
 Aquí verás todos los endpoints documentados automáticamente e interactivos para probar.
 
-## ☁️ Despliegue en Productos
+## ✨ Características Recientes
+
+- ✅ Endpoint de perfil de usuario con actualización parcial (PATCH)
+- ✅ Validación de contraseñas con confirmación
+- ✅ Paginación ordenada en todos los endpoints
+- ✅ Campo `tipo_pago` en modelo de Ventas (Efectivo/QR)
+
+## ☁️ Despliegue en Producción
 
 Consulta `instrucciones/deployment_cpanel.md` para la guía completa de subida a producción.
+

@@ -1,4 +1,4 @@
-from rest_framework import serializers
+﻿from rest_framework import serializers
 from .models import (
     Rol, Sucursal, Categoria, Usuario, Cliente, Producto, 
     Inventario, Venta, DetalleVenta, ServicioTecnico
@@ -24,10 +24,8 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usuario
-        fields = '__all__' 
-        # Note: fields will include permissions mixin fields like groups, user_permissions if __all__
-        # Better to list fields to avoid clutter, but sticking to ALL for coverage.
-        
+        fields = '__all__'
+
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         instance = self.Meta.model(**validated_data)
@@ -74,3 +72,42 @@ class ServicioTecnicoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServicioTecnico
         fields = '__all__'
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    confirm_password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+
+    class Meta:
+        model = Usuario
+        fields = ['id_usuario', 'nombre_apellido', 'correo_electronico', 'password', 'confirm_password']
+        read_only_fields = ['id_usuario']
+
+    def validate(self, data):
+        password = data.get('password', '').strip()
+        confirm_password = data.get('confirm_password', '').strip()
+        
+        # Si se proporcionó contraseña, validar que coincidan
+        if password or confirm_password:
+            if password != confirm_password:
+                raise serializers.ValidationError({"password": "Las contraseñas no coinciden."})
+            if len(password) < 4:
+                raise serializers.ValidationError({"password": "La contraseña debe tener al menos 4 caracteres."})
+        
+        return data
+
+    def update(self, instance, validated_data):
+        # Remover confirm_password ya que no es campo del modelo
+        validated_data.pop('confirm_password', None)
+        password = validated_data.pop('password', None)
+
+        # Actualizar campos básicos
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        # Si se proporcionó contraseña, hashearla
+        if password and password.strip():
+            instance.set_password(password)
+
+        instance.save()
+        return instance
+

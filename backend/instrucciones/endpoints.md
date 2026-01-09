@@ -37,6 +37,60 @@ Para acceder a los recursos, primero debes obtener un token.
 }
 ```
 
+---
+
+## 👤 Perfil de Usuario (`/perfil/`)
+
+Gestión del perfil del usuario autenticado actualmente.
+
+### Obtener Perfil Actual
+**GET** `/perfil/`
+
+**Headers:**
+- `Authorization`: `Bearer <tu_access_token>`
+
+**Respuesta:**
+```json
+{
+  "id_usuario": 1,
+  "nombre_apellido": "Admin Sistema",
+  "correo_electronico": "admin@mcmatias.com"
+}
+```
+
+### Actualizar Perfil
+**PATCH** `/perfil/`
+
+**Headers:**
+- `Authorization`: `Bearer <tu_access_token>`
+- `Content-Type`: `application/json`
+
+**Body (Actualizar solo nombre y email):**
+```json
+{
+  "nombre_apellido": "Nuevo Nombre",
+  "correo_electronico": "nuevo@email.com"
+}
+```
+
+**Body (Actualizar con contraseña):**
+```json
+{
+  "nombre_apellido": "Nuevo Nombre",
+  "correo_electronico": "nuevo@email.com",
+  "password": "nueva_contraseña_segura",
+  "confirm_password": "nueva_contraseña_segura"
+}
+```
+
+**Notas:**
+- Todos los campos son opcionales en PATCH (actualización parcial)
+- Si incluyes `password`, debes incluir también `confirm_password`
+- La contraseña debe tener al menos 4 caracteres
+- Las contraseñas deben coincidir
+
+---
+
 > **IMPORTANTE PARA SUBIDA DE IMÁGENES**:
 > Cuando uses endpoints que requieren subir fotos (`/productos/` o `/servicios_tecnicos/`), **NO** uses JSON.
 > En Postman, selecciona **Body** -> **form-data**.
@@ -155,6 +209,7 @@ Existencias de un producto en una sucursal específica.
 ## 8. Ventas (`/ventas/`)
 Cabecera de una transacción de venta.
 - Se crea primero la venta y luego sus detalles.
+- `tipo_pago`: "Efectivo" o "QR"
 
 **POST Body:**
 ```json
@@ -162,7 +217,8 @@ Cabecera de una transacción de venta.
   "numero_boleta": "B-0001",
   "id_cliente": 1,
   "id_usuario": 1,
-  "total_venta": 150.50
+  "total_venta": 150.50,
+  "tipo_pago": "Efectivo"
 }
 ```
 
@@ -201,3 +257,4 @@ Renglones de productos dentro de una venta.
   "foto_1": "ruta/foto_danio.jpg"
 }
 ```
+

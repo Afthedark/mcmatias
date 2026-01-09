@@ -72,7 +72,7 @@ function renderHeader(containerSelector = '#header-container') {
                         <a href="#" class="dropdown-item-custom">
                             <i class="bi bi-person"></i> Mi Perfil
                         </a>
-                        <a href="#" class="dropdown-item-custom">
+                        <a href="javascript:void(0)" class="dropdown-item-custom" onclick="openProfileModal()">
                             <i class="bi bi-gear"></i> Configuración
                         </a>
                         <div class="dropdown-divider"></div>

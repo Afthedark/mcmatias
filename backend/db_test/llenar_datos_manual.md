@@ -13,7 +13,7 @@ Debido a las **Llaves Foráneas (Foreign Keys)**, no puedes llenar las tablas en
 5.  **Clientes**: Registra a tus clientes.
 6.  **Productos**: Crea el catálogo (requiere Categoría).
 7.  **Inventario**: Asigna stock de productos a sucursales concretas.
-8.  **Ventas**: Registra la cabecera de la venta.
+8.  **Ventas**: Registra la cabecera de la venta (con tipo_pago).
 9.  **Detalle Ventas**: Agrega los productos a la venta creada.
 10. **Servicios Técnicos**: Registra órdenes de reparación.
 
@@ -37,6 +37,38 @@ Antes de empezar a llenar datos, obtén tu token de acceso enviando tus credenci
 }
 ```
 Copia el valor de `access` y úsalo en el header **Authorization** de las siguientes peticiones como `Bearer <TOKEN>`.
+
+---
+
+## 👤 Gestión de Perfil de Usuario
+
+### Actualizar tu perfil (`PATCH /api/perfil/`)
+Una vez autenticado, puedes actualizar tu propia información:
+
+**Solo nombre y email:**
+```json
+{
+  "nombre_apellido": "Nuevo Nombre Completo",
+  "correo_electronico": "nuevo@email.com"
+}
+```
+
+**Cambiar contraseña también:**
+```json
+{
+  "nombre_apellido": "Nuevo Nombre",
+  "correo_electronico": "nuevo@email.com",
+  "password": "nueva_password_segura",
+  "confirm_password": "nueva_password_segura"
+}
+```
+
+**Notas:**
+- Todos los campos son opcionales
+- Las contraseñas deben coincidir y tener mínimo 4 caracteres
+- El endpoint actualiza solo los datos del usuario autenticado (no requiere ID)
+
+---
 
 ### 1. Crear Roles (`POST /api/roles/`)
 ```json
@@ -82,9 +114,23 @@ Copia el valor de `access` y úsalo en el header **Authorization** de las siguie
 }
 ```
 
+### 6. Crear Ventas (`POST /api/ventas/`)
+```json
+{
+  "numero_boleta": "B-0001",
+  "id_cliente": 1,
+  "id_usuario": 1,
+  "total_venta": 150.50,
+  "tipo_pago": "Efectivo"
+}
+```
+**Nota:** `tipo_pago` puede ser "Efectivo" o "QR"
+
 ---
 
 ## 🔍 Consejos útiles
 - **Ver IDs**: Antes de crear un Usuario, haz un `GET` a `/api/roles/` para ver qué ID tiene el rol que creaste (normalmente es el `1`).
 - **Nombres exactos**: Respeta las mayúsculas y minúsculas en los nombres de los campos.
 - **Errores**: Si recibes un error `400 Bad Request`, revisa que no falte ningún campo obligatorio o que el ID que estás enviando (como `id_sucursal`) realmente exista.
+- **Actualizar perfil**: Usa `PATCH /api/perfil/` para actualizar tu información sin necesidad de conocer tu ID de usuario.
+

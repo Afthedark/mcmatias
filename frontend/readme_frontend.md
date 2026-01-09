@@ -24,6 +24,7 @@ frontend/
 │   ├── api.js              # Configuración de Axios e Interceptores JWT
 │   ├── auth.js             # Lógica de Login, Tokens y protección de rutas
 │   ├── components.js       # Inyección de Header y Sidebar reutilizables
+│   ├── profile.js          # Modal de edición de perfil de usuario
 │   ├── utils.js            # Helpers (formateo, toasts, loaders)
 │   └── pages/              # Lógica específica por página
 │       ├── dashboard.js
@@ -62,24 +63,65 @@ frontend/
 - **roles.html** - Gestión de roles
 - **usuarios.html** - Gestión de usuarios
 
+## ✨ Funcionalidades Principales
+
+### 🔐 Autenticación
+- Login con JWT
+- Tokens en `localStorage`:
+  - `access_token` - Válido 60 minutos
+  - `refresh_token` - Válido 1 día
+- Protección automática de rutas
+- Logout con limpieza de tokens
+
+### 👤 Perfil de Usuario
+- Modal de edición accesible desde "Configuración" en el menú
+- Actualización de nombre y email
+- Cambio de contraseña (opcional)
+- Validación en tiempo real
+- Actualización automática del header
+
+### 🎨 Diseño
+- **Desktop**: Sidebar fijo con opción de colapsar
+- **Mobile**: Sidebar deslizable con overlay
+- Estilo AdminLTE-like moderno
+- 100% responsive
+
+## 🔧 Módulos JavaScript
+
+### Core
+- **api.js**: Axios configurado con interceptores JWT
+- **auth.js**: Gestión de autenticación y tokens
+- **utils.js**: Funciones auxiliares (formateo, toasts)
+
+### Componentes
+- **components.js**: Header y Sidebar dinámicos
+- **profile.js**: Modal de edición de perfil
+
+### Páginas
+- **pages/dashboard.js**: Dashboard con KPIs
+- **pages/productos.js**: CRUD de productos
+- **pages/clientes.js**: CRUD de clientes
+
 ## 🔧 Personalización
 
 ### Cambiar URL del Backend
-Edita `js/api.js` línea 6:
+Edita `js/api.js` línea 7:
 ```javascript
 const API_BASE_URL = 'http://TU_URL:PUERTO/api';
 ```
 
-## 🎨 Diseño Responsive
-- Desktop: Sidebar fijo
-- Mobile: Sidebar colapsable con botón hamburguesa
-
-## 🔐 Autenticación
-Los tokens se guardan en `localStorage`:
-- `access_token` - Válido 60 minutos
-- `refresh_token` - Válido 1 día
+### Modificar Menú Lateral
+Edita `js/components.js` en `SIDEBAR_CONFIG`:
+```javascript
+const SIDEBAR_CONFIG = [
+    { type: 'item', href: 'pagina.html', icon: 'bi-icon', text: 'Texto' },
+    // ...
+];
+```
 
 ## ⚠️ Notas Importantes
-- Dashboard muestra datos ficticios (configurado según requerimientos)
+- Dashboard muestra datos ficticios (según requerimientos)
 - RBAC (control de roles) se implementará en fase futura
 - Todas las páginas requieren autenticación excepto login
+- El modal de perfil está incluido automáticamente en todas las páginas protegidas
+
