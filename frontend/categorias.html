@@ -20,20 +20,35 @@
         <div class="content-wrapper">
             <div class="page-header">
                 <h1 class="page-title">Gestión de Categorías</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="dashboard.html">Inicio</a></li>
-                        <li class="breadcrumb-item active">Categorías</li>
-                    </ol>
-                </nav>
             </div>
 
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Lista de Categorías</h5>
-                    <button class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Nueva Categoría
-                    </button>
+            <div class="card w-100">
+                <div
+                    class="card-header d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                    <!-- Tab Filter -->
+                    <ul
+                        class="nav nav-pills card-header-pills w-100 w-md-auto justify-content-center justify-content-md-start">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" data-filter="todos">Todos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-filter="producto">Productos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-filter="servicio">Servicios</a>
+                        </li>
+                    </ul>
+
+                    <div class="d-flex flex-column flex-md-row align-items-center gap-2 w-100 w-md-auto">
+                        <div class="input-group w-100">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control border-start-0 ps-0" id="searchInput"
+                                placeholder="Buscar categoría...">
+                        </div>
+                        <button class="btn btn-primary text-nowrap w-100 w-md-auto" onclick="openEditModal()">
+                            <i class="bi bi-plus-circle"></i> Nuevo
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -42,17 +57,63 @@
                                 <tr>
                                     <th>Nombre</th>
                                     <th>Tipo</th>
-                                    <th>Acciones</th>
+                                    <th style="width: 15%;">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="3" class="text-center">Módulo en desarrollo - API: /api/categorias/
-                                    </td>
-                                </tr>
+                            <tbody id="categoriasTableBody">
+                                <!-- Dynamic Content -->
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div id="paginationInfo" class="text-muted small"></div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-sm mb-0" id="paginationContainer">
+                                <!-- Dynamic Pagination -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="categoriaModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Nueva Categoría</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="categoriaForm" novalidate>
+                        <input type="hidden" id="categoriaId">
+
+                        <div class="mb-3">
+                            <label for="nombreCategoria" class="form-label">Nombre *</label>
+                            <input type="text" class="form-control" id="nombreCategoria" required
+                                placeholder="Ej. Laptops">
+                            <div class="invalid-feedback">Requerido.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tipo" class="form-label">Tipo *</label>
+                            <select class="form-select" id="tipo" required>
+                                <option value="">Seleccione...</option>
+                                <option value="producto">Producto</option>
+                                <option value="servicio">Servicio</option>
+                            </select>
+                            <div class="invalid-feedback">Seleccione un tipo.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnSave"
+                        onclick="saveCategoria()">Guardar</button>
                 </div>
             </div>
         </div>
@@ -63,7 +124,9 @@
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/utils.js"></script>
-    <script src="js/components.js"></script>`r`n    <script src="js/profile.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/pages/categorias.js"></script>
 
     <script>
         initializePage('categorias.html');

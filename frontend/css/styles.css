@@ -517,6 +517,21 @@ body.sidebar-collapsed .content-wrapper {
     border-radius: 5px;
 }
 
+/* Custom Table Styles for "Larger" feel */
+.table th,
+.table td {
+    padding: 1rem 1rem;
+    /* More padding */
+    vertical-align: middle;
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
 /* ========== UTILITIES ========== */
 .spinner-overlay {
     position: fixed;

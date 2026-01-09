@@ -19,18 +19,12 @@
         <div class="content-wrapper">
             <div class="page-header">
                 <h1 class="page-title">Gestión de Sucursales</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="dashboard.html">Inicio</a></li>
-                        <li class="breadcrumb-item active">Sucursales</li>
-                    </ol>
-                </nav>
             </div>
 
-            <div class="card">
+            <div class="card w-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Lista de Sucursales</h5>
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" onclick="openEditModal()">
                         <i class="bi bi-plus-circle"></i> Nueva Sucursal
                     </button>
                 </div>
@@ -42,17 +36,64 @@
                                     <th>Nombre</th>
                                     <th>Dirección</th>
                                     <th>Estado</th>
-                                    <th>Acciones</th>
+                                    <th style="width: 15%;">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="4" class="text-center">Módulo en desarrollo - API: /api/sucursales/
-                                    </td>
-                                </tr>
+                            <tbody id="sucursalesTableBody">
+                                <!-- Dynamic Content -->
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Pagination Controls -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div id="paginationInfo" class="text-muted small"></div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-sm mb-0" id="paginationContainer">
+                                <!-- Dynamic Pagination -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Create/Edit -->
+    <div class="modal fade" id="sucursalModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Nueva Sucursal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="sucursalForm" novalidate>
+                        <input type="hidden" id="sucursalId">
+
+                        <div class="mb-3">
+                            <label for="nombreSucursal" class="form-label">Nombre *</label>
+                            <input type="text" class="form-control" id="nombreSucursal" required
+                                placeholder="Ej. Casa Matriz">
+                            <div class="invalid-feedback">Requerido.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="direccion" class="form-label">Dirección</label>
+                            <textarea class="form-control" id="direccion" rows="3"
+                                placeholder="Ej. Av. Principal 123"></textarea>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="activo" checked>
+                            <label class="form-check-label" for="activo">Sucursal Activa</label>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnSave" onclick="saveSucursal()">Guardar</button>
                 </div>
             </div>
         </div>
@@ -63,7 +104,9 @@
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/utils.js"></script>
-    <script src="js/components.js"></script>`r`n    <script src="js/profile.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/pages/sucursales.js"></script>
 
     <script>
         initializePage('sucursales.html');

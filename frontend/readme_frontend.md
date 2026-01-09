@@ -50,18 +50,18 @@ frontend/
 
 ### ✅ Completas con CRUD
 - **index.html** - Login con JWT
-- **dashboard.html** - Dashboard con KPIs ficticios
-- **productos.html** - Gestión de productos (con imágenes)
-- **clientes.html** - Gestión de clientes
+- **dashboard.html** - Dashboard
+- **roles.html** - Gestión de roles
+- **usuarios.html** - Gestión de usuarios (+ Foreign Keys)
+- **sucursales.html** - Gestión de sucursales
+- **categorias.html** - Categorías + Buscador + Filtros
+- **productos.html** - (En progreso)
+- **clientes.html** - (En progreso)
 
 ### 📝 Plantillas Base (Requieren JS)
 - **ventas.html** - Gestión de ventas
 - **inventario.html** - Control de inventario
 - **servicios_tecnicos.html** - Órdenes de servicio
-- **categorias.html** - Gestión de categorías
-- **sucursales.html** - Gestión de sucursales
-- **roles.html** - Gestión de roles
-- **usuarios.html** - Gestión de usuarios
 
 ## ✨ Funcionalidades Principales
 
@@ -94,10 +94,22 @@ frontend/
 - **utils.js**: Funciones auxiliares (formateo, toasts)
 
 ### Componentes
+### Componentes
 - **components.js**: Header y Sidebar dinámicos
 - **profile.js**: Modal de edición de perfil
 
-### Páginas
+### Páginas Implementadas (Logica)
+- **dashboard.js**
+- **roles.js**: CRUD Roles con Modales
+- **usuarios.js**: CRUD Usuarios con Selectores Dinámicos (Roles/Sucursales)
+- **sucursales.js**: CRUD Sucursales (Activar/Desactivar)
+- **categorias.js**: CRUD Categorías con **Búsqueda en Servidor** y Filtros por Tipo
+
+## ✨ Características Recientes
+- **Buscador Inteligente**: Implementado en Categorías con _debounce_ de 300ms.
+- **Filtros Híbridos**: Filtrado visual + Búsqueda server-side.
+- **Formularios Dinámicos**: Carga de selects (foreign keys) al abrir modales.
+- **UI Responsiva Mejorada**: Encabezados adaptativos (Flexbox) para móviles.
 - **pages/dashboard.js**: Dashboard con KPIs
 - **pages/productos.js**: CRUD de productos
 - **pages/clientes.js**: CRUD de clientes

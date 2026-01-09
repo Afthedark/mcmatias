@@ -10,8 +10,9 @@ Este es el proyecto backend para el sistema de gestión **MCMatias**, desarrolla
 - **Autenticación**: JWT (JSON Web Tokens) vía `django-rest-framework-simplejwt`
 - **Documentación**: Swagger UI (`drf-spectacular`)
 - **Base de Datos**: MySQL / MariaDB
-- **Driver**: **PyMySQL** (Universal y compatible con cPanel)
+- **Driver**: **PyMySQL** + **cryptography** (Universal, optimizado para **cPanel** y compatible con MariaDB/MySQL 8.0+)
 - **Archivos**: **Pillow** (Gestión de imágenes)
+- **Filtros**: **DjangoFilter** y **SearchFilter** para búsquedas avanzadas
 
 ## 📂 Estructura del Proyecto
 
@@ -19,8 +20,8 @@ Este es el proyecto backend para el sistema de gestión **MCMatias**, desarrolla
 backend/
 ├── api/                 # Aplicación principal
 │   ├── models.py        # Modelos de datos
-│   ├── views.py         # Vistas y endpoints
-│   ├── serializers.py   # Serializadores
+│   ├── views.py         # Vistas, endpoints y filtros
+│   ├── serializers.py   # Serializadores con validaciones
 │   └── urls.py          # Rutas de API
 ├── config/              # Configuraciones de Django
 ├── instrucciones/       # Guías: Setup, Despliegue, Endpoints
@@ -53,8 +54,12 @@ El sistema utiliza JWT para proteger los endpoints. Puedes obtener tus tokens en
 - **GET** `/api/perfil/` - Obtener datos del usuario autenticado
 - **PATCH** `/api/perfil/` - Actualizar perfil (nombre, email, contraseña)
 
-### Gestión de Datos
-- **CRUD completo** para: Roles, Sucursales, Categorías, Usuarios, Clientes, Productos, Inventario, Ventas, Detalle de Ventas, Servicios Técnicos
+### Gestión de Datos con Búsqueda 🔍
+- **Roles**: CRUD Completo
+- **Usuarios**: CRUD con claves foráneas (rol, sucursal)
+- **Sucursales**: CRUD Completo
+- **Categorías**: CRUD Completo + **Searching** (`?search=term` busca en nombre y tipo)
+- **Otros**: Clientes, Productos, Inventario, Ventas, DetalleVenta, ServicioTecnico (Listos para implementar frontend)
 
 ## 📚 Documentación de API (Swagger)
 
@@ -68,6 +73,7 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
 - ✅ Endpoint de perfil de usuario con actualización parcial (PATCH)
 - ✅ Validación de contraseñas con confirmación
 - ✅ Paginación ordenada en todos los endpoints
+- ✅ **Búsqueda Global (SearchFilter)**: Implementado en Categorías
 - ✅ Campo `tipo_pago` en modelo de Ventas (Efectivo/QR)
 
 ## ☁️ Despliegue en Producción

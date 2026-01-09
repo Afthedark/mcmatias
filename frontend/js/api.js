@@ -110,6 +110,16 @@ async function apiPut(endpoint, data) {
     }
 }
 
+// PATCH request
+async function apiPatch(endpoint, data) {
+    try {
+        const response = await api.patch(endpoint, data);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
 // DELETE request
 async function apiDelete(endpoint) {
     try {

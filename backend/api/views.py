@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from rest_framework import filters
 from .models import (
     Rol, Sucursal, Categoria, Usuario, Cliente, Producto, 
     Inventario, Venta, DetalleVenta, ServicioTecnico
@@ -25,6 +26,9 @@ class SucursalViewSet(viewsets.ModelViewSet):
 class CategoriaViewSet(viewsets.ModelViewSet):
     queryset = Categoria.objects.all().order_by('pk')
     serializer_class = CategoriaSerializer
+    #Esto es para que se pueda buscar por nombre y tipo
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nombre_categoria', 'tipo']
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all().order_by('pk')
