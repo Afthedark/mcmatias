@@ -157,3 +157,17 @@ async function apiPutFormData(endpoint, formData) {
         throw error;
     }
 }
+
+// PATCH with FormData
+async function apiPatchFormData(endpoint, formData) {
+    try {
+        const response = await api.patch(endpoint, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}

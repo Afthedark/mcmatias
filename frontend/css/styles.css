@@ -45,32 +45,104 @@ body {
     outline-offset: 2px;
 }
 
-/* ========== LOGIN PAGE ========== */
+/* ========== LOGIN PAGE PREMIUM ========== */
 .login-page {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(-45deg, #0d6efd, #6610f2, #6f42c1, #0dcaf0);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 .login-page .card {
-    border-radius: 10px;
-    transition: transform 0.3s ease;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .login-page .card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
 }
 
-.login-page .input-group-text {
-    background-color: #f8f9fa;
-    border-right: none;
+.login-page .card-body {
+    padding: 3rem !important;
 }
 
-.login-page .form-control {
-    border-left: none;
+.login-page input.form-control {
+    background: rgba(248, 250, 252, 0.8);
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem 1rem;
+    height: auto;
+    font-size: 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
-.login-page .form-control:focus {
-    border-color: #dee2e6;
-    box-shadow: none;
+.login-page input.form-control:focus {
+    background: #fff;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+}
+
+.login-page .btn-primary {
+    background: linear-gradient(45deg, var(--primary-color), #6610f2);
+    border: none;
+    padding: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.login-page .btn-primary:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+
+.login-page .bi-shop-window {
+    background: -webkit-linear-gradient(45deg, var(--primary-color), #6610f2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Password Toggle Icon */
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d;
+    z-index: 5;
+    background: transparent;
+    padding: 5px;
+}
+
+.password-toggle:hover {
+    color: var(--primary-color);
 }
 
 /* ========== MAIN LAYOUT ========== */

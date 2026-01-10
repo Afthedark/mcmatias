@@ -1,24 +1,39 @@
 /**
  * Productos Page Logic
- * CRUD operations for products
+ * CRUD operations for products with pagination
  */
 
 let productos = [];
 let categorias = [];
 let currentProductoId = null;
-let modalInstance = null;
+let currentPage = 1;
+let totalPages = 1;
 
 /**
- * Load all products
+ * Load products with pagination
  */
-async function loadProductos() {
+async function loadProductos(page = 1) {
     try {
-        const data = await apiGet('/productos/');
+        showLoader();
+        const data = await apiGet(`/productos/?page=${page}`);
+
         productos = data.results || data;
+        currentPage = page;
+
+        // Calculate pagination if using DRF pagination
+        if (data.count) {
+            totalPages = Math.ceil(data.count / 10); // 10 items per page
+        } else {
+            totalPages = 1;
+        }
+
         renderProductosTable();
+        renderPagination();
     } catch (error) {
         console.error('Error loading products:', error);
         showToast('Error al cargar productos', 'danger');
+    } finally {
+        hideLoader();
     }
 }
 
@@ -59,15 +74,47 @@ function renderProductosTable() {
             <td>${producto.codigo_barras || '-'}</td>
             <td>${formatCurrency(producto.precio)}</td>
             <td class="table-actions">
-                <button class="btn btn-sm btn-info" onclick="openEditModal(${producto.id_producto})">
+                <button class="btn btn-sm btn-info" onclick="openEditModal(${producto.id_producto})" title="Editar">
                     <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteProducto(${producto.id_producto})">
+                <button class="btn btn-sm btn-danger" onclick="deleteProducto(${producto.id_producto})" title="Eliminar">
                     <i class="bi bi-trash"></i>
                 </button>
             </td>
         </tr>
     `).join('');
+}
+
+/**
+ * Render pagination controls
+ */
+function renderPagination() {
+    const paginationContainer = document.getElementById('paginationContainer');
+
+    if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+    }
+
+    paginationContainer.innerHTML = `
+        <nav aria-label="Products pagination">
+            <ul class="pagination justify-content-center mb-0">
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadProductos(${currentPage - 1}); return false;">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">Página ${currentPage} de ${totalPages}</span>
+                </li>
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadProductos(${currentPage + 1}); return false;">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    `;
 }
 
 /**
@@ -142,9 +189,11 @@ async function saveProducto() {
         showLoader();
 
         if (currentProductoId) {
-            await apiPutFormData(`/productos/${currentProductoId}/`, formData);
+            // Update using PATCH
+            await apiPatchFormData(`/productos/${currentProductoId}/`, formData);
             showToast('Producto actualizado correctamente', 'success');
         } else {
+            // Create using POST
             await apiPostFormData('/productos/', formData);
             showToast('Producto creado correctamente', 'success');
         }
@@ -153,7 +202,7 @@ async function saveProducto() {
         bootstrap.Modal.getInstance(document.getElementById('productoModal')).hide();
 
         // Reload table
-        await loadProductos();
+        await loadProductos(currentPage);
 
     } catch (error) {
         console.error('Error saving product:', error);
@@ -175,7 +224,14 @@ async function deleteProducto(id) {
         showLoader();
         await apiDelete(`/productos/${id}/`);
         showToast('Producto eliminado correctamente', 'success');
-        await loadProductos();
+
+        // Reload current page or go back if it's empty
+        const newCount = productos.length - 1;
+        if (newCount === 0 && currentPage > 1) {
+            await loadProductos(currentPage - 1);
+        } else {
+            await loadProductos(currentPage);
+        }
     } catch (error) {
         console.error('Error deleting product:', error);
         showToast('Error al eliminar producto', 'danger');
@@ -183,3 +239,15 @@ async function deleteProducto(id) {
         hideLoader();
     }
 }
+
+/**
+ * Reset modal when closed
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    const modalElement = document.getElementById('productoModal');
+    if (modalElement) {
+        modalElement.addEventListener('hidden.bs.modal', () => {
+            document.getElementById('productoForm').classList.remove('was-validated');
+        });
+    }
+});
