@@ -26,9 +26,21 @@ class SucursalViewSet(viewsets.ModelViewSet):
 class CategoriaViewSet(viewsets.ModelViewSet):
     queryset = Categoria.objects.all().order_by('pk')
     serializer_class = CategoriaSerializer
-    #Esto es para que se pueda buscar por nombre y tipo
+    # Búsqueda por nombre y tipo
     filter_backends = [filters.SearchFilter]
     search_fields = ['nombre_categoria', 'tipo']
+    
+    def get_queryset(self):
+        """
+        Opcionalmente filtra por tipo usando el parámetro ?tipo=producto o ?tipo=servicio
+        """
+        queryset = super().get_queryset()
+        tipo = self.request.query_params.get('tipo', None)
+        
+        if tipo:
+            queryset = queryset.filter(tipo=tipo)
+        
+        return queryset
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all().order_by('pk')
@@ -37,6 +49,9 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all().order_by('pk')
     serializer_class = ClienteSerializer
+    # Búsqueda por nombre, CI, celular y email
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nombre_apellido', 'cedula_identidad', 'celular', 'correo_electronico']
 
 class ProductoViewSet(viewsets.ModelViewSet):
     queryset = Producto.objects.all().order_by('pk')

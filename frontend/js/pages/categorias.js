@@ -1,130 +1,142 @@
 /**
- * Categorias Page Logic
- * CRUD operations for categories search and pagination
+ * Categorias Page Logic - Dual Table Implementation
+ * Manages two independent tables: Productos and Servicios
  */
 
-let categorias = [];
-let currentFilter = 'todos';
-let currentPage = 1;
-let totalPages = 1;
-let searchTimeout = null;
-let currentSearch = '';
+// State for Productos
+const productosState = {
+    data: [],
+    currentPage: 1,
+    totalPages: 1,
+    searchQuery: '',
+    searchTimeout: null
+};
+
+// State for Servicios
+const serviciosState = {
+    data: [],
+    currentPage: 1,
+    totalPages: 1,
+    searchQuery: '',
+    searchTimeout: null
+};
 
 /**
- * Initialize listeners
+ * Initialize page
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // Filter tabs
-    document.querySelectorAll('.nav-link[data-filter]').forEach(tab => {
-        tab.addEventListener('click', (e) => {
-            e.preventDefault();
-
-            // UI Update
-            document.querySelectorAll('.nav-link[data-filter]').forEach(t => t.classList.remove('active'));
-            e.target.classList.add('active');
-
-            // Logic Update
-            currentFilter = e.target.getAttribute('data-filter');
-            currentPage = 1;
-            loadCategorias();
-        });
-    });
-
-    // Search input with debounce
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                currentSearch = e.target.value.trim();
-                currentPage = 1;
-                loadCategorias();
+    // Setup search for Productos
+    const searchProductos = document.getElementById('searchProductos');
+    if (searchProductos) {
+        searchProductos.addEventListener('input', (e) => {
+            clearTimeout(productosState.searchTimeout);
+            productosState.searchTimeout = setTimeout(() => {
+                productosState.searchQuery = e.target.value.trim();
+                productosState.currentPage = 1;
+                loadProductos();
             }, 300);
         });
     }
 
-    loadCategorias();
+    // Setup search for Servicios
+    const searchServicios = document.getElementById('searchServicios');
+    if (searchServicios) {
+        searchServicios.addEventListener('input', (e) => {
+            clearTimeout(serviciosState.searchTimeout);
+            serviciosState.searchTimeout = setTimeout(() => {
+                serviciosState.searchQuery = e.target.value.trim();
+                serviciosState.currentPage = 1;
+                loadServicios();
+            }, 300);
+        });
+    }
+
+    // Initial load
+    loadProductos();
+    loadServicios();
 });
 
 /**
- * Load categories from API
+ * Load Productos categories
  */
-async function loadCategorias(page = null) {
-    if (page) currentPage = page;
+async function loadProductos(page = null) {
+    if (page) productosState.currentPage = page;
 
     try {
-        const tbody = document.getElementById('categoriasTableBody');
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center">Cargando...</td></tr>';
-
-        let url = `/categorias/?page=${currentPage}`;
-
-        // Add search param if exists
-        if (currentSearch) {
-            url += `&search=${encodeURIComponent(currentSearch)}`;
+        let url = `/categorias/?tipo=producto&page=${productosState.currentPage}`;
+        if (productosState.searchQuery) {
+            url += `&search=${encodeURIComponent(productosState.searchQuery)}`;
         }
-
-        // Add filtering logic (Server-side filter usually requires backend support but we can do client side if small dataset, 
-        // OR simply pass the filter if backend supports it. Assuming backend supports searching which covers basic filtering)
-        // Note: The original prompt implied search is server side.
 
         const data = await apiGet(url);
+        productosState.data = data.results || data;
 
-        // Process results
-        let results = data.results || data;
-
-        // Apply type filter client-side if backend doesn't support specific 'type' filter param individually
-        // (Optimally this should be server-side filter like ?tipo=producto)
-        if (currentFilter !== 'todos') {
-            results = results.filter(c => c.tipo === currentFilter);
-        }
-
-        categorias = results;
-
-        // Pagination (DRF standard)
         if (data.count) {
-            // Note: If we client-side filter, pagination count might be off.
-            // Ideally we should send ?tipo={currentFilter} to backend.
-            // If backend doesn't support it, client side filtering on paginated results is buggy.
-            // Let's assume for now we render what we have.
-            totalPages = Math.ceil(data.count / 10);
+            productosState.totalPages = Math.ceil(data.count / 10);
         } else {
-            totalPages = 1;
+            productosState.totalPages = 1;
         }
 
-        renderTable();
-        renderPagination();
+        renderTableProductos();
+        renderPaginationProductos();
 
     } catch (error) {
-        console.error('Error loading categories:', error);
-        showToast('Error al cargar categorías', 'danger');
-        document.getElementById('categoriasTableBody').innerHTML = '<tr><td colspan="3" class="text-center text-danger">Error al cargar datos</td></tr>';
+        console.error('Error loading productos:', error);
+        document.getElementById('tableProductos').innerHTML =
+            '<tr><td colspan="2" class="text-center text-danger">Error al cargar datos</td></tr>';
     }
 }
 
 /**
- * Render table rows
+ * Load Servicios categories
  */
-function renderTable() {
-    const tbody = document.getElementById('categoriasTableBody');
+async function loadServicios(page = null) {
+    if (page) serviciosState.currentPage = page;
 
-    if (categorias.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center">No s e encontraron categorías</td></tr>';
+    try {
+        let url = `/categorias/?tipo=servicio&page=${serviciosState.currentPage}`;
+        if (serviciosState.searchQuery) {
+            url += `&search=${encodeURIComponent(serviciosState.searchQuery)}`;
+        }
+
+        const data = await apiGet(url);
+        serviciosState.data = data.results || data;
+
+        if (data.count) {
+            serviciosState.totalPages = Math.ceil(data.count / 10);
+        } else {
+            serviciosState.totalPages = 1;
+        }
+
+        renderTableServicios();
+        renderPaginationServicios();
+
+    } catch (error) {
+        console.error('Error loading servicios:', error);
+        document.getElementById('tableServicios').innerHTML =
+            '<tr><td colspan="2" class="text-center text-danger">Error al cargar datos</td></tr>';
+    }
+}
+
+/**
+ * Render Productos table
+ */
+function renderTableProductos() {
+    const tbody = document.getElementById('tableProductos');
+
+    if (productosState.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="2" class="text-center">No hay categorías de productos</td></tr>';
         return;
     }
 
-    tbody.innerHTML = categorias.map(item => `
+    tbody.innerHTML = productosState.data.map(item => `
         <tr>
             <td>${item.nombre_categoria}</td>
             <td>
-                <span class="badge ${item.tipo === 'producto' ? 'bg-info' : 'bg-warning'}">
-                    ${item.tipo === 'producto' ? 'Producto' : 'Servicio'}
-                </span>
-            </td>
-            <td>
-                <button class="btn btn-sm btn-info me-1" onclick="openEditModal(${item.id_categoria})" title="Editar">
+                <button class="btn btn-sm btn-info me-1" onclick="openEditModal(${item.id_categoria}, 'producto')" title="Editar">
                     <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteCategoria(${item.id_categoria})" title="Eliminar">
+                <button class="btn btn-sm btn-danger" onclick="deleteCategoria(${item.id_categoria}, 'producto')" title="Eliminar">
                     <i class="bi bi-trash"></i>
                 </button>
             </td>
@@ -133,97 +145,157 @@ function renderTable() {
 }
 
 /**
- * Render pagination
+ * Render Servicios table
  */
-function renderPagination() {
-    const container = document.getElementById('paginationContainer');
-    const info = document.getElementById('paginationInfo');
+function renderTableServicios() {
+    const tbody = document.getElementById('tableServicios');
 
-    // Info text
-    if (info) info.textContent = `Página ${currentPage} de ${totalPages || 1}`;
+    if (serviciosState.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="2" class="text-center">No hay categorías de servicios</td></tr>';
+        return;
+    }
 
-    if (!container || totalPages <= 1) {
+    tbody.innerHTML = serviciosState.data.map(item => `
+        <tr>
+            <td>${item.nombre_categoria}</td>
+            <td>
+                <button class="btn btn-sm btn-info me-1" onclick="openEditModal(${item.id_categoria}, 'servicio')" title="Editar">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteCategoria(${item.id_categoria}, 'servicio')" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+/**
+ * Render pagination for Productos
+ */
+function renderPaginationProductos() {
+    const container = document.getElementById('paginationProductos');
+
+    if (productosState.totalPages <= 1) {
         container.innerHTML = '';
         return;
     }
 
-    let html = '';
-
-    // Prev
-    html += `
-        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-            <a class="page-link" href="#" onclick="loadCategorias(${currentPage - 1}); return false;">Anterior</a>
-        </li>
+    container.innerHTML = `
+        <nav aria-label="Productos pagination">
+            <ul class="pagination justify-content-center mb-0">
+                <li class="page-item ${productosState.currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadProductos(${productosState.currentPage - 1}); return false;">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">Página ${productosState.currentPage} de ${productosState.totalPages}</span>
+                </li>
+                <li class="page-item ${productosState.currentPage === productosState.totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadProductos(${productosState.currentPage + 1}); return false;">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
     `;
-
-    // Next
-    html += `
-        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-            <a class="page-link" href="#" onclick="loadCategorias(${currentPage + 1}); return false;">Siguiente</a>
-        </li>
-    `;
-
-    container.innerHTML = html;
 }
 
 /**
- * Open Modal (Create or Edit)
+ * Render pagination for Servicios
  */
-async function openEditModal(id = null) {
+function renderPaginationServicios() {
+    const container = document.getElementById('paginationServicios');
+
+    if (serviciosState.totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+
+    container.innerHTML = `
+        <nav aria-label="Servicios pagination">
+            <ul class="pagination justify-content-center mb-0">
+                <li class="page-item ${serviciosState.currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadServicios(${serviciosState.currentPage - 1}); return false;">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">Página ${serviciosState.currentPage} de ${serviciosState.totalPages}</span>
+                </li>
+                <li class="page-item ${serviciosState.currentPage === serviciosState.totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadServicios(${serviciosState.currentPage + 1}); return false;">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    `;
+}
+
+/**
+ * Open modal for create (tipo pre-selected)
+ */
+function openModal(tipo) {
     const modalEl = document.getElementById('categoriaModal');
-    const modalTitle = document.getElementById('modalTitle');
     const form = document.getElementById('categoriaForm');
-    const idInput = document.getElementById('categoriaId');
-    const nameInput = document.getElementById('nombreCategoria');
-    const typeInput = document.getElementById('tipo');
 
     form.reset();
     form.classList.remove('was-validated');
 
-    if (id) {
-        // Edit Mode
-        modalTitle.textContent = 'Editar Categoría';
-        const item = categorias.find(c => c.id_categoria === id);
-        if (item) {
-            idInput.value = item.id_categoria;
-            nameInput.value = item.nombre_categoria;
-            typeInput.value = item.tipo;
-        } else {
-            // Fetch if not in current page list (rare but possible)
-            try {
-                const data = await apiGet(`/categorias/${id}/`);
-                idInput.value = data.id_categoria;
-                nameInput.value = data.nombre_categoria;
-                typeInput.value = data.tipo;
-            } catch (e) {
-                showToast('Error al cargar datos', 'danger');
-                return;
-            }
-        }
-    } else {
-        // Create Mode
-        modalTitle.textContent = 'Nueva Categoría';
-        idInput.value = '';
-    }
+    document.getElementById('categoriaId').value = '';
+    document.getElementById('categoriaTipo').value = tipo;
+    document.getElementById('tipoDisplay').value = tipo === 'producto' ? 'Producto' : 'Servicio Técnico';
+    document.getElementById('modalTitle').textContent = `Nueva Categoría de ${tipo === 'producto' ? 'Producto' : 'Servicio'}`;
 
     const modal = new bootstrap.Modal(modalEl);
     modal.show();
 }
 
 /**
- * Save Category
+ * Open modal for edit
+ */
+async function openEditModal(id, tipo) {
+    const modalEl = document.getElementById('categoriaModal');
+    const form = document.getElementById('categoriaForm');
+
+    form.reset();
+    form.classList.remove('was-validated');
+
+    try {
+        const data = await apiGet(`/categorias/${id}/`);
+
+        document.getElementById('categoriaId').value = data.id_categoria;
+        document.getElementById('nombreCategoria').value = data.nombre_categoria;
+        document.getElementById('categoriaTipo').value = data.tipo;
+        document.getElementById('tipoDisplay').value = data.tipo === 'producto' ? 'Producto' : 'Servicio Técnico';
+        document.getElementById('modalTitle').textContent = 'Editar Categoría';
+
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+
+    } catch (error) {
+        showToast('Error al cargar categoría', 'danger');
+    }
+}
+
+/**
+ * Save categoria
  */
 async function saveCategoria() {
     const form = document.getElementById('categoriaForm');
+
     if (!form.checkValidity()) {
         form.classList.add('was-validated');
         return;
     }
 
     const id = document.getElementById('categoriaId').value;
+    const tipo = document.getElementById('categoriaTipo').value;
     const payload = {
         nombre_categoria: document.getElementById('nombreCategoria').value,
-        tipo: document.getElementById('tipo').value
+        tipo: tipo
     };
 
     try {
@@ -239,8 +311,12 @@ async function saveCategoria() {
         const modalEl = document.getElementById('categoriaModal');
         bootstrap.Modal.getInstance(modalEl).hide();
 
-        // Reload
-        loadCategorias();
+        // Reload appropriate table
+        if (tipo === 'producto') {
+            loadProductos();
+        } else {
+            loadServicios();
+        }
 
     } catch (error) {
         console.error('Error saving:', error);
@@ -249,17 +325,24 @@ async function saveCategoria() {
 }
 
 /**
- * Delete Category
+ * Delete categoria
  */
-async function deleteCategoria(id) {
-    if (!confirm('¿Está seguro de eliminar esta categoría?')) return;
+async function deleteCategoria(id, tipo) {
+    if (!confirmDelete('¿Está seguro de eliminar esta categoría?')) return;
 
     try {
         await apiDelete(`/categorias/${id}/`);
         showToast('Categoría eliminada', 'success');
-        loadCategorias();
+
+        // Reload appropriate table
+        if (tipo === 'producto') {
+            loadProductos();
+        } else {
+            loadServicios();
+        }
+
     } catch (error) {
         console.error('Error deleting:', error);
-        showToast('Error al eliminar', 'danger');
+        showToast('Error al eliminar categoría', 'danger');
     }
 }

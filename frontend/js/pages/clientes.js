@@ -1,21 +1,53 @@
 /**
  * Clientes Page Logic
+ * CRUD operations for clients with pagination
  */
 
 let clientes = [];
 let currentClienteId = null;
+let currentPage = 1;
+let totalPages = 1;
+let searchQuery = '';
+let searchTimeout = null;
 
-async function loadClientes() {
+/**
+ * Load clients with pagination
+ */
+async function loadClientes(page = 1) {
     try {
-        const data = await apiGet('/clientes/');
+        showLoader();
+
+        // Build URL with search parameter if exists
+        let url = `/clientes/?page=${page}`;
+        if (searchQuery) {
+            url += `&search=${encodeURIComponent(searchQuery)}`;
+        }
+
+        const data = await apiGet(url);
+
         clientes = data.results || data;
+        currentPage = page;
+
+        // Calculate pagination
+        if (data.count) {
+            totalPages = Math.ceil(data.count / 10); // 10 items per page
+        } else {
+            totalPages = 1;
+        }
+
         renderClientesTable();
+        renderPagination();
     } catch (error) {
         console.error('Error loading clients:', error);
         showToast('Error al cargar clientes', 'danger');
+    } finally {
+        hideLoader();
     }
 }
 
+/**
+ * Render clients table
+ */
 function renderClientesTable() {
     const tbody = document.getElementById('clientesTable');
 
@@ -31,10 +63,10 @@ function renderClientesTable() {
             <td>${cliente.celular || '-'}</td>
             <td>${cliente.correo_electronico || '-'}</td>
             <td class="table-actions">
-                <button class="btn btn-sm btn-info" onclick="openEditModal(${cliente.id_cliente})">
+                <button class="btn btn-sm btn-info" onclick="openEditModal(${cliente.id_cliente})" title="Editar">
                     <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteCliente(${cliente.id_cliente})">
+                <button class="btn btn-sm btn-danger" onclick="deleteCliente(${cliente.id_cliente})" title="Eliminar">
                     <i class="bi bi-trash"></i>
                 </button>
             </td>
@@ -42,14 +74,54 @@ function renderClientesTable() {
     `).join('');
 }
 
+/**
+ * Render pagination controls
+ */
+function renderPagination() {
+    const paginationContainer = document.getElementById('paginationContainer');
+
+    if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+    }
+
+    paginationContainer.innerHTML = `
+        <nav aria-label="Clients pagination">
+            <ul class="pagination justify-content-center mb-0">
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadClientes(${currentPage - 1}); return false;">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">Página ${currentPage} de ${totalPages}</span>
+                </li>
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadClientes(${currentPage + 1}); return false;">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    `;
+}
+
+/**
+ * Open create modal
+ */
 function openCreateModal() {
     currentClienteId = null;
     document.getElementById('modalTitle').textContent = 'Nuevo Cliente';
     document.getElementById('clienteForm').reset();
+    document.getElementById('clienteForm').classList.remove('was-validated');
+
     const modal = new bootstrap.Modal(document.getElementById('clienteModal'));
     modal.show();
 }
 
+/**
+ * Open edit modal
+ */
 async function openEditModal(id) {
     currentClienteId = id;
     document.getElementById('modalTitle').textContent = 'Editar Cliente';
@@ -70,8 +142,12 @@ async function openEditModal(id) {
     }
 }
 
+/**
+ * Save client (create or update)
+ */
 async function saveCliente() {
     const form = document.getElementById('clienteForm');
+
     if (!form.checkValidity()) {
         form.classList.add('was-validated');
         return;
@@ -87,32 +163,72 @@ async function saveCliente() {
 
     try {
         showLoader();
+
         if (currentClienteId) {
-            await apiPut(`/clientes/${currentClienteId}/`, data);
+            // Update using PATCH
+            await apiPatch(`/clientes/${currentClienteId}/`, data);
             showToast('Cliente actualizado correctamente', 'success');
         } else {
+            // Create using POST
             await apiPost('/clientes/', data);
             showToast('Cliente creado correctamente', 'success');
         }
+
+        // Close modal
         bootstrap.Modal.getInstance(document.getElementById('clienteModal')).hide();
-        await loadClientes();
+
+        // Reload table
+        await loadClientes(currentPage);
+
     } catch (error) {
+        console.error('Error saving client:', error);
         showToast('Error al guardar cliente', 'danger');
     } finally {
         hideLoader();
     }
 }
 
+/**
+ * Delete client
+ */
 async function deleteCliente(id) {
-    if (!confirmDelete()) return;
+    if (!confirmDelete('¿Estás seguro de eliminar este cliente?')) {
+        return;
+    }
+
     try {
         showLoader();
         await apiDelete(`/clientes/${id}/`);
         showToast('Cliente eliminado correctamente', 'success');
-        await loadClientes();
+
+        // Reload current page or go back if it's empty
+        const newCount = clientes.length - 1;
+        if (newCount === 0 && currentPage > 1) {
+            await loadClientes(currentPage - 1);
+        } else {
+            await loadClientes(currentPage);
+        }
     } catch (error) {
+        console.error('Error deleting client:', error);
         showToast('Error al eliminar cliente', 'danger');
     } finally {
         hideLoader();
     }
 }
+
+/**
+ * Initialize search functionality
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('searchClientes');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchQuery = e.target.value.trim();
+                currentPage = 1; // Reset to page 1 on new search
+                loadClientes(1);
+            }, 300); // 300ms debounce
+        });
+    }
+});
