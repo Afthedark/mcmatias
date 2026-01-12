@@ -49,14 +49,20 @@ class ClienteSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProductoSerializer(serializers.ModelSerializer):
+    nombre_categoria = serializers.CharField(source='id_categoria.nombre_categoria', read_only=True)
+
     class Meta:
         model = Producto
-        fields = '__all__'
+        fields = ['id_producto', 'nombre_producto', 'descripcion', 'codigo_barras', 
+                  'id_categoria', 'nombre_categoria', 'precio', 'foto_producto']
 
 class InventarioSerializer(serializers.ModelSerializer):
+    nombre_producto = serializers.CharField(source='id_producto.nombre_producto', read_only=True)
+    nombre_sucursal = serializers.CharField(source='id_sucursal.nombre', read_only=True)
+
     class Meta:
         model = Inventario
-        fields = '__all__'
+        fields = ['id_inventario', 'id_producto', 'nombre_producto', 'id_sucursal', 'nombre_sucursal', 'cantidad']
 
 class VentaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -76,11 +82,20 @@ class ServicioTecnicoSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False, allow_blank=True)
     confirm_password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    
+    # Campos extra de información (solo lectura)
+    nombre_rol = serializers.CharField(source='id_rol.nombre_rol', read_only=True)
+    numero_rol = serializers.IntegerField(source='id_rol.numero_rol', read_only=True)
+    nombre_sucursal = serializers.CharField(source='id_sucursal.nombre', read_only=True)
 
     class Meta:
         model = Usuario
-        fields = ['id_usuario', 'nombre_apellido', 'correo_electronico', 'password', 'confirm_password']
-        read_only_fields = ['id_usuario']
+        fields = [
+            'id_usuario', 'nombre_apellido', 'correo_electronico', 'password', 'confirm_password',
+            'id_rol', 'nombre_rol', 'numero_rol', 
+            'id_sucursal', 'nombre_sucursal'
+        ]
+        read_only_fields = ['id_usuario', 'nombre_rol', 'numero_rol', 'nombre_sucursal', 'id_rol', 'id_sucursal']
 
     def validate(self, data):
         password = data.get('password', '').strip()

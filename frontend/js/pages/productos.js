@@ -4,7 +4,6 @@
  */
 
 let productos = [];
-let categorias = [];
 let currentProductoId = null;
 let currentPage = 1;
 let totalPages = 1;
@@ -38,21 +37,106 @@ async function loadProductos(page = 1) {
 }
 
 /**
- * Load categories for select
+ * Load initial categories for searchable dropdown (Server-Side)
  */
+let searchDebounceTimer = null;
+
 async function loadCategorias() {
     try {
-        const data = await apiGet('/categorias/');
-        categorias = data.results || data;
+        // Load only 3 initial categories of type 'producto'
+        const data = await apiGet('/categorias/?tipo=producto&page_size=3');
+        const cats = data.results || data;
 
-        const select = document.getElementById('idCategoria');
-        select.innerHTML = '<option value="">Seleccione...</option>';
-        categorias.forEach(cat => {
-            select.innerHTML += `<option value="${cat.id_categoria}">${cat.nombre_categoria} (${cat.tipo})</option>`;
-        });
+        renderCategoriasList(cats);
+        setupCategoriaSearch();
+
     } catch (error) {
         console.error('Error loading categories:', error);
     }
+}
+
+/**
+ * Search categories on server (Server-Side Search)
+ */
+async function searchCategoriasServer(term) {
+    try {
+        let url = '/categorias/?tipo=producto';
+        if (term && term.trim() !== '') {
+            url += `&search=${encodeURIComponent(term)}`;
+        } else {
+            url += '&page_size=3'; // Show only 3 when no search term
+        }
+
+        const data = await apiGet(url);
+        const cats = data.results || data;
+        renderCategoriasList(cats);
+
+    } catch (error) {
+        console.error('Error searching categories:', error);
+        renderCategoriasList([]);
+    }
+}
+
+/**
+ * Render categories list in dropdown
+ */
+function renderCategoriasList(items) {
+    const listContainer = document.getElementById('listaCategorias');
+
+    if (!items || items.length === 0) {
+        listContainer.innerHTML = '<div class="p-2 text-muted text-center small">No se encontraron resultados</div>';
+        return;
+    }
+
+    listContainer.innerHTML = items.map(cat => `
+        <li>
+            <a class="dropdown-item" href="#" onclick="selectCategoria(${cat.id_categoria}, '${cat.nombre_categoria.replace(/'/g, "\\'")}', event)">
+                ${cat.nombre_categoria}
+            </a>
+        </li>
+    `).join('');
+}
+
+/**
+ * Handle category selection
+ */
+function selectCategoria(id, name, event) {
+    if (event) event.preventDefault();
+
+    document.getElementById('idCategoria').value = id;
+    document.querySelector('#btnSelectCategoria span').textContent = name;
+
+    // Validar manualmente porque es un hidden input
+    document.getElementById('idCategoria').classList.remove('is-invalid');
+    document.getElementById('btnSelectCategoria').classList.remove('is-invalid');
+    document.getElementById('btnSelectCategoria').classList.remove('border-danger');
+
+    // Close dropdown after selection
+    const dropdown = bootstrap.Dropdown.getInstance(document.getElementById('btnSelectCategoria'));
+    if (dropdown) dropdown.hide();
+}
+
+/**
+ * Setup search listener with debounce (Server-Side)
+ */
+function setupCategoriaSearch() {
+    const searchInput = document.getElementById('busquedaCategoria');
+
+    searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.trim();
+
+        // Debounce: wait 300ms after user stops typing
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+            searchCategoriasServer(term);
+        }, 300);
+    });
+
+    // Prevent dropdown closing when clicking input
+    searchInput.addEventListener('click', (e) => e.stopPropagation());
+
+    // Prevent dropdown closing when typing
+    searchInput.addEventListener('keydown', (e) => e.stopPropagation());
 }
 
 /**
@@ -70,7 +154,7 @@ function renderProductosTable() {
         <tr>
             <td><img src="${getImageUrl(producto.foto_producto)}" class="product-img" alt="${producto.nombre_producto}"></td>
             <td>${producto.nombre_producto}</td>
-            <td>${getCategoriaName(producto.id_categoria)}</td>
+            <td>${producto.nombre_categoria || '-'}</td>
             <td>${producto.codigo_barras || '-'}</td>
             <td>${formatCurrency(producto.precio)}</td>
             <td class="table-actions">
@@ -118,21 +202,20 @@ function renderPagination() {
 }
 
 /**
- * Get category name by ID
- */
-function getCategoriaName(id) {
-    const cat = categorias.find(c => c.id_categoria === id);
-    return cat ? cat.nombre_categoria : '-';
-}
-
-/**
  * Open create modal
  */
 function openCreateModal() {
     currentProductoId = null;
     document.getElementById('modalTitle').textContent = 'Nuevo Producto';
     document.getElementById('productoForm').reset();
-    document.getElementById('productoId').value = '';
+    document.getElementById('productoForm').classList.remove('was-validated');
+
+    // Reset dropdown
+    document.getElementById('idCategoria').value = '';
+    document.querySelector('#btnSelectCategoria span').textContent = 'Seleccione...';
+    document.getElementById('busquedaCategoria').value = '';
+    // Reload initial categories from server
+    searchCategoriasServer('');
 
     const modal = new bootstrap.Modal(document.getElementById('productoModal'));
     modal.show();
@@ -152,12 +235,22 @@ async function openEditModal(id) {
         document.getElementById('nombreProducto').value = producto.nombre_producto;
         document.getElementById('descripcion').value = producto.descripcion || '';
         document.getElementById('codigoBarras').value = producto.codigo_barras || '';
-        document.getElementById('idCategoria').value = producto.id_categoria || '';
+
         document.getElementById('precio').value = producto.precio;
+
+        // Set category in dropdown
+        document.getElementById('idCategoria').value = producto.id_categoria || '';
+
+        if (producto.id_categoria && producto.nombre_categoria) {
+            document.querySelector('#btnSelectCategoria span').textContent = producto.nombre_categoria;
+        } else {
+            document.querySelector('#btnSelectCategoria span').textContent = 'Seleccione...';
+        }
 
         const modal = new bootstrap.Modal(document.getElementById('productoModal'));
         modal.show();
     } catch (error) {
+        console.error(error);
         showToast('Error al cargar producto', 'danger');
     }
 }

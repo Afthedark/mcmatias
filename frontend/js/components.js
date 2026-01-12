@@ -29,28 +29,35 @@ async function renderHeader(containerSelector = '#header-container') {
     // Get user data from API or fallback to localStorage
     let userName = 'Usuario';
     let userEmail = getCurrentUserEmail() || '';
+    let userRole = 'Cargando...';
+    let userSucursal = '';
 
     // Try to fetch real user data from API
     try {
         const userData = await apiGet('/perfil/');
+
+        // Extract data
         userName = userData.nombre_apellido || userData.correo_electronico?.split('@')[0] || 'Usuario';
         userEmail = userData.correo_electronico || userEmail;
+        userRole = userData.nombre_rol || 'Usuario';
+        userSucursal = userData.nombre_sucursal || '';
 
         // Update localStorage with fresh data
-        if (userEmail) {
-            localStorage.setItem('user_email', userEmail);
-        }
-        if (userName) {
-            localStorage.setItem('user_name', userName);
-        }
+        if (userEmail) localStorage.setItem('user_email', userEmail);
+        if (userName) localStorage.setItem('user_name', userName);
+        if (userRole) localStorage.setItem('user_role', userRole);
+        if (userSucursal) localStorage.setItem('user_sucursal', userSucursal);
+
     } catch (error) {
         // If API fails, try to use localStorage
         const storedName = localStorage.getItem('user_name');
-        if (storedName) {
-            userName = storedName;
-        } else if (userEmail) {
-            userName = userEmail.split('@')[0];
-        }
+        const storedRole = localStorage.getItem('user_role');
+
+        if (storedName) userName = storedName;
+        else if (userEmail) userName = userEmail.split('@')[0];
+
+        if (storedRole) userRole = storedRole;
+        else userRole = 'Usuario';
     }
 
     const userInitial = userName.charAt(0).toUpperCase();
@@ -84,7 +91,7 @@ async function renderHeader(containerSelector = '#header-container') {
                         <div class="user-avatar">${userInitial}</div>
                         <div class="user-details d-none d-sm-block">
                             <span class="user-name">${userName}</span>
-                            <span class="user-role">Administrador</span>
+                            <span class="user-role">${userRole}</span>
                         </div>
                         <i class="bi bi-chevron-down ms-2 text-muted" style="font-size: 0.8rem;"></i>
                     </button>
@@ -92,7 +99,7 @@ async function renderHeader(containerSelector = '#header-container') {
                     <div id="userDropdown" class="user-dropdown-menu">
                         <div class="px-3 py-2 border-bottom d-sm-none">
                             <div class="fw-bold">${userName}</div>
-                            <div class="small text-muted">Administrador</div>
+                            <div class="small text-muted">${userRole}</div>
                         </div>
                         <a href="#" class="dropdown-item-custom">
                             <i class="bi bi-person"></i> Mi Perfil

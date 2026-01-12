@@ -170,7 +170,7 @@ Todos los ViewSets soportan:
 | `/api/categorias/?tipo=producto` | 🌍 Global | 🔍 | + Filtro por tipo | Visible para todos |
 | `/api/usuarios/` | 🔒 Aislado | ❌ | - | **Solo users de MI sucursal** |
 | `/api/clientes/` | 🌍 Global | 🔍 | `nombre_apellido`, `cedula_identidad`, `celular`, `correo_electronico` | Visible para todos |
-| `/api/productos/` | 🌍 Global | ❌ | - | Visible para todos |
+| `/api/productos/` | 🌍 Global | 🔍 | `nombre_producto`, `codigo_barras`, `descripcion` | Visible para todos |
 | `/api/inventario/` | 🔒 Aislado | ❌ | - | **Solo stock de MI sucursal** |
 | `/api/ventas/` | 🔒 Aislado | ❌ | - | **Solo ventas de MI sucursal** |
 | `/api/detalle_ventas/` | Relación | ❌ | - | Hereda de Venta |
@@ -236,9 +236,9 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
 ### API y Frontend
 - ✅ **Endpoint de Perfil**: `/api/perfil/` con actualización parcial (PATCH) y validación de contraseñas
 - ✅ **Paginación Universal**: 10 items/página en todos los endpoints
-- ✅ **Búsqueda Server-Side**: Implementado en Categorías (`nombre_categoria`, `tipo`) y Clientes (`nombre_apellido`, `cedula_identidad`, `celular`, `correo_electronico`)
-- ✅ **Filtrado por Tipo**: Categorías soporta `?tipo=producto` o `?tipo=servicio`
-- ✅ **Soporte PATCH**: Actualizaciones parciales en todos los ViewSets
+- ✅ **Búsqueda Server-Side**: Implementado en Categorías, Clientes y Productos
+- ✅ **Productos Searchable**: Búsqueda por `nombre_producto`, `codigo_barras`, `descripcion`
+- ✅ **Serializers Enriquecidos**: Productos incluye `nombre_categoria`, Inventario incluye `nombre_producto` y `nombre_sucursal`
 - ✅ **Campo `tipo_pago`**: En modelo Ventas (Efectivo/QR)
 
 

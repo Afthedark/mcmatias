@@ -54,9 +54,9 @@ frontend/
 
 | Módulo | Paginación | Búsqueda | PATCH | Características Especiales |
 |--------|------------|----------|-------|---------------------------|
-| **Productos** | ✅ 10/página | ❌ | ✅ | Upload de imágenes |
+| **Productos** | ✅ 10/página | 🔍 Server-Side | ✅ | Upload de imágenes, Dropdown categorías con búsqueda |
 | **Clientes** | ✅ 10/página | ✅ | ✅ | Búsqueda en 4 campos |
-| **Inventario** | ✅ 10/página | ❌ | ✅ | Multi-sucursal |
+| **Inventario** | ✅ 10/página | 🔍 Dropdown | ✅ | RBAC sucursal, Dropdown productos y sucursales con búsqueda |
 | **Categorías** | ✅ 10/página | ✅ | ✅ | **Dual Table** (Productos/Servicios) |
 | **Roles** | ❌ | ❌ | ✅ | Simple CRUD |
 | **Usuarios** | ❌ | ❌ | ✅ | FK a Roles/Sucursales |
@@ -166,6 +166,8 @@ renderTableServicios()
 ### Búsqueda Server-Side
 - **Clientes**: Busca en nombre, CI, celular, email
 - **Categorías**: Busca en nombre y tipo
+- **Productos**: Busca en nombre, código de barras, descripción
+- **Dropdowns Inteligentes**: Productos e Inventario usan búsqueda server-side en selectores
 - **Debounce de 300ms** para evitar sobrecarga
 - **Reset a página 1** al buscar
 
@@ -238,5 +240,11 @@ async function deleteItem(id) { ... }
 - [ ] Módulo de Servicios Técnicos con upload de fotos
 - [ ] Dashboard con datos reales desde API
 - [ ] Reportes y exportación (PDF/Excel)
-- [ ] Búsqueda en Productos e Inventario
 - [ ] Filtros avanzados por fecha
+
+## ✅ Implementado Recientemente
+
+- [x] **RBAC en Inventario**: Sucursal auto-asignada y bloqueada para roles no-admin
+- [x] **Búsqueda Server-Side en Productos**: Dropdown de categorías con búsqueda
+- [x] **Búsqueda Server-Side en Inventario**: Dropdown de productos con búsqueda
+- [x] **Serializers Enriquecidos**: Backend envía nombres legibles (nombre_categoria, nombre_producto, nombre_sucursal)

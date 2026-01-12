@@ -77,6 +77,8 @@ class ProductoViewSet(viewsets.ModelViewSet):
     """
     queryset = Producto.objects.all().order_by('pk')
     serializer_class = ProductoSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nombre_producto', 'codigo_barras', 'descripcion']
 
 class InventarioViewSet(viewsets.ModelViewSet):
     """

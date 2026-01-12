@@ -53,6 +53,7 @@ Algunos endpoints soportan búsqueda:
 Endpoints con búsqueda:
 - `/clientes/` - Busca en: nombre, CI, celular, email
 - `/categorias/` - Busca en: nombre_categoria, tipo
+- `/productos/` - Busca en: nombre_producto, codigo_barras, descripcion
 
 ### Métodos HTTP
 - **GET**: Listar (con paginación) o ver detalle
@@ -332,13 +333,17 @@ Personas que compran o solicitan servicios con **búsqueda** en múltiples campo
 
 ---
 
-## 6. Productos (`/productos/`)
-Inventario general (catálogo).
+## 6. Productos (`/productos/`) 🔍
+Inventario general (catálogo) con **búsqueda** server-side.
 - Requiere `id_categoria`.
 - Soporta subida de imágenes.
 
 ### Listar Productos
 **GET** `/productos/?page=1`
+
+### Buscar Productos
+**GET** `/productos/?search=laptop`
+**GET** `/productos/?search=MAC-001` (por código de barras)
 
 ### Crear Producto (con JSON)
 **POST** `/productos/`
