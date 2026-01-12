@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 class Rol(models.Model):
     id_rol = models.AutoField(primary_key=True)
     nombre_rol = models.CharField(max_length=50, unique=True)
+    numero_rol = models.IntegerField(unique=True, null=True, blank=True)
 
     class Meta:
         db_table = 'roles'
@@ -62,23 +63,47 @@ class UsuarioManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, correo_electronico, nombre_apellido, id_rol=None, id_sucursal=None, password=None):
-        # Simplification for superuser creation: 
-        # You might need to handle Rol and Sucursal creation or retrieval here if they are mandatory.
-        # For now, this might fail if foreign keys are not provided or nullable.
-        # Assuming admin will manually assign these or we provide defaults.
-        # THIS IS TRICKY with strict FKs. We'll set nullable for now or require them.
-        # Actually, let's just create them if they don't exist for the superuser flow or assume IDs 1.
+    def create_superuser(self, correo_electronico, nombre_apellido, password=None, **extra_fields):
+        """
+        Crea un superusuario. Auto-asigna:
+        - Rol: Super Administrador (numero_rol=1)
+        - Sucursal: Primera disponible
         
+        Esto permite usar `python manage.py createsuperuser` de forma interactiva.
+        """
+        # Obtener o crear rol Super Administrador
+        try:
+            from api.models import Rol, Sucursal
+            rol_super = Rol.objects.get(numero_rol=1)
+        except Rol.DoesNotExist:
+            raise ValueError(
+                'No existe el rol Super Administrador (numero_rol=1). '
+                'Ejecuta primero: python manage.py migrate'
+            )
+        
+        # Obtener primera sucursal disponible
+        try:
+            sucursal = Sucursal.objects.filter(activo=True).first()
+            if not sucursal:
+                sucursal = Sucursal.objects.first()
+            if not sucursal:
+                raise Sucursal.DoesNotExist
+        except Sucursal.DoesNotExist:
+            raise ValueError(
+                'No existe ninguna sucursal. '
+                'Ejecuta primero: python manage.py migrate'
+            )
+        
+        # Crear superusuario
         user = self.create_user(
             correo_electronico=correo_electronico,
             nombre_apellido=nombre_apellido,
-            id_rol=id_rol, # Will error if None and field is NOT NULL. 
-            id_sucursal=id_sucursal,
+            id_rol=rol_super,
+            id_sucursal=sucursal,
             password=password
         )
         user.is_superuser = True
-        user.is_staff = True # Django requirement for admin
+        user.is_staff = True  # Django requirement for admin
         user.save(using=self._db)
         return user
 
@@ -175,6 +200,7 @@ class Venta(models.Model):
     numero_boleta = models.CharField(max_length=20, unique=True, blank=True, null=True)
     id_cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True, db_column='id_cliente')
     id_usuario = models.ForeignKey(Usuario, on_delete=models.RESTRICT, db_column='id_usuario')
+    id_sucursal = models.ForeignKey(Sucursal, on_delete=models.RESTRICT, db_column='id_sucursal')
     fecha_venta = models.DateTimeField(auto_now_add=True)
     total_venta = models.DecimalField(max_digits=10, decimal_places=2)
     tipo_pago = models.CharField(max_length=20, choices=METODO_PAGO_CHOICES, default='Efectivo')

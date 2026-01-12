@@ -19,21 +19,26 @@ Sistema completo de gestión empresarial para control de inventario, ventas, cli
 - Tokens de acceso (60 min) y refresh (1 día)
 
 ### 📦 Gestión de Inventario
-- Catálogo centralizado de productos
-- Control de stock por sucursal
-- Categorización de productos y servicios
+- Catálogo centralizado de productos con imágenes
+- Control de stock por sucursal con paginación
+- **Paginación**: 10 items por página en todos los módulos
+- Categorización dual: Productos y Servicios Técnicos
 - Soporte para imágenes de productos
 
-### 💰 Punto de Venta
-- Registro de ventas con detalle de productos
-- Múltiples métodos de pago (Efectivo, QR)
-- Generación de boletas
-- Historial de transacciones
+### 💰 Gestión de Clientes
+- Base de datos de clientes con **búsqueda server-side**
+- Búsqueda en múltiples campos: nombre, CI, celular, email
+- Paginación 10/página con contador
+- Actualizaciones parciales con PATCH
 
-### 👥 Gestión de Clientes
-- Base de datos de clientes
-- Registro de información de contacto
-- Historial de compras y servicios
+### 🏪 Módulos de Configuración
+- **Categorías**: Implementación dual-table independiente
+  - Tabla separada para Productos (con búsqueda)
+  - Tabla separada para Servicios (con búsqueda independiente)
+  - Paginación y estado independiente por tabla
+- **Productos**: CRUD completo con upload de imágenes
+- **Inventario**: Multi-sucursal con paginación
+- **Usuarios** y **Roles**: Gestión completa
 
 ### 🔧 Servicios Técnicos
 - Órdenes de reparación y mantenimiento
@@ -53,12 +58,12 @@ Sistema completo de gestión empresarial para control de inventario, ventas, cli
 ### Backend
 ![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python)
 ![Django](https://img.shields.io/badge/Django-6.0-green?logo=django)
-![DRF](https://img.shields.io/badge/DRF-3.14+-red)
+![DRF](https://img.shields.io/badge/DRF-3.16+-red)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-orange?logo=mysql)
 
 - **Python 3.10+**
 - **Django 6.0** - Framework web
-- **Django REST Framework** - API REST
+- **Django REST Framework 3.16+** - API REST
 - **SimpleJWT** - Autenticación JWT
 - **MySQL / MariaDB** - Base de datos
 - **Pillow** - Procesamiento de imágenes
@@ -73,7 +78,7 @@ Sistema completo de gestión empresarial para control de inventario, ventas, cli
 - **HTML5**
 - **CSS3** (Diseño AdminLTE-like)
 - **JavaScript ES6+** (Vanilla)
-- **Bootstrap 5** - Framework CSS
+- **Bootstrap 5.3** - Framework CSS
 - **Bootstrap Icons** - Iconografía
 - **Axios** - Cliente HTTP
 
@@ -87,12 +92,13 @@ mcmatias/
 ├── backend/                    # API REST con Django
 │   ├── api/                    # Aplicación principal
 │   │   ├── models.py           # Modelos de datos
-│   │   ├── views.py            # Endpoints de la API
+│   │   ├── views.py            # ViewSets con paginación y búsqueda
 │   │   ├── serializers.py      # Serializadores
 │   │   └── urls.py             # Rutas
 │   ├── config/                 # Configuración Django
 │   ├── instrucciones/          # Guías de setup y endpoints
 │   ├── db_test/                # Scripts de prueba
+│   ├── media/uploads/          # Archivos subidos
 │   └── requirements.txt        # Dependencias Python
 │
 └── frontend/                   # Interfaz MPA
@@ -105,6 +111,10 @@ mcmatias/
     │   ├── profile.js          # Gestión de perfil
     │   ├── utils.js            # Utilidades
     │   └── pages/              # Lógica por página
+    │       ├── productos.js    # CRUD con imágenes y paginación
+    │       ├── clientes.js     # CRUD con búsqueda y paginación
+    │       ├── inventario.js   # CRUD multi-sucursal paginado
+    │       └── categorias.js   # Dual-table con búsqueda
     └── assets/                 # Recursos estáticos
 ```
 
@@ -115,7 +125,8 @@ mcmatias/
 ### Requisitos Previos
 - Python 3.10+
 - MySQL 8.0+ o MariaDB
-- Node.js (opcional, para herramientas de desarrollo)
+- Navegador moderno (Chrome, Firefox, Edge)
+- Live Server (VS Code) o cualquier servidor HTTP
 
 ### Backend
 
@@ -209,27 +220,48 @@ Una vez iniciado el servidor, accede a la documentación interactiva:
 - `GET /api/perfil/` - Obtener perfil actual
 - `PATCH /api/perfil/` - Actualizar perfil
 
-### Gestión de Datos
+### Gestión de Datos (Todos con paginación 10/página)
 - `/api/roles/` - Roles de usuario
 - `/api/sucursales/` - Sucursales
-- `/api/categorias/` - Categorías
+- `/api/categorias/` - Categorías (🔍 búsqueda + filtro por tipo)
+- `/api/categorias/?tipo=producto` - Solo categorías de productos
 - `/api/usuarios/` - Usuarios
-- `/api/clientes/` - Clientes
+- `/api/clientes/` - Clientes (🔍 búsqueda en 4 campos)
 - `/api/productos/` - Productos
 - `/api/inventario/` - Inventario
 - `/api/ventas/` - Ventas
 - `/api/detalle_ventas/` - Detalle de ventas
 - `/api/servicios_tecnicos/` - Servicios técnicos
 
+**Ejemplo de búsqueda**:
+```
+GET /api/clientes/?search=juan&page=1
+GET /api/categorias/?tipo=servicio&search=reparacion
+```
+
 ---
 
 ## 🎯 Roadmap
 
+### ✅ Implementado
 - [x] Sistema de autenticación JWT
-- [x] CRUD completo para todos los módulos
+- [x] CRUD completo para todos los módulos principales
 - [x] Gestión de perfil de usuario
-- [x] Campo de método de pago en ventas
-- [x] Paginación ordenada
+- [x] **Paginación universal** (10 items/página)
+- [x] **Búsqueda server-side** en Clientes y Categorías
+- [x] **Actualización con PATCH** en todos los módulos
+- [x] **Dual-table Categorías** (Productos/Servicios independientes)
+- [x] Upload de imágenes en Productos
+- [x] Navegación inteligente al eliminar
+- [x] Debounce en búsquedas (300ms)
+- [x] Auto-refresh de JWT tokens
+
+### 🚧 En Desarrollo
+- [ ] Módulo de Ventas con detalle de productos
+- [ ] Módulo de Servicios Técnicos completo
+- [ ] Dashboard con datos reales desde API
+
+### 📅 Próximas Características
 - [ ] RBAC (Control de acceso basado en roles) en frontend
 - [ ] Reportes y estadísticas avanzadas
 - [ ] Exportación de datos (PDF, Excel)

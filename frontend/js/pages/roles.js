@@ -73,10 +73,11 @@ function renderTable(roles) {
     tbody.innerHTML = roles.map(rol => `
         <tr>
             <td>${rol.id_rol}</td>
+            <td><code>${rol.numero_rol !== null ? rol.numero_rol : '-'}</code></td>
             <td>${rol.nombre_rol}</td>
             <td>
                 <button class="btn btn-sm btn-outline-primary me-1" 
-                        onclick="openEditModal(${rol.id_rol}, '${rol.nombre_rol}')"
+                        onclick="openEditModal(${rol.id_rol}, '${rol.nombre_rol}', ${rol.numero_rol})"
                         title="Editar">
                     <i class="bi bi-pencil"></i>
                 </button>
@@ -131,12 +132,14 @@ function renderPagination(totalItems) {
  * Open Modal for Creating or Editing
  * @param {number|null} id - Rol ID (null for create)
  * @param {string|null} name - Rol Name (null for create)
+ * @param {number|null} number - Rol Number (null for create)
  */
-function openEditModal(id = null, name = null) {
+function openEditModal(id = null, name = null, number = null) {
     const modalTitle = document.getElementById('modalTitle');
     const form = document.getElementById('rolForm');
     const idInput = document.getElementById('rolId');
     const nameInput = document.getElementById('nombreRol');
+    const numberInput = document.getElementById('numeroRol');
 
     form.reset();
     form.classList.remove('was-validated');
@@ -145,9 +148,11 @@ function openEditModal(id = null, name = null) {
         modalTitle.innerText = 'Editar Rol';
         idInput.value = id;
         nameInput.value = name;
+        numberInput.value = number !== null ? number : '';
     } else {
         modalTitle.innerText = 'Nuevo Rol';
         idInput.value = '';
+        numberInput.value = '';
     }
 
     const modal = new bootstrap.Modal(document.getElementById('rolModal'));
@@ -167,7 +172,14 @@ async function saveRol() {
 
     const id = document.getElementById('rolId').value;
     const name = document.getElementById('nombreRol').value;
-    const data = { nombre_rol: name };
+    const number = document.getElementById('numeroRol').value;
+
+    // Convert logic: if empty string, send null or 0? 
+    // Backend expects Integer or null. Let's send integer.
+    const data = {
+        nombre_rol: name,
+        numero_rol: number ? parseInt(number) : null
+    };
 
     const btnSave = document.getElementById('btnSave');
     const originalText = btnSave.innerText;

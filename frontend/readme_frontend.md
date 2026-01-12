@@ -11,7 +11,7 @@ frontend/
 ├── ventas.html             # Gestión de ventas
 ├── inventario.html         # Control de inventario
 ├── servicios_tecnicos.html # Órdenes de servicio
-├── categorias.html         # Gestión de categorías
+├── categorias.html         # Gestión de categorías (Dual Table)
 ├── sucursales.html         # Gestión de sucursales
 ├── roles.html              # Gestión de roles
 ├── usuarios.html           # Gestión de usuarios
@@ -21,15 +21,17 @@ frontend/
 │   └── styles.css          # Estilos personalizados AdminLTE-like
 │
 ├── js/
-│   ├── api.js              # Configuración de Axios e Interceptores JWT
-│   ├── auth.js             # Lógica de Login, Tokens y protección de rutas
-│   ├── components.js       # Inyección de Header y Sidebar reutilizables
-│   ├── profile.js          # Modal de edición de perfil de usuario
+│   ├── api.js              # Configuración de Axios + Interceptores JWT
+│   ├── auth.js             # Login, Tokens y protección de rutas
+│   ├── components.js       # Header y Sidebar reutilizables
+│   ├── profile.js          # Modal de edición de perfil
 │   ├── utils.js            # Helpers (formateo, toasts, loaders)
 │   └── pages/              # Lógica específica por página
 │       ├── dashboard.js
-│       ├── productos.js
-│       └── clientes.js
+│       ├── productos.js    # CRUD con paginación y PATCH
+│       ├── clientes.js     # CRUD con paginación, búsqueda y PATCH
+│       ├── inventario.js   # CRUD con paginación y PATCH
+│       └── categorias.js   # Dual table con búsqueda independiente
 │
 └── assets/                 # Logos, imágenes (opcional)
 ```
@@ -46,73 +48,137 @@ frontend/
 1. Usa Live Server o abre directamente `index.html`
 2. Credenciales: usa las creadas en el backend
 
-## 📄 Páginas Implementadas
+## 📄 Módulos Implementados
 
-### ✅ Completas con CRUD
-- **index.html** - Login con JWT
-- **dashboard.html** - Dashboard
-- **roles.html** - Gestión de roles
-- **usuarios.html** - Gestión de usuarios (+ Foreign Keys)
-- **sucursales.html** - Gestión de sucursales
-- **categorias.html** - Categorías + Buscador + Filtros
-- **productos.html** - (En progreso)
-- **clientes.html** - (En progreso)
+### ✅ Completamente Funcionales con CRUD + Paginación
 
-### 📝 Plantillas Base (Requieren JS)
+| Módulo | Paginación | Búsqueda | PATCH | Características Especiales |
+|--------|------------|----------|-------|---------------------------|
+| **Productos** | ✅ 10/página | ❌ | ✅ | Upload de imágenes |
+| **Clientes** | ✅ 10/página | ✅ | ✅ | Búsqueda en 4 campos |
+| **Inventario** | ✅ 10/página | ❌ | ✅ | Multi-sucursal |
+| **Categorías** | ✅ 10/página | ✅ | ✅ | **Dual Table** (Productos/Servicios) |
+| **Roles** | ❌ | ❌ | ✅ | Simple CRUD |
+| **Usuarios** | ❌ | ❌ | ✅ | FK a Roles/Sucursales |
+| **Sucursales** | ❌ | ❌ | ✅ | Activar/Desactivar |
+
+### 📝 Plantillas Base (Requieren implementación)
 - **ventas.html** - Gestión de ventas
-- **inventario.html** - Control de inventario
 - **servicios_tecnicos.html** - Órdenes de servicio
 
 ## ✨ Funcionalidades Principales
 
 ### 🔐 Autenticación
-- Login con JWT
+- **Login** con JWT
 - Tokens en `localStorage`:
   - `access_token` - Válido 60 minutos
   - `refresh_token` - Válido 1 día
 - Protección automática de rutas
 - Logout con limpieza de tokens
+- **Auto-refresh** de access token cuando expira
 
 ### 👤 Perfil de Usuario
 - Modal de edición accesible desde "Configuración" en el menú
 - Actualización de nombre y email
-- Cambio de contraseña (opcional)
+- Cambio de contraseña (opcional con confirmación)
 - Validación en tiempo real
 - Actualización automática del header
+- Uso de **PATCH** para actualizaciones parciales
 
 ### 🎨 Diseño
 - **Desktop**: Sidebar fijo con opción de colapsar
 - **Mobile**: Sidebar deslizable con overlay
 - Estilo AdminLTE-like moderno
 - 100% responsive
+- Bootstrap 5.3
+- Bootstrap Icons integrados
 
 ## 🔧 Módulos JavaScript
 
 ### Core
 - **api.js**: Axios configurado con interceptores JWT
+  - `apiGet()`, `apiPost()`, `apiPatch()`, `apiDelete()`
+  - `apiPostFormData()`, `apiPatchFormData()` para uploads
 - **auth.js**: Gestión de autenticación y tokens
-- **utils.js**: Funciones auxiliares (formateo, toasts)
+  - `checkAuth()`, `login()`, `logout()`
+- **utils.js**: Funciones auxiliares
+  - `formatCurrency()`, `formatDate()`, `showToast()`, `confirmDelete()`
 
-### Componentes
 ### Componentes
 - **components.js**: Header y Sidebar dinámicos
+  - Renderizado de menú basado en `SIDEBAR_CONFIG`
+  - Perfil de usuario con avatar inicial
 - **profile.js**: Modal de edición de perfil
+  - Inyección automática del modal
+  - Validación de contraseñas
 
-### Páginas Implementadas (Logica)
-- **dashboard.js**
-- **roles.js**: CRUD Roles con Modales
-- **usuarios.js**: CRUD Usuarios con Selectores Dinámicos (Roles/Sucursales)
-- **sucursales.js**: CRUD Sucursales (Activar/Desactivar)
-- **categorias.js**: CRUD Categorías con **Búsqueda en Servidor** y Filtros por Tipo
+### Páginas Implementadas (Lógica CRUD Completa)
+
+#### productos.js
+```javascript
+// Funciones principales
+loadProductos(page)      // Carga paginada
+saveProducto()           // POST/PATCH con FormData (imagen)
+deleteProducto(id)       // DELETE con confirmación
+renderPagination()       // Controles Anterior/Siguiente
+```
+
+#### clientes.js
+```javascript
+// Funciones principales  
+loadClientes(page)       // Carga paginada con búsqueda
+saveCliente()            // POST/PATCH (sin archivos)
+deleteCliente(id)        // DELETE con navegación inteligente
+// Event Listeners
+searchInput              // Debounce 300ms para búsqueda
+```
+
+#### inventario.js
+```javascript
+// Funciones principales
+loadInventario(page)     // Carga paginada
+loadProductos()          // Para selector
+loadSucursales()         // Para selector
+saveInventario()         // POST/PATCH (FK bloqueadas al editar)
+```
+
+#### categorias.js (Arquitectura Dual Table)
+```javascript
+// Estado independiente
+productosState = { data, currentPage, searchQuery }
+serviciosState = { data, currentPage, searchQuery }
+
+// Funciones separadas
+loadProductos(page)
+loadServicios(page)
+renderTableProductos()
+renderTableServicios()
+```
 
 ## ✨ Características Recientes
-- **Buscador Inteligente**: Implementado en Categorías con _debounce_ de 300ms.
-- **Filtros Híbridos**: Filtrado visual + Búsqueda server-side.
-- **Formularios Dinámicos**: Carga de selects (foreign keys) al abrir modales.
-- **UI Responsiva Mejorada**: Encabezados adaptativos (Flexbox) para móviles.
-- **pages/dashboard.js**: Dashboard con KPIs
-- **pages/productos.js**: CRUD de productos
-- **pages/clientes.js**: CRUD de clientes
+
+### Paginación Universal
+- Todas las tablas muestran **10 filas por página**
+- Contador: **"Página X de Y"**
+- Botones Anterior/Siguiente deshabilitados en extremos
+- Navegación inteligente al eliminar (retrocede si página queda vacía)
+
+### Búsqueda Server-Side
+- **Clientes**: Busca en nombre, CI, celular, email
+- **Categorías**: Busca en nombre y tipo
+- **Debounce de 300ms** para evitar sobrecarga
+- **Reset a página 1** al buscar
+
+### Actualización con PATCH
+- Todos los módulos usan **PATCH** en lugar de PUT
+- Solo envía campos modificados
+- Para FormData (imágenes): `apiPatchFormData()`
+
+### Categorías Dual Table
+- **Tabla Productos** y **Tabla Servicios** independientes
+- Búsqueda y paginación separadas
+- Filtro backend: `?tipo=producto` o `?tipo=servicio`
+- Modal inteligente que detecta el tipo automáticamente
 
 ## 🔧 Personalización
 
@@ -127,13 +193,50 @@ Edita `js/components.js` en `SIDEBAR_CONFIG`:
 ```javascript
 const SIDEBAR_CONFIG = [
     { type: 'item', href: 'pagina.html', icon: 'bi-icon', text: 'Texto' },
+    { type: 'section', text: 'Sección' },
     // ...
 ];
 ```
 
+**Orden actual del menú**:
+1. Dashboard
+2. **Logística**: Productos, Inventario
+3. **Ventas & Clientes**: Ventas, Servicios Técnicos, Clientes
+4. **Configuración**: Categorías, Sucursales, Usuarios, Roles
+
+## 📊 Consistencia entre Módulos
+
+Todos los módulos CRUD implementados siguen el mismo patrón:
+
+```javascript
+// Variables globales
+let items = [];
+let currentPage = 1;
+let totalPages = 1;
+let searchQuery = ''; // Si aplica
+
+// Funciones estándar
+async function loadItems(page = 1) { ... }
+function renderTable() { ... }
+function renderPagination() { ... }
+async function saveItem() { ... }
+async function deleteItem(id) { ... }
+```
+
 ## ⚠️ Notas Importantes
+
 - Dashboard muestra datos ficticios (según requerimientos)
-- RBAC (control de roles) se implementará en fase futura
+- RBAC (control de roles) en frontend se implementará en fase futura
 - Todas las páginas requieren autenticación excepto login
 - El modal de perfil está incluido automáticamente en todas las páginas protegidas
+- Las imágenes se suben a `backend/media/uploads/`
+- Paginación se oculta automáticamente si hay menos de 10 items
 
+## 🎯 Próximas Implementaciones
+
+- [ ] Módulo de Ventas con detalle
+- [ ] Módulo de Servicios Técnicos con upload de fotos
+- [ ] Dashboard con datos reales desde API
+- [ ] Reportes y exportación (PDF/Excel)
+- [ ] Búsqueda en Productos e Inventario
+- [ ] Filtros avanzados por fecha

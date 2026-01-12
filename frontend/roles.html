@@ -34,6 +34,7 @@
                             <thead>
                                 <tr>
                                     <th style="width: 10%;">ID</th>
+                                    <th>Número Rol</th>
                                     <th>Nombre del Rol</th>
                                     <th style="width: 15%;">Acciones</th>
                                 </tr>
@@ -69,6 +70,17 @@
                 <div class="modal-body">
                     <form id="rolForm" novalidate>
                         <input type="hidden" id="rolId">
+
+                        <!-- Numero Rol Field -->
+                        <div class="mb-3">
+                            <label for="numeroRol" class="form-label">Número Rol *</label>
+                            <input type="number" class="form-control" id="numeroRol" required placeholder="Ej. 1">
+                            <div class="invalid-feedback">
+                                Ingrese un número único para el rol.
+                            </div>
+                        </div>
+
+                        <!-- Nombre Rol Field -->
                         <div class="mb-3">
                             <label for="nombreRol" class="form-label">Nombre del Rol *</label>
                             <input type="text" class="form-control" id="nombreRol" required

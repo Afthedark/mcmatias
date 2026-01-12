@@ -42,7 +42,7 @@ Instala todas las librerías necesarias:
 pip install -r requirements.txt
 ```
 
-### 2.5 Configurar Variables de Envorno (.env)
+### 2.5 Configurar Variables de Entorno (.env)
 Crea un archivo llamado `.env` en la carpeta `backend` y define tus credenciales:
 
 ```env
@@ -61,16 +61,50 @@ DB_PORT=3306
 
 Este proyecto usa **PyMySQL** como driver para maximizar la compatibilidad (especialmente con cPanel).
 
+### 3.1 Crear la Base de Datos
 1.  Asegúrate de tener un servidor MySQL/MariaDB corriendo.
 2.  Crea la base de datos:
     ```sql
     CREATE DATABASE mcmatias_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     ```
-3.  Ejecuta las migraciones de Django para crear las tablas:
-    ```bash
-    python manage.py makemigrations
-    python manage.py migrate
-    ```
+
+### 3.2 Aplicar Migraciones (Crea Tablas + Datos Iniciales)
+Ejecuta las migraciones que crearán automáticamente:
+- ✅ Todas las tablas del sistema
+- ✅ **5 Roles** (Super Administrador, Administrador, Técnico, Cajero, Técnico y Cajero)
+- ✅ **Sucursal Central** (oficina matriz)
+
+```bash
+python manage.py migrate
+```
+
+**Salida esperada**:
+```
+Applying api.0006_initial_data...
+✅ Roles iniciales creados
+✅ Sucursal principal creada
+ OK
+```
+
+### 3.3 Crear tu Superusuario
+Crea tu usuario administrador de forma interactiva:
+
+```bash
+python manage.py createsuperuser
+```
+
+Django te preguntará:
+```
+Correo electronico: admin@tuempresa.com
+Nombre apellido: Tu Nombre Completo
+Password: ********
+Password (again): ********
+Superuser created successfully.
+```
+
+El sistema **automáticamente asignará**:
+- 👑 Rol: Super Administrador (numero_rol=1)
+- 🏢 Sucursal: Sucursal Central
 
 ---
 
@@ -101,7 +135,52 @@ Los tokens expiran cada **60 minutos** (Access) y **1 día** (Refresh).
 
 ---
 
-## 6. Características Especiales
+## 6. Sistema RBAC (Control de Acceso por Roles)
+
+El sistema implementa control de acceso automático:
+
+### Roles Creados Automáticamente
+| numero_rol | Nombre | Acceso |
+|------------|--------|--------|
+| 1 | Super Administrador | 👑 Ve y gestiona TODO (todas las sucursales) |
+| 2 | Administrador | 🔒 Solo su sucursal |
+| 3 | Técnico | 🔒 Solo su sucursal |
+| 4 | Cajero | 🔒 Solo su sucursal |
+| 5 | Técnico y Cajero | 🔒 Solo su sucursal |
+
+### Módulos Aislados por Sucursal
+Los siguientes módulos filtran automáticamente por sucursal del usuario:
+- Usuarios
+- Inventario
+- Ventas
+- Servicios Técnicos
+
+### Módulos Globales
+Estos datos son compartidos entre todas las sucursales:
+- Productos
+- Clientes
+- Categorías
+
+---
+
+## 7. Características Especiales
+
+### Inicialización Automática de Datos
+El sistema incluye una **data migration** (`0006_initial_data.py`) que crea automáticamente:
+- ✅ Roles predefinidos con jerarquía numérica
+- ✅ Sucursal principal
+
+Esto garantiza que siempre puedas usar `python manage.py createsuperuser` sin errores.
+
+### Comando de Setup Manual (Opcional)
+Si necesitas recrear datos o crear un superusuario con credenciales por defecto:
+```bash
+python manage.py setup_initial_data --create-superuser
+```
+
+Esto crea:
+- Roles y Sucursal (si no existen)
+- Superusuario: `admin@mcmatias.com` / `admin123`
 
 ### Documentación Automática (Swagger)
 El proyecto usa `drf-spectacular`. Cada vez que agregues una vista o modelo, la documentación en la URL de Swagger se actualizará automáticamente.
@@ -119,7 +198,81 @@ pip freeze > requirements.txt
 
 ---
 
-## 6. Solución de Problemas Comunes
+## 8. Solución de Problemas Comunes
 
-- **Error: `MySQL 8.0.11 or later is required`**: Django 5.x/6.x requiere versiones recientes. Si usas una versión antigua de MySQL, se recomienda actualizar o aplicar el parche de PyMySQL incluido en `config/__init__.py`.
-- **Error: `[Errno 2] No such file or directory`**: Verifica que estés dentro de la carpeta `backend` antes de ejecutar comandos de Python.
+### Error: "Column 'id_rol' cannot be null"
+**Causa**: Intentaste crear un superusuario antes de ejecutar `migrate`.
+
+**Solución**:
+```bash
+python manage.py migrate  # Esto crea Roles y Sucursales automáticamente
+python manage.py createsuperuser  # Ahora funcionará
+```
+
+### Error: "No existe el rol Super Administrador (numero_rol=1)"
+**Causa**: La data migration no se ejecutó correctamente.
+
+**Solución**:
+```bash
+# Opción 1: Recrear manualmente
+python manage.py setup_initial_data
+
+# Opción 2: Verificar migración
+python manage.py showmigrations api
+# Debe aparecer [X] api.0006_initial_data
+```
+
+### Error: `MySQL 8.0.11 or later is required`
+Django 5.x/6.x requiere versiones recientes. Si usas una versión antigua de MySQL, se recomienda actualizar o aplicar el parche de PyMySQL incluido en `config/__init__.py`.
+
+### Error: `[Errno 2] No such file or directory`
+Verifica que estés dentro de la carpeta `backend` antes de ejecutar comandos de Python.
+
+---
+
+## 9. Reseteo de Base de Datos
+
+Si necesitas empezar de cero:
+
+```bash
+# 1. Borrar BD (desde MySQL)
+mysql -u root -p
+DROP DATABASE mcmatias_db;
+CREATE DATABASE mcmatias_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+exit;
+
+# 2. Aplicar migraciones (recrea TODO automáticamente)
+python manage.py migrate
+
+# 3. Crear superusuario
+python manage.py createsuperuser
+
+# 4. Listo!
+python manage.py runserver
+```
+
+---
+
+## 10. Resumen del Flujo de Instalación
+
+```bash
+# Setup inicial (una sola vez)
+python -m venv venv
+.\venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+
+# Configurar .env con credenciales MySQL
+
+# Base de datos
+CREATE DATABASE mcmatias_db;  # En MySQL
+python manage.py migrate      # Crea tablas + Roles + Sucursal automáticamente
+
+# Usuario admin
+python manage.py createsuperuser  # Interactivo
+
+# Correr servidor
+python manage.py runserver
+```
+
+¡Listo para desarrollar! 🚀
+
