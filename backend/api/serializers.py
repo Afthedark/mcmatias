@@ -65,19 +65,32 @@ class InventarioSerializer(serializers.ModelSerializer):
         fields = ['id_inventario', 'id_producto', 'nombre_producto', 'id_sucursal', 'nombre_sucursal', 'cantidad']
 
 class VentaSerializer(serializers.ModelSerializer):
+    nombre_cliente = serializers.CharField(source='id_cliente.nombre_apellido', read_only=True)
+    nombre_usuario = serializers.CharField(source='id_usuario.nombre_apellido', read_only=True)
+    nombre_sucursal = serializers.CharField(source='id_sucursal.nombre', read_only=True)
+    
     class Meta:
         model = Venta
-        fields = '__all__'
+        fields = ['id_venta', 'numero_boleta', 'id_cliente', 'nombre_cliente',
+                  'id_usuario', 'nombre_usuario', 'id_sucursal', 'nombre_sucursal',
+                  'fecha_venta', 'total_venta', 'tipo_pago',
+                  'estado', 'motivo_anulacion', 'fecha_anulacion']
+        read_only_fields = ['numero_boleta', 'id_usuario', 'id_sucursal',
+                           'estado', 'motivo_anulacion', 'fecha_anulacion']
 
 class DetalleVentaSerializer(serializers.ModelSerializer):
+    nombre_producto = serializers.CharField(source='id_producto.nombre_producto', read_only=True)
+    
     class Meta:
         model = DetalleVenta
-        fields = '__all__'
+        fields = ['id_detalle_venta', 'id_venta', 'id_producto', 'nombre_producto', 
+                  'cantidad', 'precio_venta']
 
 class ServicioTecnicoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServicioTecnico
         fields = '__all__'
+        read_only_fields = ['numero_servicio']  # Auto-generado por el modelo
 
 class UserProfileSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False, allow_blank=True)

@@ -196,6 +196,10 @@ class Venta(models.Model):
         ('Efectivo', 'Efectivo'),
         ('QR', 'QR'),
     ]
+    ESTADO_CHOICES = [
+        ('Completada', 'Completada'),
+        ('Anulada', 'Anulada'),
+    ]
     id_venta = models.AutoField(primary_key=True)
     numero_boleta = models.CharField(max_length=20, unique=True, blank=True, null=True)
     id_cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True, db_column='id_cliente')
@@ -204,10 +208,35 @@ class Venta(models.Model):
     fecha_venta = models.DateTimeField(auto_now_add=True)
     total_venta = models.DecimalField(max_digits=10, decimal_places=2)
     tipo_pago = models.CharField(max_length=20, choices=METODO_PAGO_CHOICES, default='Efectivo')
+    # Campos para anulación
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='Completada')
+    motivo_anulacion = models.TextField(blank=True, null=True)
+    fecha_anulacion = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = 'ventas'
         managed = True
+
+    def save(self, *args, **kwargs):
+        """Auto-genera numero_boleta con formato VTA-YYYY-XXXXX"""
+        if not self.numero_boleta:
+            from datetime import datetime
+            año_actual = datetime.now().year
+            
+            ultimo = Venta.objects.filter(
+                numero_boleta__startswith=f'VTA-{año_actual}-'
+            ).order_by('-numero_boleta').first()
+            
+            if ultimo:
+                try:
+                    num = int(ultimo.numero_boleta.split('-')[2])
+                except (IndexError, ValueError):
+                    num = 0
+                self.numero_boleta = f"VTA-{año_actual}-{num + 1:05d}"
+            else:
+                self.numero_boleta = f"VTA-{año_actual}-00001"
+        
+        super().save(*args, **kwargs)
 
 # 9. Tabla de Detalle de Ventas
 class DetalleVenta(models.Model):
@@ -246,3 +275,26 @@ class ServicioTecnico(models.Model):
     class Meta:
         db_table = 'servicios_tecnicos'
         managed = True
+
+    def save(self, *args, **kwargs):
+        """Auto-genera numero_servicio con formato ST-YYYY-XXXXX"""
+        if not self.numero_servicio:
+            from datetime import datetime
+            año_actual = datetime.now().year
+            
+            # Buscar último servicio del año actual
+            ultimo = ServicioTecnico.objects.filter(
+                numero_servicio__startswith=f'ST-{año_actual}-'
+            ).order_by('-numero_servicio').first()
+            
+            if ultimo:
+                try:
+                    num = int(ultimo.numero_servicio.split('-')[2])
+                except (IndexError, ValueError):
+                    num = 0
+                self.numero_servicio = f"ST-{año_actual}-{num + 1:05d}"
+            else:
+                # Primer servicio del año
+                self.numero_servicio = f"ST-{año_actual}-00001"
+        
+        super().save(*args, **kwargs)

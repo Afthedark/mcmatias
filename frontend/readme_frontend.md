@@ -58,12 +58,13 @@ frontend/
 | **Clientes** | ✅ 10/página | ✅ | ✅ | Búsqueda en 4 campos |
 | **Inventario** | ✅ 10/página | 🔍 Dropdown | ✅ | RBAC sucursal, Dropdown productos y sucursales con búsqueda |
 | **Categorías** | ✅ 10/página | ✅ | ✅ | **Dual Table** (Productos/Servicios) |
+| **Ventas** | ✅ 10/página | ❌ | ✅ | Sistema completo con carrito, búsqueda de clientes/productos, anulación |
 | **Roles** | ❌ | ❌ | ✅ | Simple CRUD |
 | **Usuarios** | ❌ | ❌ | ✅ | FK a Roles/Sucursales |
 | **Sucursales** | ❌ | ❌ | ✅ | Activar/Desactivar |
+| **Dashboard** | N/A | N/A | N/A | Client-side Data Processing, KPIs reales |
 
 ### 📝 Plantillas Base (Requieren implementación)
-- **ventas.html** - Gestión de ventas
 - **servicios_tecnicos.html** - Órdenes de servicio
 
 ## ✨ Funcionalidades Principales
@@ -155,7 +156,68 @@ renderTableProductos()
 renderTableServicios()
 ```
 
+#### ventas.js (Sistema Completo de Ventas)
+```javascript
+// Funciones principales
+loadVentas(page)             // Carga paginada de ventas
+verDetalleVenta(id)          // Modal con detalle completo + info de anulación
+abrirModalAnular(id)         // Modal de confirmación de anulación
+confirmarAnulacion()         // Anular venta + restaurar inventario
+
+// Sistema de Carrito
+agregarProducto()            // Añadir al carrito con validación
+actualizarCantidad()         // Modificar cantidad en carrito
+quitarProducto()             // Eliminar del carrito
+confirmarVenta()             // Crear venta + detalles (con validación de stock)
+
+// Búsqueda Server-Side
+searchClientes()             // Debounce 300ms en nombre, CI, celular, email
+searchProductos()            // Debounce 300ms en nombre y código de barras
+```
+
+#### dashboard.js (Client-side Data Processing)
+```javascript
+// Fetch Optimizado
+loadDashboardData()          // Promise.all para cargas paralelas
+processAndRenderKPIs()       // Cálculos client-side (suma, filtrado, promedio)
+
+// Cálculos de KPIs
+// - Ventas del mes (filtrado por fecha en cliente)
+// - Total ingresos (reduce de ventas válidas)
+// - Productos/Clientes/Servicios (count de API)
+```
+
 ## ✨ Características Recientes
+
+### Módulo de Ventas Completo
+- **Vista de Lista**: Tabla paginada con columnas Tipo Pago y Estado
+- **Nueva Venta - Flujo Wizard**:
+  1. Selección de Cliente (búsqueda server-side + opción crear nuevo)
+  2. Carrito de Productos (búsqueda por nombre o código de barras)
+  3. Método de Pago (Efectivo/QR)
+  4. Resumen lateral con total dinámico
+- **Auto-generación de Boleta**: `numero_boleta` se genera automáticamente en backend (VTA-YYYY-XXXXX)
+- **Gestión de Stock Automática**:
+  - Validación de disponibilidad antes de confirmar venta
+  - Descuento automático de inventario al crear detalle
+  - Validación por sucursal (usa stock de la sucursal del usuario)
+- **Sistema de Anulación**:
+  - Botón "Anular" visible solo en ventas activas
+  - Modal con campo obligatorio de motivo
+  - Restauración automática de inventario al anular
+  - Ventas anuladas se muestran tachadas y grises
+  - Info de anulación visible en modal de detalle
+
+### Dashboard con Client-Side Processing
+- **Fetch Paralelo**: Usa `Promise.all` para cargar datos simultáneamente
+- **KPIs Calculados**:
+  - **Ventas del Mes**: Filtrado local por fecha (cantidad + monto)
+  - **Total Productos/Clientes/Servicios**: Usa `.count` de paginación
+- **Procesamiento Local**:
+  - Filtra ventas anuladas
+  - Calcula totales con `reduce`
+  - Agrupa por fecha para futuras gráficas
+- **Últimas Ventas**: Top 5 con indicador de estado
 
 ### Paginación Universal
 - Todas las tablas muestran **10 filas por página**
@@ -227,23 +289,26 @@ async function deleteItem(id) { ... }
 
 ## ⚠️ Notas Importantes
 
-- Dashboard muestra datos ficticios (según requerimientos)
-- RBAC (control de roles) en frontend se implementará en fase futura
+- **RBAC (control de roles)**: Implementado tanto en backend como frontend
 - Todas las páginas requieren autenticación excepto login
 - El modal de perfil está incluido automáticamente en todas las páginas protegidas
 - Las imágenes se suben a `backend/media/uploads/`
 - Paginación se oculta automáticamente si hay menos de 10 items
+- **Ventas anuladas**: No se pueden editar ni volver a anular
 
 ## 🎯 Próximas Implementaciones
 
-- [ ] Módulo de Ventas con detalle
 - [ ] Módulo de Servicios Técnicos con upload de fotos
-- [ ] Dashboard con datos reales desde API
+- [ ] Gráficos visuales en Dashboard (Chart.js)
 - [ ] Reportes y exportación (PDF/Excel)
-- [ ] Filtros avanzados por fecha
+- [ ] Filtros avanzados por fecha en ventas
 
 ## ✅ Implementado Recientemente
 
+- [x] **Módulo de Ventas Completo**: Carrito, búsqueda, validación de stock, anulación
+- [x] **Dashboard con Datos Reales**: Client-side processing, KPIs calculados
+- [x] **Sistema de Anulación**: Con restauración automática de inventario
+- [x] **RBAC en Ventas**: Cada sucursal ve solo sus ventas (Super Admin ve todas)
 - [x] **RBAC en Inventario**: Sucursal auto-asignada y bloqueada para roles no-admin
 - [x] **Búsqueda Server-Side en Productos**: Dropdown de categorías con búsqueda
 - [x] **Búsqueda Server-Side en Inventario**: Dropdown de productos con búsqueda

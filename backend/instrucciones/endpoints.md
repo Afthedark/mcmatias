@@ -431,7 +431,11 @@ Existencias de un producto en una sucursal específica.
 ## 8. Ventas (`/ventas/`) 🔒
 Cabecera de una transacción de venta.
 - Se crea primero la venta y luego sus detalles.
+- `numero_boleta`: **Auto-generado** con formato `VTA-YYYY-XXXXX` (no enviar en POST)
+- `id_usuario`: **Auto-asignado** al usuario autenticado (no enviar en POST)
+- `id_sucursal`: **Auto-asignado** a la sucursal del usuario (no enviar en POST para roles normales)
 - `tipo_pago`: "Efectivo" o "QR"
+- `estado`: "Completada" o "Anulada" (solo lectura, se cambia con endpoint de anulación)
 - **RBAC**: Solo verás ventas de TU sucursal (excepto Super Admin).
 
 ### Listar Ventas
@@ -441,22 +445,67 @@ Cabecera de una transacción de venta.
 - Super Admin: Ve ventas de TODAS las sucursales.
 - Otros: Solo ven ventas realizadas en su sucursal.
 
+**Respuesta enriquecida**:
+```json
+{
+  "count": 25,
+  "results": [
+    {
+      "id_venta": 1,
+      "numero_boleta": "VTA-2026-00001",
+      "id_cliente": 1,
+      "nombre_cliente": "Juan Pérez",
+      "id_usuario": 2,
+      "nombre_usuario": "Vendedor1",
+      "id_sucursal": 1,
+      "nombre_sucursal": "Central",
+      "fecha_venta": "2026-01-13T10:30:00Z",
+      "total_venta": "150.50",
+      "tipo_pago": "Efectivo",
+      "estado": "Completada",
+      "motivo_anulacion": null,
+      "fecha_anulacion": null
+    }
+  ]
+}
+```
+
 ### Crear Venta
 **POST** `/ventas/`
 ```json
 {
-  "numero_boleta": "B-0001",
   "id_cliente": 1,
-  "id_usuario": 1,
-  "id_sucursal": 1,
   "total_venta": 150.50,
   "tipo_pago": "Efectivo"
 }
 ```
 
-**Auto-Asignación de Sucursal**:
-- Si NO eres Super Admin, el sistema **fuerza** `id_sucursal` a tu sucursal.
-- Puedes omitir `id_sucursal` en el JSON (se asigna automáticamente).
+**Campos Auto-Generados/Asignados**:
+- `numero_boleta`: Se genera automáticamente (VTA-2026-00001, VTA-2026-00002, etc.)
+- `id_usuario`: Se asigna automáticamente al usuario autenticado
+- `id_sucursal`: Se asigna automáticamente a la sucursal del usuario
+- `estado`: Se crea como "Completada" por defecto
+- `fecha_venta`: Timestamp automático
+
+**Respuesta**:
+```json
+{
+  "id_venta": 1,
+  "numero_boleta": "VTA-2026-00001",
+  "id_cliente": 1,
+  "nombre_cliente": "Juan Pérez",
+  "id_usuario": 2,
+  "nombre_usuario": "Vendedor1",
+  "id_sucursal": 1,
+  "nombre_sucursal": "Central",
+  "fecha_venta": "2026-01-13T10:30:00Z",
+  "total_venta": "150.50",
+  "tipo_pago": "Efectivo",
+  "estado": "Completada",
+  "motivo_anulacion": null,
+  "fecha_anulacion": null
+}
+```
 
 **Valores válidos para `tipo_pago`**:
 - `"Efectivo"`
@@ -471,14 +520,89 @@ Cabecera de una transacción de venta.
 }
 ```
 
+**Nota**: No se puede cambiar `estado`, `numero_boleta`, `id_usuario` o `id_sucursal` con PATCH normal. Para anular usa el endpoint específico.
+
+### Anular Venta (Custom Endpoint)
+**PATCH** `/ventas/1/anular/`
+
+**Body**:
+```json
+{
+  "motivo_anulacion": "Cliente solicitó devolución por producto defectuoso"
+}
+```
+
+**Funcionalidad**:
+1. Valida que la venta no esté ya anulada
+2. Valida que se proporcione un motivo
+3. Cambia `estado` a "Anulada"
+4. Guarda `motivo_anulacion` y `fecha_anulacion`
+5. **Restaura automáticamente el inventario** (devuelve las cantidades vendidas al stock de la sucursal)
+
+**Respuesta exitosa**:
+```json
+{
+  "id_venta": 1,
+  "numero_boleta": "VTA-2026-00001",
+  "estado": "Anulada",
+  "motivo_anulacion": "Cliente solicitó devolución por producto defectuoso",
+  "fecha_anulacion": "2026-01-13T14:25:00Z",
+  ...
+}
+```
+
+**Errores posibles**:
+```json
+// Si ya está anulada
+{
+  "error": "Esta venta ya fue anulada"
+}
+
+// Si falta el motivo
+{
+  "error": "Debe proporcionar un motivo de anulación"
+}
+```
+
 ---
 
 ## 9. Detalle de Ventas (`/detalle_ventas/`)
 Renglones de productos dentro de una venta.
 - Requiere el ID de la venta creada anteriormente (`id_venta`).
+- **Validación y Descuento de Stock Automático**: Al crear un detalle, el sistema valida disponibilidad y descuenta el inventario.
 
 ### Listar Detalles
 **GET** `/detalle_ventas/?page=1`
+
+### Filtrar por Venta Específica
+**GET** `/detalle_ventas/?id_venta=1`
+
+Retorna solo los detalles de la venta con `id_venta=1`. Útil para mostrar el contenido de una venta específica.
+
+**Respuesta enriquecida**:
+```json
+{
+  "count": 3,
+  "results": [
+    {
+      "id_detalle_venta": 1,
+      "id_venta": 1,
+      "id_producto": 5,
+      "nombre_producto": "Laptop Dell XPS 15",
+      "cantidad": 2,
+      "precio_venta": "1250.00"
+    },
+    {
+      "id_detalle_venta": 2,
+      "id_venta": 1,
+      "id_producto": 12,
+      "nombre_producto": "Mouse Logitech MX Master 3",
+      "cantidad": 1,
+      "precio_venta": "99.99"
+    }
+  ]
+}
+```
 
 ### Crear Detalle de Venta
 **POST** `/detalle_ventas/`
@@ -491,6 +615,29 @@ Renglones de productos dentro de una venta.
 }
 ```
 
+**Gestión Automática de Stock**:
+Cuando creas un detalle de venta, el sistema:
+1. Obtiene la sucursal de la venta (`id_venta.id_sucursal`)
+2. Busca el inventario del producto en esa sucursal
+3. **Valida** que el producto exista en el inventario
+4. **Valida** que haya cantidad suficiente (`inventario.cantidad >= detalle.cantidad`)
+5. Si las validaciones son exitosas:
+   - Guarda el detalle
+   - **Descuenta** la cantidad del inventario: `inventario.cantidad -= detalle.cantidad`
+
+**Errores posibles**:
+```json
+// Si el producto no existe en el inventario de la sucursal
+{
+  "error": "El producto 'Laptop Dell' no está disponible en el inventario de la sucursal 'Central'"
+}
+
+// Si no hay suficiente stock
+{
+  "error": "Stock insuficiente. Disponible: 5, Solicitado: 10"
+}
+```
+
 ### Actualizar Detalle (Parcial)
 **PATCH** `/detalle_ventas/1/`
 ```json
@@ -499,6 +646,8 @@ Renglones de productos dentro de una venta.
   "precio_venta": 70.00
 }
 ```
+
+**Nota**: Actualizar detalles de ventas ya completadas puede descuadrar el stock. Se recomienda usar solo para correcciones inmediatas.
 
 ---
 

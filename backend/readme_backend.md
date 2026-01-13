@@ -239,7 +239,28 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
 - ✅ **Búsqueda Server-Side**: Implementado en Categorías, Clientes y Productos
 - ✅ **Productos Searchable**: Búsqueda por `nombre_producto`, `codigo_barras`, `descripcion`
 - ✅ **Serializers Enriquecidos**: Productos incluye `nombre_categoria`, Inventario incluye `nombre_producto` y `nombre_sucursal`
+- ✅ **Ventas Enriquecidas**: VentaSerializer incluye `nombre_cliente`, `nombre_usuario`, `nombre_sucursal`
+- ✅ **DetalleVenta Enriquecido**: Incluye `nombre_producto` para facilitar visualización
 - ✅ **Campo `tipo_pago`**: En modelo Ventas (Efectivo/QR)
+
+### Módulo de Ventas
+- ✅ **Auto-generación de `numero_boleta`**: Formato `VTA-YYYY-XXXXX` con secuencia anual automática
+- ✅ **Auto-asignación de Usuario y Sucursal**: Al crear venta se asigna automáticamente el usuario autenticado
+- ✅ **Sistema de Anulación de Ventas**:
+  - Campo `estado` (Completada/Anulada)
+  - Campo `motivo_anulacion` y `fecha_anulacion`
+  - Endpoint custom `PATCH /api/ventas/{id}/anular/` que restaura inventario automáticamente
+  - Validación para evitar doble anulación
+- ✅ **Gestión Automática de Stock**:
+  - Validación de stock disponible antes de confirmar venta
+  - Descuento automático de inventario al crear DetalleVenta
+  - Restauración automática de stock al anular venta
+  - Filtrado por `id_venta` en endpoint de detalles: `/api/detalle_ventas/?id_venta=X`
+
+### Sistema de Numeración Automática
+- ✅ **ServicioTecnico**: Auto-genera `numero_servicio` con formato `ST-YYYY-XXXXX`
+- ✅ **Venta**: Auto-genera `numero_boleta` con formato `VTA-YYYY-XXXXX`
+- ✅ **Secuencias anuales**: Los contadores se reinician automáticamente cada año
 
 
 ## 🔧 Modelos de Datos

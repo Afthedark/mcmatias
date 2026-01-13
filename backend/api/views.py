@@ -1,9 +1,11 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework import filters
+from rest_framework.decorators import action
+from django.utils import timezone
 from .models import (
     Rol, Sucursal, Categoria, Usuario, Cliente, Producto, 
     Inventario, Venta, DetalleVenta, ServicioTecnico
@@ -123,18 +125,109 @@ class VentaViewSet(viewsets.ModelViewSet):
         return Venta.objects.filter(id_sucursal=user.id_sucursal).order_by('pk')
     
     def perform_create(self, serializer):
-        """Auto-asignar sucursal del usuario"""
+        """Auto-asignar sucursal y usuario del request"""
         user = self.request.user
         if user.id_rol.numero_rol == 1:
-            # Super Admin puede especificar o usar su sucursal
-            serializer.save()
+            # Super Admin puede especificar sucursal, pero siempre se asigna el usuario
+            serializer.save(id_usuario=user)
         else:
-            # Otros: forzar su sucursal
-            serializer.save(id_sucursal=user.id_sucursal)
+            # Otros: forzar su sucursal y usuario
+            serializer.save(id_sucursal=user.id_sucursal, id_usuario=user)
+    
+    @action(detail=True, methods=['patch'])
+    def anular(self, request, pk=None):
+        """
+        Anula una venta y restaura el inventario.
+        PATCH /api/ventas/{id}/anular/
+        Body: { "motivo_anulacion": "razón..." }
+        """
+        venta = self.get_object()
+        
+        # Validar que no esté ya anulada
+        if venta.estado == 'Anulada':
+            return Response(
+                {'error': 'Esta venta ya fue anulada'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Obtener motivo
+        motivo = request.data.get('motivo_anulacion', '')
+        if not motivo:
+            return Response(
+                {'error': 'Debe proporcionar un motivo de anulación'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Restaurar inventario
+        detalles = DetalleVenta.objects.filter(id_venta=venta)
+        for detalle in detalles:
+            inventario = Inventario.objects.filter(
+                id_producto=detalle.id_producto,
+                id_sucursal=venta.id_sucursal
+            ).first()
+            if inventario:
+                inventario.cantidad += detalle.cantidad
+                inventario.save()
+        
+        # Anular venta
+        venta.estado = 'Anulada'
+        venta.motivo_anulacion = motivo
+        venta.fecha_anulacion = timezone.now()
+        venta.save()
+        
+        return Response(VentaSerializer(venta).data)
 
 class DetalleVentaViewSet(viewsets.ModelViewSet):
     queryset = DetalleVenta.objects.all().order_by('pk')
     serializer_class = DetalleVentaSerializer
+    
+    def get_queryset(self):
+        """Permite filtrar por id_venta: /api/detalle_ventas/?id_venta=1"""
+        queryset = super().get_queryset()
+        id_venta = self.request.query_params.get('id_venta', None)
+        if id_venta:
+            queryset = queryset.filter(id_venta=id_venta)
+        return queryset
+    
+    def perform_create(self, serializer):
+        """
+        Al crear un detalle de venta:
+        1. Obtiene la sucursal de la venta
+        2. Valida que exista stock suficiente en esa sucursal
+        3. Descuenta del inventario automáticamente
+        """
+        # Obtener datos del request
+        id_venta = serializer.validated_data.get('id_venta')
+        id_producto = serializer.validated_data.get('id_producto')
+        cantidad = serializer.validated_data.get('cantidad')
+        
+        # Obtener la sucursal de la venta
+        sucursal = id_venta.id_sucursal
+        
+        # Buscar inventario de este producto en esta sucursal
+        inventario = Inventario.objects.filter(
+            id_producto=id_producto,
+            id_sucursal=sucursal
+        ).first()
+        
+        # Validar existencia de inventario
+        if not inventario:
+            raise serializers.ValidationError({
+                'id_producto': f'El producto "{id_producto.nombre_producto}" no existe en el inventario de la sucursal "{sucursal.nombre}".'
+            })
+        
+        # Validar stock suficiente
+        if inventario.cantidad < cantidad:
+            raise serializers.ValidationError({
+                'cantidad': f'Stock insuficiente para "{id_producto.nombre_producto}". Disponible: {inventario.cantidad}, Solicitado: {cantidad}'
+            })
+        
+        # Guardar el detalle
+        serializer.save()
+        
+        # Descontar del inventario
+        inventario.cantidad -= cantidad
+        inventario.save()
 
 class ServicioTecnicoViewSet(viewsets.ModelViewSet):
     """
