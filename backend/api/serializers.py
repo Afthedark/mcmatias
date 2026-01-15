@@ -87,10 +87,28 @@ class DetalleVentaSerializer(serializers.ModelSerializer):
                   'cantidad', 'precio_venta']
 
 class ServicioTecnicoSerializer(serializers.ModelSerializer):
+    # Campos enriquecidos (read-only)
+    nombre_cliente = serializers.CharField(source='id_cliente.nombre_apellido', read_only=True)
+    celular_cliente = serializers.CharField(source='id_cliente.celular', read_only=True)
+    nombre_usuario = serializers.CharField(source='id_usuario.nombre_apellido', read_only=True)
+    nombre_sucursal = serializers.CharField(source='id_sucursal.nombre', read_only=True)
+    nombre_categoria = serializers.CharField(source='id_categoria.nombre_categoria', read_only=True)
+    
     class Meta:
         model = ServicioTecnico
-        fields = '__all__'
-        read_only_fields = ['numero_servicio']  # Auto-generado por el modelo
+        fields = [
+            'id_servicio', 'numero_servicio', 
+            'id_cliente', 'nombre_cliente', 'celular_cliente',
+            'id_usuario', 'nombre_usuario',
+            'id_sucursal', 'nombre_sucursal',
+            'id_categoria', 'nombre_categoria',
+            'marca_dispositivo', 'modelo_dispositivo',
+            'descripcion_problema', 'costo_estimado',
+            'estado', 'fecha_inicio',
+            'foto_1', 'foto_2', 'foto_3',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['numero_servicio', 'id_usuario', 'id_sucursal', 'created_at', 'updated_at']
 
 class UserProfileSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False, allow_blank=True)

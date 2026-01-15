@@ -89,6 +89,8 @@ class InventarioViewSet(viewsets.ModelViewSet):
     """
     queryset = Inventario.objects.all()  # Base queryset for DRF router
     serializer_class = InventarioSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['id_producto__nombre_producto', 'id_producto__codigo_barras']
     
     def get_queryset(self):
         user = self.request.user
@@ -115,14 +117,16 @@ class VentaViewSet(viewsets.ModelViewSet):
     """
     queryset = Venta.objects.all()  # Base queryset for DRF router
     serializer_class = VentaSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['numero_boleta', 'id_cliente__nombre_apellido', 'id_cliente__cedula_identidad']
     
     def get_queryset(self):
         user = self.request.user
         # Super Admin ve todo
         if user.id_rol.numero_rol == 1:
-            return Venta.objects.all().order_by('pk')
+            return Venta.objects.all().order_by('-pk')
         # Otros solo ven ventas de su sucursal
-        return Venta.objects.filter(id_sucursal=user.id_sucursal).order_by('pk')
+        return Venta.objects.filter(id_sucursal=user.id_sucursal).order_by('-pk')
     
     def perform_create(self, serializer):
         """Auto-asignar sucursal y usuario del request"""
@@ -236,24 +240,63 @@ class ServicioTecnicoViewSet(viewsets.ModelViewSet):
     """
     queryset = ServicioTecnico.objects.all()  # Base queryset for DRF router
     serializer_class = ServicioTecnicoSerializer
+    # Búsqueda server-side
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['numero_servicio', 'id_cliente__nombre_apellido', 'marca_dispositivo', 
+                     'modelo_dispositivo', 'descripcion_problema']
     
     def get_queryset(self):
         user = self.request.user
         # Super Admin ve todo
         if user.id_rol.numero_rol == 1:
-            return ServicioTecnico.objects.all().order_by('pk')
+            return ServicioTecnico.objects.all().order_by('-pk')
         # Otros solo ven servicios de su sucursal
-        return ServicioTecnico.objects.filter(id_sucursal=user.id_sucursal).order_by('pk')
+        return ServicioTecnico.objects.filter(id_sucursal=user.id_sucursal).order_by('-pk')
     
     def perform_create(self, serializer):
-        """Auto-asignar sucursal del usuario"""
+        """Auto-asignar sucursal y usuario del request"""
         user = self.request.user
         if user.id_rol.numero_rol == 1:
-            # Super Admin puede especificar sucursal
-            serializer.save()
+            # Super Admin puede especificar sucursal, pero siempre se asigna el usuario
+            serializer.save(id_usuario=user)
         else:
-            # Otros: forzar su sucursal
-            serializer.save(id_sucursal=user.id_sucursal)
+            # Otros: forzar su sucursal y usuario
+            serializer.save(id_sucursal=user.id_sucursal, id_usuario=user)
+
+    @action(detail=True, methods=['patch'])
+    def anular(self, request, pk=None):
+        """
+        Anula un servicio técnico.
+        PATCH /api/servicios_tecnicos/{id}/anular/
+        Body: { "motivo_anulacion": "razón..." }
+        Solo roles 1 (Super Admin) y 2 (Administrador) pueden anular.
+        """
+        user = request.user
+        
+        # RBAC: Solo roles 1 y 2 pueden anular
+        if user.id_rol.numero_rol not in [1, 2]:
+            return Response(
+                {'error': 'No tiene permisos para anular servicios'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        servicio = self.get_object()
+        
+        # Verificar que no esté ya anulado
+        if servicio.estado == 'Anulado':
+            return Response(
+                {'error': 'Este servicio ya está anulado'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Anular el servicio
+        servicio.estado = 'Anulado'
+        servicio.save()
+        
+        return Response({
+            'message': 'Servicio anulado correctamente',
+            'numero_servicio': servicio.numero_servicio
+        })
 
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]

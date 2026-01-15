@@ -7,6 +7,7 @@
 let ventas = [];
 let currentPage = 1;
 let totalPages = 1;
+let searchQuery = '';
 
 // Nueva Venta
 let clienteSeleccionado = null;
@@ -22,15 +23,21 @@ let searchProductoTimeout = null;
 // ============================================
 
 /**
- * Cargar ventas con paginación
+ * Cargar ventas con paginación y búsqueda
  */
 async function loadVentas(page = 1) {
     try {
         showLoader();
-        const data = await apiGet(`/ventas/?page=${page}`);
+        currentPage = page;
+
+        let url = `/ventas/?page=${page}`;
+        if (searchQuery) {
+            url += `&search=${encodeURIComponent(searchQuery)}`;
+        }
+
+        const data = await apiGet(url);
 
         ventas = data.results || data;
-        currentPage = page;
 
         if (data.count) {
             totalPages = Math.ceil(data.count / 10);
@@ -678,4 +685,42 @@ async function confirmarAnulacion() {
         hideLoader();
     }
 }
+
+// ============================================
+// Inicialización de Listeners
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Buscador principal de ventas
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        let debounceTimer;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                searchQuery = e.target.value.trim();
+                currentPage = 1;
+                loadVentas(1);
+            }, 300);
+        });
+    }
+
+    // Configurar búsqueda de cliente para nueva venta
+    const clienteInput = document.getElementById('searchClienteInput');
+    if (clienteInput) {
+        clienteInput.addEventListener('input', (e) => {
+            clearTimeout(searchClienteTimeout);
+            searchClienteTimeout = setTimeout(() => {
+                searchClientes(e.target.value.trim());
+            }, 300);
+        });
+
+        // Cerrar resultados al hacer click fuera
+        document.addEventListener('click', (e) => {
+            const resultados = document.getElementById('clienteResultados');
+            if (resultados && !clienteInput.contains(e.target) && !resultados.contains(e.target)) {
+                resultados.style.display = 'none';
+            }
+        });
+    }
+});
 

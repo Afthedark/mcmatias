@@ -7,17 +7,24 @@ let productos = [];
 let currentProductoId = null;
 let currentPage = 1;
 let totalPages = 1;
+let searchQuery = '';
 
 /**
- * Load products with pagination
+ * Load products with pagination and search
  */
 async function loadProductos(page = 1) {
     try {
         showLoader();
-        const data = await apiGet(`/productos/?page=${page}`);
+        currentPage = page;
+
+        let url = `/productos/?page=${page}`;
+        if (searchQuery) {
+            url += `&search=${encodeURIComponent(searchQuery)}`;
+        }
+
+        const data = await apiGet(url);
 
         productos = data.results || data;
-        currentPage = page;
 
         // Calculate pagination if using DRF pagination
         if (data.count) {
@@ -334,13 +341,27 @@ async function deleteProducto(id) {
 }
 
 /**
- * Reset modal when closed
+ * Reset modal when closed + Setup search listener
  */
 document.addEventListener('DOMContentLoaded', () => {
     const modalElement = document.getElementById('productoModal');
     if (modalElement) {
         modalElement.addEventListener('hidden.bs.modal', () => {
             document.getElementById('productoForm').classList.remove('was-validated');
+        });
+    }
+
+    // Search listener with debounce
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        let debounceTimer;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                searchQuery = e.target.value.trim();
+                currentPage = 1;
+                loadProductos(1);
+            }, 300);
         });
     }
 });

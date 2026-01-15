@@ -15,19 +15,21 @@ async function loadDashboardData() {
             apiGet('/ventas/?page_size=1000'),  // Get recent sales
             apiGet('/productos/?page_size=1'),  // Only need count
             apiGet('/clientes/?page_size=1'),   // Only need count
-            apiGet('/servicios_tecnicos/?page_size=1')  // Only need count
+            apiGet('/servicios_tecnicos/?page_size=5')  // Get latest 5 services
         ]);
 
         const ventas = ventasRes.results || ventasRes;
         const totalProductos = productosRes.count || (Array.isArray(productosRes) ? productosRes.length : 0);
         const totalClientes = clientesRes.count || (Array.isArray(clientesRes) ? clientesRes.length : 0);
+        const servicios = serviciosRes.results || serviciosRes;
         const totalServicios = serviciosRes.count || (Array.isArray(serviciosRes) ? serviciosRes.length : 0);
 
         // 2. Client-side Processing
         processAndRenderKPIs(ventas, totalProductos, totalClientes, totalServicios);
 
-        // 3. Render Latest Sales Table
+        // 3. Render Latest Tables
         renderLatestSalesTable(ventas.slice(0, 5));
+        renderLatestServicesTable(servicios.slice(0, 5));
 
     } catch (error) {
         console.error('Error loading dashboard:', error);
@@ -116,4 +118,41 @@ function renderLatestSalesTable(ventas) {
             </tr>
         `;
     }).join('');
+}
+
+/**
+ * Render latest services table
+ */
+function renderLatestServicesTable(servicios) {
+    const tbody = document.getElementById('lastServicesTable');
+
+    if (!servicios || servicios.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay servicios registrados</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = servicios.map(servicio => {
+        const esAnulado = servicio.estado === 'Anulado';
+        const rowClass = esAnulado ? 'table-secondary text-decoration-line-through' : '';
+
+        return `
+            <tr class="${rowClass}">
+                <td><strong>${servicio.numero_servicio || 'N/A'}</strong></td>
+                <td>${servicio.nombre_cliente || 'Sin cliente'}</td>
+                <td>${servicio.marca_dispositivo || ''} ${servicio.modelo_dispositivo || ''}</td>
+                <td>${getDashboardEstadoBadge(servicio.estado)}</td>
+                <td>${formatDate(servicio.fecha_inicio)}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function getDashboardEstadoBadge(estado) {
+    const estados = {
+        'En Reparación': '<span class="badge bg-primary">🔵 En Reparación</span>',
+        'Para Retirar': '<span class="badge bg-warning text-dark">🟡 Para Retirar</span>',
+        'Entregado': '<span class="badge bg-success">🟢 Entregado</span>',
+        'Anulado': '<span class="badge bg-danger">❌ Anulado</span>'
+    };
+    return estados[estado] || `<span class="badge bg-secondary">${estado}</span>`;
 }

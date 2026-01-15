@@ -9,17 +9,24 @@ let sucursales = [];
 let currentInventarioId = null;
 let currentPage = 1;
 let totalPages = 1;
+let searchQuery = '';
 
 /**
- * Load inventory with pagination
+ * Load inventory with pagination and search
  */
 async function loadInventario(page = 1) {
     try {
         showLoader();
-        const data = await apiGet(`/inventario/?page=${page}`);
+        currentPage = page;
+
+        let url = `/inventario/?page=${page}`;
+        if (searchQuery) {
+            url += `&search=${encodeURIComponent(searchQuery)}`;
+        }
+
+        const data = await apiGet(url);
 
         inventarios = data.results || data;
-        currentPage = page;
 
         // Calculate pagination if using DRF pagination
         if (data.count) {
@@ -402,7 +409,7 @@ async function deleteInventario(id) {
 }
 
 /**
- * Reset modal when closed
+ * Reset modal when closed + Setup search listener
  */
 document.addEventListener('DOMContentLoaded', () => {
     const modalElement = document.getElementById('inventarioModal');
@@ -411,6 +418,20 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('idProducto').disabled = false;
             document.getElementById('idSucursal').disabled = false;
             document.getElementById('inventarioForm').classList.remove('was-validated');
+        });
+    }
+
+    // Search listener with debounce
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        let debounceTimer;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                searchQuery = e.target.value.trim();
+                currentPage = 1;
+                loadInventario(1);
+            }, 300);
         });
     }
 });

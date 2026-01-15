@@ -256,19 +256,29 @@ class ServicioTecnico(models.Model):
         ('En Reparación', 'En Reparación'),
         ('Para Retirar', 'Para Retirar'),
         ('Entregado', 'Entregado'),
+        ('Anulado', 'Anulado'),
     ]
     id_servicio = models.AutoField(primary_key=True)
     numero_servicio = models.CharField(max_length=20, unique=True, blank=True, null=True)
     id_cliente = models.ForeignKey(Cliente, on_delete=models.RESTRICT, db_column='id_cliente')
     id_usuario = models.ForeignKey(Usuario, on_delete=models.RESTRICT, db_column='id_usuario')
+    # Información del dispositivo
+    marca_dispositivo = models.CharField(max_length=100, blank=True, null=True)
+    modelo_dispositivo = models.CharField(max_length=100, blank=True, null=True)
+    # Descripción y categoría del servicio
     descripcion_problema = models.TextField(blank=True, null=True)
+    id_categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, db_column='id_categoria')
+    costo_estimado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    # Fechas y estado
     fecha_inicio = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='En Reparación')
+    # Relaciones
     id_sucursal = models.ForeignKey(Sucursal, on_delete=models.RESTRICT, db_column='id_sucursal')
-    id_categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, db_column='id_categoria')
+    # Fotos del problema
     foto_1 = models.ImageField(upload_to='uploads/images/', blank=True, null=True)
     foto_2 = models.ImageField(upload_to='uploads/images/', blank=True, null=True)
     foto_3 = models.ImageField(upload_to='uploads/images/', blank=True, null=True)
+    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
