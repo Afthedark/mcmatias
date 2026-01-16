@@ -162,6 +162,9 @@ function renderServiciosTable() {
                 <button class="btn btn-sm btn-info" onclick="verDetalle(${servicio.id_servicio})" title="Ver Detalle">
                     <i class="bi bi-eye"></i>
                 </button>
+                <button class="btn btn-sm btn-primary" onclick="imprimirBoletaServicio(${servicio.id_servicio})" title="Imprimir Orden">
+                    <i class="bi bi-printer"></i>
+                </button>
                 ${!esAnulado ? `
                     <button class="btn btn-sm btn-warning" onclick="mostrarEditarServicio(${servicio.id_servicio})" title="Editar">
                         <i class="bi bi-pencil"></i>
@@ -684,3 +687,22 @@ function handleImagePreview(event, num) {
     };
     reader.readAsDataURL(file);
 }
+
+// ============================================
+// IMPRESIÓN DE BOLETAS
+// ============================================
+
+/**
+ * Imprimir boleta de servicio técnico
+ */
+function imprimirBoletaServicio(idServicio) {
+    if (typeof mostrarSelectorFormato === 'function') {
+        mostrarSelectorFormato(idServicio);
+    } else {
+        console.error('Módulo de impresión no cargado');
+        showToast('Error: Módulo de impresión no disponible', 'error');
+    }
+}
+
+// Hacer la función globalmente accesible
+window.imprimirBoletaServicio = imprimirBoletaServicio;

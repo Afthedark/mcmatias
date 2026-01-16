@@ -171,15 +171,22 @@ Todos los ViewSets soportan:
 | `/api/usuarios/` | 🔒 Aislado | ❌ | - | **Solo users de MI sucursal** |
 | `/api/clientes/` | 🌍 Global | 🔍 | `nombre_apellido`, `cedula_identidad`, `celular`, `correo_electronico` | Visible para todos |
 | `/api/productos/` | 🌍 Global | 🔍 | `nombre_producto`, `codigo_barras`, `descripcion` | Visible para todos |
-| `/api/inventario/` | 🔒 Aislado | ❌ | - | **Solo stock de MI sucursal** |
+| `/api/inventario/` | 🔒 Aislado | 🔍 | `id_producto__nombre_producto`, `id_producto__codigo_barras` | **Solo stock de MI sucursal** |
 | `/api/ventas/` | 🔒 Aislado | ❌ | - | **Solo ventas de MI sucursal** |
+| `/api/ventas/{id}/anular/` | Custom Action | ❌ | - | POST para anular venta |
 | `/api/detalle_ventas/` | Relación | ❌ | - | Hereda de Venta |
+| `/api/detalle_ventas/?id_venta=X` | Relación | ❌ | - | Filtrado por venta |
 | `/api/servicios_tecnicos/` | 🔒 Aislado | ❌ | - | **Solo servicios de MI sucursal** |
+| `/api/servicios_tecnicos/{id}/anular/` | Custom Action | ❌ | - | PATCH para anular servicio (Solo Admin) |
+| `/api/perfil/` | Usuario Auth | ❌ | - | Perfil del usuario autenticado |
 
 **Ejemplo de búsqueda**:
 ```
 GET /api/clientes/?search=juan&page=1
 GET /api/categorias/?tipo=servicio&search=reparacion
+GET /api/productos/?search=laptop
+GET /api/inventario/?search=samsung
+GET /api/detalle_ventas/?id_venta=5
 ```
 
 **Comportamiento RBAC**:
@@ -251,16 +258,46 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
   - Campo `motivo_anulacion` y `fecha_anulacion`
   - Endpoint custom `PATCH /api/ventas/{id}/anular/` que restaura inventario automáticamente
   - Validación para evitar doble anulación
+  - **Roles permitidos**: 1 (Super Admin), 2 (Administrador)
 - ✅ **Gestión Automática de Stock**:
   - Validación de stock disponible antes de confirmar venta
   - Descuento automático de inventario al crear DetalleVenta
   - Restauración automática de stock al anular venta
   - Filtrado por `id_venta` en endpoint de detalles: `/api/detalle_ventas/?id_venta=X`
+- ✅ **Sistema de Impresión de Boletas**:
+  - Generación de boletas de venta en formatos Ticket 80mm y Boleta A4
+  - Modal de selección de formato de impresión
+  - Print CSS adaptativo para diferentes tipos de impresora
+  - Incluye dirección de sucursal automáticamente
+  - Marca visual "ANULADA" en ventas canceladas
+
 
 ### Sistema de Numeración Automática
 - ✅ **ServicioTecnico**: Auto-genera `numero_servicio` con formato `ST-YYYY-XXXXX`
 - ✅ **Venta**: Auto-genera `numero_boleta` con formato `VTA-YYYY-XXXXX`
 - ✅ **Secuencias anuales**: Los contadores se reinician automáticamente cada año
+- ✅ **Thread-safe**: Implementado en el método `save()` de cada modelo
+
+### Módulo de Servicios Técnicos
+- ✅ **CRUD Completo**: Crear, leer, actualizar servicios técnicos
+- ✅ **Auto-generación de `numero_servicio`**: Formato `ST-YYYY-XXXXX` con secuencia anual
+- ✅ **Auto-asignación de Usuario y Sucursal**: Al crear servicio se asigna automáticamente
+- ✅ **Sistema de Anulación de Servicios**:
+  - Campo `estado` (En Reparación/Para Retirar/Entregado/Anulado)
+  - Endpoint custom `PATCH /api/servicios_tecnicos/{id}/anular/`
+  - **Roles permitidos**: 1 (Super Admin), 2 (Administrador), 3 (Técnico), 5 (Técnico y Cajero)
+  - Rol 4 (Cajero) **NO** puede anular servicios
+  - Validación para evitar doble anulación
+- ✅ **Upload de Imágenes**: Hasta 3 fotos por servicio (`foto_1`, `foto_2`, `foto_3`)
+- ✅ **Información del Dispositivo**: Marca, modelo, descripción del problema
+- ✅ **Categorización**: FK a categorías tipo "servicio"
+- ✅ **RBAC Completo**: Cada sucursal ve solo sus servicios (Super Admin ve todos)
+- ✅ **Sistema de Impresión de Boletas**:
+  - Generación de órdenes de servicio en formatos Ticket 80mm y Boleta A4
+  - Modal de selección de formato de impresión
+  - Print CSS adaptativo para diferentes tipos de impresora
+  - Incluye dirección de sucursal automáticamente
+
 
 
 ## 🔧 Modelos de Datos
@@ -273,14 +310,15 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
 ### Principales Relaciones
 - **Usuario** → Rol (FK), Sucursal (FK)
 - **Producto** → Categoría (FK)
-- **Inventario** → Producto (FK), Sucursal (FK)
-- **Venta** → Usuario (FK), Cliente (FK), **Sucursal (FK)** ← **NUEVO**
+- **Inventario** → Producto (FK), Sucursal (FK) - Unique together
+- **Venta** → Usuario (FK), Cliente (FK), Sucursal (FK)
 - **DetalleVenta** → Venta (FK), Producto (FK)
-- **ServicioTecnico** → Cliente (FK), Usuario (FK), Sucursal (FK)
+- **ServicioTecnico** → Cliente (FK), Usuario (FK), Sucursal (FK), Categoría (FK)
 
 ### Campos de Imagen
 - **Producto**: `foto_producto` (opcional)
 - **ServicioTecnico**: `foto_1`, `foto_2`, `foto_3` (opcionales)
+- **Upload Path**: `media/uploads/images/`
 
 ## ☁️ Despliegue en Producción
 

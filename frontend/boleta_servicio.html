@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orden de Servicio Técnico - Multicentro Matias</title>
+    <link rel="stylesheet" href="css/boleta_servicio_print.css">
+</head>
+
+<body>
+    <!-- Formato TICKET 80mm -->
+    <div id="boletaTicket" class="boleta-ticket" style="display: none;">
+        <div class="ticket-header">
+            <h1 class="negocio">MULTICENTRO MATIAS</h1>
+            <div class="sucursal" id="ticketSucursal"></div>
+            <div class="direccion" id="ticketDireccion" style="display: none;"></div>
+        </div>
+        <div class="ticket-divider"></div>
+
+        <div class="ticket-info">
+            <div>Servicio: <span id="ticketNumero"></span></div>
+            <div>Fecha: <span id="ticketFecha"></span></div>
+            <div>Cliente: <span id="ticketCliente"></span></div>
+            <div id="ticketCelular" style="display: none;">Tel: <span></span></div>
+        </div>
+
+        <div class="ticket-divider"></div>
+
+        <div class="ticket-dispositivo">
+            <div><strong>DISPOSITIVO</strong></div>
+            <div>Marca: <span id="ticketMarca"></span></div>
+            <div>Modelo: <span id="ticketModelo"></span></div>
+            <div>Servicio: <span id="ticketCategoria"></span></div>
+        </div>
+
+        <div class="ticket-divider"></div>
+
+        <div class="ticket-problema">
+            <div><strong>PROBLEMA:</strong></div>
+            <div id="ticketProblema"></div>
+        </div>
+
+        <div class="ticket-divider"></div>
+
+        <div class="ticket-estado">
+            Estado: <span id="ticketEstado" class="badge"></span>
+        </div>
+        <div class="ticket-costo">
+            Costo Estimado: Bs <span id="ticketCosto"></span>
+        </div>
+
+        <div class="ticket-divider"></div>
+
+        <div class="ticket-footer">
+            <div>Técnico: <span id="ticketUsuario"></span></div>
+            <div class="gracias">¡Gracias por confiar en nosotros!</div>
+        </div>
+
+        <!-- Marca de anulación -->
+        <div id="ticketAnulado" class="anulado-marca" style="display: none;">
+            <div class="anulado-texto">SERVICIO ANULADO</div>
+        </div>
+    </div>
+
+    <!-- Formato BOLETA A4 -->
+    <div id="boletaA4" class="boleta-a4" style="display: none;">
+        <div class="boleta-header">
+            <h1 class="negocio">MULTICENTRO MATIAS</h1>
+            <h2 class="sucursal" id="boletaSucursal"></h2>
+            <div class="direccion" id="boletaDireccion"></div>
+        </div>
+
+        <hr class="separador">
+
+        <div class="boleta-datos">
+            <div class="numero-servicio">Orden de Servicio N°: <span id="boletaNumero"></span></div>
+            <div class="fecha">Fecha de Ingreso: <span id="boletaFecha"></span></div>
+        </div>
+
+        <div class="cliente-datos">
+            <div><strong>Cliente:</strong> <span id="boletaCliente"></span></div>
+            <div id="boletaCelular" style="display: none;">
+                <strong>Celular:</strong> <span></span>
+            </div>
+        </div>
+
+        <hr class="separador">
+
+        <h3>INFORMACIÓN DEL DISPOSITIVO</h3>
+        <table class="tabla-dispositivo">
+            <tr>
+                <td><strong>Marca:</strong></td>
+                <td id="boletaMarca"></td>
+            </tr>
+            <tr>
+                <td><strong>Modelo:</strong></td>
+                <td id="boletaModelo"></td>
+            </tr>
+            <tr>
+                <td><strong>Tipo de Servicio:</strong></td>
+                <td id="boletaCategoria"></td>
+            </tr>
+        </table>
+
+        <hr class="separador">
+
+        <h3>DESCRIPCIÓN DEL PROBLEMA</h3>
+        <div class="problema-descripcion" id="boletaProblema"></div>
+
+        <hr class="separador">
+
+        <div class="boleta-totales">
+            <div class="estado-servicio">
+                <strong>Estado:</strong> <span id="boletaEstado" class="badge"></span>
+            </div>
+            <div class="costo-estimado">
+                <strong>Costo Estimado:</strong> Bs <span id="boletaCosto"></span>
+            </div>
+        </div>
+
+        <hr class="separador">
+
+        <div class="boleta-footer">
+            <div>Técnico asignado: <span id="boletaUsuario"></span></div>
+            <div class="mensaje-final">¡Gracias por confiar en nuestro servicio!</div>
+        </div>
+
+        <!-- Marca de anulación -->
+        <div id="boletaAnulado" class="anulado-overlay" style="display: none;">
+            <div class="anulado-marca">
+                <div class="anulado-texto">SERVICIO ANULADO</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/boleta_servicio.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boleta de Venta - MCMatias</title>
+    <link rel="stylesheet" href="css/boleta_ventas_print.css">
+</head>
+
+<body>
+    <!-- Formato TICKET 80mm -->
+    <div id="boletaTicket" class="boleta-ticket" style="display: none;">
+        <div class="ticket-header">
+            <h1 class="negocio">MULTICENTRO MATIAS</h1>
+            <div class="sucursal" id="ticketSucursal"></div>
+            <div class="direccion" id="ticketDireccion" style="display: none;"></div>
+        </div>
+        <div class="ticket-divider"></div>
+
+        <div class="ticket-info">
+            <div>Boleta: <span id="ticketNumero"></span></div>
+            <div>Fecha: <span id="ticketFecha"></span></div>
+            <div>Cliente: <span id="ticketCliente"></span></div>
+        </div>
+
+        <div class="ticket-divider"></div>
+        <table class="ticket-productos" id="ticketProductos"></table>
+        <div class="ticket-divider"></div>
+
+        <div class="ticket-total">
+            TOTAL: Bs <span id="ticketTotal"></span>
+        </div>
+        <div class="ticket-metodo">Método de pago: <span id="ticketMetodo"></span></div>
+        <div class="ticket-divider"></div>
+
+        <div class="ticket-footer">
+            <div>Atendido por: <span id="ticketUsuario"></span></div>
+            <div class="gracias">¡Gracias por su compra!</div>
+        </div>
+
+        <!-- Marca de anulación -->
+        <div id="ticketAnulada" class="anulada-marca" style="display: none;">
+            <div class="anulada-texto">ANULADA</div>
+            <div class="anulada-motivo"></div>
+        </div>
+    </div>
+
+    <!-- Formato BOLETA A4 -->
+    <div id="boletaA4" class="boleta-a4" style="display: none;">
+        <div class="boleta-header">
+            <h1 class="negocio">MULTICENTRO MATIAS</h1>
+            <h2 class="sucursal" id="boletaSucursal"></h2>
+            <div class="direccion" id="boletaDireccion"></div>
+        </div>
+
+        <hr class="separador">
+
+        <div class="boleta-datos">
+            <div class="numero-boleta">Boleta N°: <span id="boletaNumero"></span></div>
+            <div class="fecha">Fecha: <span id="boletaFecha"></span></div>
+        </div>
+
+        <div class="cliente-datos">
+            <div><strong>Cliente:</strong> <span id="boletaCliente"></span></div>
+            <div id="boletaClienteCI" style="display: none;">
+                <strong>CI:</strong> <span></span>
+            </div>
+            <div id="boletaClienteTel" style="display: none;">
+                <strong>Tel:</strong> <span></span>
+            </div>
+        </div>
+
+        <hr class="separador">
+
+        <h3>DETALLE DE PRODUCTOS</h3>
+        <table class="tabla-productos">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>P. Unitario</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="boletaProductos"></tbody>
+        </table>
+
+        <hr class="separador">
+
+        <div class="boleta-totales">
+            <div class="total-principal">TOTAL: Bs <span id="boletaTotal"></span></div>
+            <div class="metodo-pago">Método de pago: <span id="boletaMetodo"></span></div>
+        </div>
+
+        <hr class="separador">
+
+        <div class="boleta-footer">
+            <div>Atendido por: <span id="boletaUsuario"></span></div>
+            <div class="mensaje-final">¡Gracias por su compra!</div>
+        </div>
+
+        <!-- Marca de anulación -->
+        <div id="boletaAnulada" class="anulada-overlay" style="display: none;">
+            <div class="anulada-marca">
+                <div class="anulada-texto">VENTA ANULADA</div>
+                <div class="anulada-motivo"></div>
+                <div class="anulada-fecha"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/boleta_ventas.js"></script>
+</body>
+
+</html>

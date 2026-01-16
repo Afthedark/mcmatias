@@ -268,13 +268,13 @@ class ServicioTecnicoViewSet(viewsets.ModelViewSet):
         """
         Anula un servicio técnico.
         PATCH /api/servicios_tecnicos/{id}/anular/
-        Body: { "motivo_anulacion": "razón..." }
-        Solo roles 1 (Super Admin) y 2 (Administrador) pueden anular.
+        Roles permitidos: 1 (Super Admin), 2 (Admin), 3 (Técnico), 5 (Técnico y Cajero)
         """
         user = request.user
         
-        # RBAC: Solo roles 1 y 2 pueden anular
-        if user.id_rol.numero_rol not in [1, 2]:
+        # RBAC: Roles permitidos: 1 (Super Admin), 2 (Admin), 3 (Técnico), 5 (Técnico y Cajero)
+        # Rol 4 (Cajero) NO puede anular
+        if user.id_rol.numero_rol not in [1, 2, 3, 5]:
             return Response(
                 {'error': 'No tiene permisos para anular servicios'},
                 status=status.HTTP_403_FORBIDDEN

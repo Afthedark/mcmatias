@@ -90,6 +90,9 @@ function renderVentasTable() {
                 <button class="btn btn-sm btn-info" onclick="verDetalleVenta(${venta.id_venta})" title="Ver Detalle">
                     <i class="bi bi-eye"></i>
                 </button>
+                <button class="btn btn-sm btn-primary" onclick="imprimirBoleta(${venta.id_venta})" title="Imprimir Boleta">
+                    <i class="bi bi-printer"></i>
+                </button>
                 ${!esAnulada ? `
                     <button class="btn btn-sm btn-warning" onclick="abrirModalAnular(${venta.id_venta}, '${venta.numero_boleta}')" title="Anular">
                         <i class="bi bi-x-circle"></i>
@@ -723,4 +726,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ============================================
+// IMPRESIÓN DE BOLETAS
+// ============================================
+
+/**
+ * Imprimir boleta de venta
+ * Abre modal para seleccionar formato (80mm o A4)
+ */
+function imprimirBoleta(idVenta) {
+    if (typeof mostrarSelectorFormato === 'function') {
+        mostrarSelectorFormato(idVenta);
+    } else {
+        console.error('Módulo de impresión no cargado. Asegúrese de incluir boleta_ventas.js');
+        showToast('Error: Módulo de impresión no disponible', 'error');
+    }
+}
+
+// Hacer la función globalmente accesible
+window.imprimirBoleta = imprimirBoleta;
 

@@ -9,6 +9,8 @@ frontend/
 ├── productos.html          # Gestión de productos
 ├── clientes.html           # Gestión de clientes
 ├── ventas.html             # Gestión de ventas
+├── boleta_ventas.html      # Plantilla de boletas de venta
+├── boleta_servicio.html    # Plantilla de órdenes de servicio
 ├── inventario.html         # Control de inventario
 ├── servicios_tecnicos.html # Órdenes de servicio
 ├── categorias.html         # Gestión de categorías (Dual Table)
@@ -18,20 +20,29 @@ frontend/
 ├── unauthorized.html       # Página 403
 │
 ├── css/
-│   └── styles.css          # Estilos personalizados AdminLTE-like
+│   ├── styles.css                # Estilos personalizados AdminLTE-like
+│   ├── boleta_ventas_print.css   # Estilos de impresión de boletas de venta
+│   └── boleta_servicio_print.css # Estilos de impresión de órdenes de servicio
 │
 ├── js/
-│   ├── api.js              # Configuración de Axios + Interceptores JWT
-│   ├── auth.js             # Login, Tokens y protección de rutas
-│   ├── components.js       # Header y Sidebar reutilizables
-│   ├── profile.js          # Modal de edición de perfil
-│   ├── utils.js            # Helpers (formateo, toasts, loaders)
-│   └── pages/              # Lógica específica por página
-│       ├── dashboard.js
-│       ├── productos.js    # CRUD con paginación y PATCH
-│       ├── clientes.js     # CRUD con paginación, búsqueda y PATCH
-│       ├── inventario.js   # CRUD con paginación y PATCH
-│       └── categorias.js   # Dual table con búsqueda independiente
+│   ├── api.js                  # Configuración de Axios + Interceptores JWT
+│   ├── auth.js                 # Login, Tokens y protección de rutas
+│   ├── components.js           # Header y Sidebar reutilizables
+│   ├── profile.js              # Modal de edición de perfil
+│   ├── utils.js                # Helpers (formateo, toasts, loaders)
+│   ├── boleta_ventas.js        # Lógica de impresión de boletas de venta
+│   ├── boleta_servicio.js      # Lógica de impresión de órdenes de servicio
+│   └── pages/                  # Lógica específica por página
+│       ├── dashboard.js        # KPIs reales + últimas ventas/servicios
+│       ├── productos.js        # CRUD con paginación y PATCH
+│       ├── clientes.js         # CRUD con paginación, búsqueda y PATCH
+│       ├── inventario.js       # CRUD con paginación y PATCH
+│       ├── categorias.js       # Dual table con búsqueda independiente
+│       ├── ventas.js           # Sistema completo de ventas con carrito + impresión
+│       ├── servicios_tecnicos.js # CRUD completo con imágenes + impresión
+│       ├── usuarios.js         # Gestión de usuarios
+│       ├── roles.js            # Gestión de roles
+│       └── sucursales.js       # Gestión de sucursales
 │
 └── assets/                 # Logos, imágenes (opcional)
 ```
@@ -59,13 +70,11 @@ frontend/
 | **Inventario** | ✅ 10/página | 🔍 Dropdown | ✅ | RBAC sucursal, Dropdown productos y sucursales con búsqueda |
 | **Categorías** | ✅ 10/página | ✅ | ✅ | **Dual Table** (Productos/Servicios) |
 | **Ventas** | ✅ 10/página | ❌ | ✅ | Sistema completo con carrito, búsqueda de clientes/productos, anulación |
+| **Servicios Técnicos** | ✅ 10/página | 🔍 Server-Side | ✅ | Sistema completo con búsqueda de clientes/categorías, upload de 3 fotos, anulación |
 | **Roles** | ❌ | ❌ | ✅ | Simple CRUD |
 | **Usuarios** | ❌ | ❌ | ✅ | FK a Roles/Sucursales |
 | **Sucursales** | ❌ | ❌ | ✅ | Activar/Desactivar |
-| **Dashboard** | N/A | N/A | N/A | Client-side Data Processing, KPIs reales |
-
-### 📝 Plantillas Base (Requieren implementación)
-- **servicios_tecnicos.html** - Órdenes de servicio
+| **Dashboard** | N/A | N/A | N/A | Client-side Data Processing, KPIs reales, últimas ventas y servicios |
 
 ## ✨ Funcionalidades Principales
 
@@ -175,6 +184,29 @@ searchClientes()             // Debounce 300ms en nombre, CI, celular, email
 searchProductos()            // Debounce 300ms en nombre y código de barras
 ```
 
+#### servicios_tecnicos.js (Sistema Completo de Servicios Técnicos)
+```javascript
+// Funciones principales
+loadServicios(page)          // Carga paginada de servicios
+mostrarNuevoServicio()       // Cambia a vista de nuevo servicio
+mostrarEditarServicio(id)    // Cambia a vista de edición
+verDetalle(id)               // Modal con detalle completo
+abrirModalAnular(id)         // Modal de confirmación de anulación
+confirmarAnulacion()         // Anular servicio técnico
+
+// Búsqueda Server-Side
+searchClientes(term)         // Debounce 300ms en clientes
+searchCategorias(term)       // Debounce 300ms en categorías tipo servicio
+
+// Gestión de Imágenes
+handleImagePreview(event, num)  // Preview de hasta 3 fotos
+guardarServicio()            // POST/PATCH con FormData (imágenes)
+
+// Modales auxiliares
+abrirModalNuevoCliente()     // Crear cliente desde el formulario
+guardarNuevoCliente()        // Guardar y auto-seleccionar cliente
+```
+
 #### dashboard.js (Client-side Data Processing)
 ```javascript
 // Fetch Optimizado
@@ -185,9 +217,37 @@ processAndRenderKPIs()       // Cálculos client-side (suma, filtrado, promedio)
 // - Ventas del mes (filtrado por fecha en cliente)
 // - Total ingresos (reduce de ventas válidas)
 // - Productos/Clientes/Servicios (count de API)
+
+// Tablas de Datos Recientes
+renderLatestSales()          // Top 5 ventas con estado y tipo pago
+renderLatestServices()       // Top 5 servicios técnicos con estado
 ```
 
 ## ✨ Características Recientes
+
+### Módulo de Servicios Técnicos Completo
+- **Vista de Lista**: Tabla paginada con columnas Estado, Cliente, Dispositivo, Categoría
+- **Nuevo Servicio - Flujo por Vistas**:
+  1. Búsqueda de Cliente (búsqueda server-side + opción crear nuevo)
+  2. Búsqueda de Categoría tipo servicio (búsqueda server-side)
+  3. Detalles del dispositivo (marca, modelo, problema)
+  4. Upload de hasta 3 fotos con preview
+  5. Costo estimado
+  6. Resumen lateral dinámico
+- **Auto-generación de Número**: `numero_servicio` se genera automáticamente en backend (ST-YYYY-XXXXX)
+- **Estados del Servicio**: En Reparación → Para Retirar → Entregado
+- **Sistema de Anulación**:
+  - Botón "Anular" visible para roles 1, 2, 3, y 5 (NO para Cajero puro)
+  - Modal de confirmación simple (sin motivo obligatorio)
+  - Servicios anulados se muestran con badge rojo y tachados
+- **RBAC**: Cada sucursal ve solo sus servicios (Super Admin ve todos)
+- **Galería de Fotos**: Visualización de hasta 3 fotos en modal de detalle
+- **Sistema de Impresión de Órdenes**:
+  - Botón de impresión en cada servicio de la tabla
+  - Modal de selección de formato (Ticket 80mm o Boleta A4)
+  - Vista previa antes de imprimir
+  - Incluye información del dispositivo, cliente, problema y costo estimado
+  - Marca visual "SERVICIO ANULADO" en servicios cancelados
 
 ### Módulo de Ventas Completo
 - **Vista de Lista**: Tabla paginada con columnas Tipo Pago y Estado
@@ -207,6 +267,12 @@ processAndRenderKPIs()       // Cálculos client-side (suma, filtrado, promedio)
   - Restauración automática de inventario al anular
   - Ventas anuladas se muestran tachadas y grises
   - Info de anulación visible en modal de detalle
+- **Sistema de Impresión de Boletas**:
+  - Botón de impresión en cada venta de la tabla
+  - Modal de selección de formato (Ticket 80mm o Boleta A4)
+  - Vista previa antes de imprimir
+  - Incluye productos, totales, cliente y método de pago
+  - Marca visual "ANULADA" en ventas canceladas
 
 ### Dashboard con Client-Side Processing
 - **Fetch Paralelo**: Usa `Promise.all` para cargar datos simultáneamente
@@ -217,7 +283,9 @@ processAndRenderKPIs()       // Cálculos client-side (suma, filtrado, promedio)
   - Filtra ventas anuladas
   - Calcula totales con `reduce`
   - Agrupa por fecha para futuras gráficas
-- **Últimas Ventas**: Top 5 con indicador de estado
+- **Tablas de Datos Recientes**:
+  - **Últimas Ventas**: Top 5 con indicador de estado y tipo de pago
+  - **Últimos Servicios Técnicos**: Top 5 con estado y detalles del dispositivo
 
 ### Paginación Universal
 - Todas las tablas muestran **10 filas por página**
@@ -298,18 +366,23 @@ async function deleteItem(id) { ... }
 
 ## 🎯 Próximas Implementaciones
 
-- [ ] Módulo de Servicios Técnicos con upload de fotos
 - [ ] Gráficos visuales en Dashboard (Chart.js)
 - [ ] Reportes y exportación (PDF/Excel)
-- [ ] Filtros avanzados por fecha en ventas
+- [ ] Filtros avanzados por fecha en ventas y servicios
+- [ ] Sistema de notificaciones push
+- [ ] Gestión de garantías de productos
 
 ## ✅ Implementado Recientemente
 
+- [x] **Sistema de Impresión de Boletas de Venta**: Formatos Ticket 80mm y Boleta A4 con CSS adaptativo
+- [x] **Sistema de Impresión de Órdenes de Servicio**: Formatos Ticket 80mm y Boleta A4 con CSS adaptativo
+- [x] **Dirección en Sucursales**: Campo dirección agregado y mostrado automáticamente en boletas
+- [x] **RBAC Actualizado en Servicios**: Técnicos y Técnico+Cajero pueden anular servicios
+- [x] **Módulo de Servicios Técnicos Completo**: CRUD, búsqueda, upload de 3 fotos, anulación, RBAC
+- [x] **Dashboard Mejorado**: Tabla de últimos servicios técnicos + últimas ventas
 - [x] **Módulo de Ventas Completo**: Carrito, búsqueda, validación de stock, anulación
 - [x] **Dashboard con Datos Reales**: Client-side processing, KPIs calculados
-- [x] **Sistema de Anulación**: Con restauración automática de inventario
-- [x] **RBAC en Ventas**: Cada sucursal ve solo sus ventas (Super Admin ve todas)
-- [x] **RBAC en Inventario**: Sucursal auto-asignada y bloqueada para roles no-admin
-- [x] **Búsqueda Server-Side en Productos**: Dropdown de categorías con búsqueda
-- [x] **Búsqueda Server-Side en Inventario**: Dropdown de productos con búsqueda
-- [x] **Serializers Enriquecidos**: Backend envía nombres legibles (nombre_categoria, nombre_producto, nombre_sucursal)
+- [x] **Sistema de Anulación**: Con restauración automática de inventario (ventas)
+- [x] **RBAC Completo**: Implementado en Ventas, Servicios, Inventario, Usuarios
+- [x] **Búsqueda Server-Side Universal**: Productos, Clientes, Categorías, Inventario
+- [x] **Serializers Enriquecidos**: Backend envía nombres legibles en todos los módulos

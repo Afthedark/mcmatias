@@ -1,0 +1,395 @@
+/* =========================================
+   BOLETA DE VENTA - ESTILOS ADAPTATIVOS
+   Soporta: Ticket 80mm y Boleta A4
+   ========================================= */
+
+/* =========================================
+   ESTILOS GENERALES
+   ========================================= */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background: #f5f5f5;
+}
+
+/* =========================================
+   FORMATO TICKET (80mm)
+   ========================================= */
+.boleta-ticket {
+    width: 74mm;
+    padding: 3mm;
+    font-size: 9pt;
+    line-height: 1.3;
+    background: white;
+    margin: 10px auto;
+}
+
+.ticket-header {
+    text-align: center;
+    margin-bottom: 3mm;
+}
+
+.ticket-header .negocio {
+    font-size: 12pt;
+    font-weight: bold;
+    margin: 0;
+}
+
+.ticket-header .sucursal {
+    font-size: 8pt;
+    margin-top: 1mm;
+}
+
+.ticket-header .direccion {
+    font-size: 7pt;
+    margin-top: 1mm;
+    color: #666;
+}
+
+.ticket-divider {
+    border-top: 1px dashed #333;
+    margin: 3mm 0;
+}
+
+.ticket-info {
+    font-size: 8pt;
+    margin-bottom: 2mm;
+}
+
+.ticket-info div {
+    margin-bottom: 1mm;
+}
+
+.ticket-productos {
+    width: 100%;
+    font-size: 8pt;
+    border-collapse: collapse;
+}
+
+.ticket-productos td {
+    padding: 1mm 0;
+}
+
+.ticket-productos td:last-child {
+    text-align: right;
+}
+
+.ticket-total {
+    font-size: 10pt;
+    font-weight: bold;
+    text-align: right;
+    margin-top: 2mm;
+}
+
+.ticket-metodo {
+    font-size: 8pt;
+    text-align: right;
+}
+
+.ticket-footer {
+    margin-top: 3mm;
+    font-size: 7pt;
+    text-align: center;
+}
+
+.ticket-footer .gracias {
+    margin-top: 2mm;
+    font-weight: bold;
+}
+
+/* =========================================
+   FORMATO BOLETA (A4)
+   ========================================= */
+.boleta-a4 {
+    width: 170mm;
+    padding: 15mm;
+    font-size: 11pt;
+    background: white;
+    margin: 20px auto;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.boleta-header {
+    text-align: center;
+    margin-bottom: 10mm;
+}
+
+.boleta-header .negocio {
+    font-size: 18pt;
+    font-weight: bold;
+    margin: 0;
+    color: #2c3e50;
+}
+
+.boleta-header .sucursal {
+    font-size: 12pt;
+    margin: 2mm 0;
+    color: #34495e;
+}
+
+.boleta-header .direccion {
+    font-size: 10pt;
+    color: #666;
+}
+
+.separador {
+    border: none;
+    border-top: 1px solid #333;
+    margin: 5mm 0;
+}
+
+.boleta-datos {
+    margin-bottom: 5mm;
+}
+
+.boleta-datos .numero-boleta {
+    font-size: 11pt;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.boleta-datos .fecha {
+    font-size: 10pt;
+    color: #555;
+}
+
+.cliente-datos {
+    margin-bottom: 5mm;
+    font-size: 10pt;
+}
+
+.cliente-datos div {
+    margin-bottom: 2mm;
+}
+
+.boleta-a4 h3 {
+    text-align: center;
+    font-size: 12pt;
+    margin: 5mm 0;
+    color: #2c3e50;
+}
+
+.tabla-productos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 5mm;
+}
+
+.tabla-productos th {
+    background-color: #f0f0f0;
+    padding: 3mm;
+    text-align: left;
+    border-bottom: 2px solid #333;
+    font-weight: bold;
+}
+
+.tabla-productos td {
+    padding: 2mm 3mm;
+    border-bottom: 1px solid #ddd;
+}
+
+.tabla-productos td:nth-child(2),
+.tabla-productos td:nth-child(3),
+.tabla-productos td:nth-child(4),
+.tabla-productos th:nth-child(2),
+.tabla-productos th:nth-child(3),
+.tabla-productos th:nth-child(4) {
+    text-align: right;
+}
+
+.boleta-totales {
+    text-align: right;
+    margin-bottom: 5mm;
+}
+
+.total-principal {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-bottom: 2mm;
+    color: #2c3e50;
+}
+
+.metodo-pago {
+    font-size: 10pt;
+    color: #555;
+}
+
+.boleta-footer {
+    text-align: center;
+    margin-top: 10mm;
+    font-size: 9pt;
+}
+
+.boleta-footer .mensaje-final {
+    font-size: 11pt;
+    font-weight: bold;
+    margin: 3mm 0;
+    color: #27ae60;
+}
+
+.boleta-footer .politicas {
+    font-size: 8pt;
+    color: #666;
+    margin-top: 2mm;
+}
+
+/* =========================================
+   MARCA DE ANULACIÓN
+   ========================================= */
+.anulada-marca {
+    background: rgba(255, 0, 0, 0.1);
+    border: 2px dashed #cc0000;
+    padding: 3mm;
+    margin-top: 3mm;
+    text-align: center;
+}
+
+.anulada-texto {
+    color: #cc0000;
+    font-weight: bold;
+    font-size: 12pt;
+}
+
+.anulada-motivo {
+    font-size: 8pt;
+    color: #666;
+    margin-top: 2mm;
+}
+
+.boleta-a4 .anulada-overlay {
+    position: relative;
+    margin-top: 10mm;
+}
+
+.boleta-a4 .anulada-marca {
+    padding: 5mm;
+}
+
+.boleta-a4 .anulada-texto {
+    font-size: 14pt;
+}
+
+.boleta-a4 .anulada-fecha {
+    font-size: 9pt;
+    color: #999;
+    margin-top: 2mm;
+}
+
+/* =========================================
+   MEDIA QUERIES PARA IMPRESIÓN
+   ========================================= */
+
+/* Estilos base de impresión para ambos formatos */
+@media print {
+    body {
+        background: white;
+        margin: 0;
+        padding: 0;
+    }
+
+    body * {
+        visibility: hidden;
+    }
+
+    .boleta-ticket,
+    .boleta-ticket *,
+    .boleta-a4,
+    .boleta-a4 * {
+        visibility: visible;
+    }
+
+    /* Quitar sombras y estilos de vista previa */
+    .boleta-a4 {
+        box-shadow: none;
+        margin: 0;
+    }
+
+    .boleta-ticket {
+        margin: 0;
+    }
+
+    /* Prevenir saltos de página en elementos importantes */
+    table,
+    .cliente-datos,
+    .ticket-info,
+    .boleta-totales {
+        page-break-inside: avoid;
+    }
+
+    /* Asegurar que los separadores se impriman */
+    .ticket-divider,
+    .separador {
+        border-color: #000 !important;
+    }
+}
+
+/* Configuración específica para TICKET 80mm */
+@media print {
+    @page {
+        size: 80mm auto;
+        margin: 2mm;
+    }
+
+    .boleta-a4 {
+        display: none !important;
+    }
+
+    .boleta-ticket {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 76mm;
+        display: block !important;
+    }
+}
+
+/* Override para BOLETA A4 cuando el navegador detecta tamaño grande */
+@media print and (min-width: 190mm) {
+    @page {
+        size: A4;
+        margin: 10mm;
+    }
+
+    .boleta-ticket {
+        display: none !important;
+    }
+
+    .boleta-a4 {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 190mm;
+        display: block !important;
+    }
+}
+
+/* Control adicional basado en clase del body */
+body.formato-ticket .boleta-a4 {
+    display: none !important;
+}
+
+body.formato-ticket .boleta-ticket {
+    display: block !important;
+}
+
+body.formato-a4 .boleta-ticket {
+    display: none !important;
+}
+
+body.formato-a4 .boleta-a4 {
+    display: block !important;
+}
+
+/* =========================================
+   VISTA PREVIA EN PANTALLA
+   ========================================= */
+@media screen {
+    .preview-container {
+        background: white;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin: 20px auto;
+        max-width: fit-content;
+    }
+}
