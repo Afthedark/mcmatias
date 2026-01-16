@@ -83,7 +83,7 @@ async function loadProductos(page = null) {
     } catch (error) {
         console.error('Error loading productos:', error);
         document.getElementById('tableProductos').innerHTML =
-            '<tr><td colspan="2" class="text-center text-danger">Error al cargar datos</td></tr>';
+            '<tr><td colspan="3" class="text-center text-danger">Error al cargar datos</td></tr>';
     }
 }
 
@@ -114,7 +114,7 @@ async function loadServicios(page = null) {
     } catch (error) {
         console.error('Error loading servicios:', error);
         document.getElementById('tableServicios').innerHTML =
-            '<tr><td colspan="2" class="text-center text-danger">Error al cargar datos</td></tr>';
+            '<tr><td colspan="3" class="text-center text-danger">Error al cargar datos</td></tr>';
     }
 }
 
@@ -125,23 +125,36 @@ function renderTableProductos() {
     const tbody = document.getElementById('tableProductos');
 
     if (productosState.data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="2" class="text-center">No hay categorías de productos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center">No hay categorías de productos</td></tr>';
         return;
     }
 
-    tbody.innerHTML = productosState.data.map(item => `
-        <tr>
-            <td>${item.nombre_categoria}</td>
-            <td>
-                <button class="btn btn-sm btn-info me-1" onclick="openEditModal(${item.id_categoria}, 'producto')" title="Editar">
-                    <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteCategoria(${item.id_categoria}, 'producto')" title="Eliminar">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = productosState.data.map(item => {
+        const estadoClass = item.activo ? 'success' : 'secondary';
+        const estadoTexto = item.activo ? 'Activa' : 'Inactiva';
+        const rowClass = item.activo ? '' : 'table-secondary text-decoration-line-through';
+
+        return `
+            <tr class="${rowClass}">
+                <td>${item.nombre_categoria}</td>
+                <td><span class="badge bg-${estadoClass}">${estadoTexto}</span></td>
+                <td>
+                    ${item.activo ? `
+                        <button class="btn btn-sm btn-info me-1" onclick="openEditModal(${item.id_categoria}, 'producto')" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="desactivarCategoria(${item.id_categoria}, 'producto')" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    ` : `
+                        <button class="btn btn-sm btn-success" onclick="reactivarCategoria(${item.id_categoria}, 'producto')" title="Reactivar">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reactivar
+                        </button>
+                    `}
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 /**
@@ -151,23 +164,36 @@ function renderTableServicios() {
     const tbody = document.getElementById('tableServicios');
 
     if (serviciosState.data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="2" class="text-center">No hay categorías de servicios</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center">No hay categorías de servicios</td></tr>';
         return;
     }
 
-    tbody.innerHTML = serviciosState.data.map(item => `
-        <tr>
-            <td>${item.nombre_categoria}</td>
-            <td>
-                <button class="btn btn-sm btn-info me-1" onclick="openEditModal(${item.id_categoria}, 'servicio')" title="Editar">
-                    <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteCategoria(${item.id_categoria}, 'servicio')" title="Eliminar">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = serviciosState.data.map(item => {
+        const estadoClass = item.activo ? 'success' : 'secondary';
+        const estadoTexto = item.activo ? 'Activa' : 'Inactiva';
+        const rowClass = item.activo ? '' : 'table-secondary text-decoration-line-through';
+
+        return `
+            <tr class="${rowClass}">
+                <td>${item.nombre_categoria}</td>
+                <td><span class="badge bg-${estadoClass}">${estadoTexto}</span></td>
+                <td>
+                    ${item.activo ? `
+                        <button class="btn btn-sm btn-info me-1" onclick="openEditModal(${item.id_categoria}, 'servicio')" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="desactivarCategoria(${item.id_categoria}, 'servicio')" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    ` : `
+                        <button class="btn btn-sm btn-success" onclick="reactivarCategoria(${item.id_categoria}, 'servicio')" title="Reactivar">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reactivar
+                        </button>
+                    `}
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 /**
@@ -325,24 +351,56 @@ async function saveCategoria() {
 }
 
 /**
- * Delete categoria
+ * Soft delete (desactivar) categoria
  */
-async function deleteCategoria(id, tipo) {
-    if (!confirmDelete('¿Está seguro de eliminar esta categoría?')) return;
+async function desactivarCategoria(id, tipo) {
+    if (!confirm('¿Estás seguro de eliminar esta categoría?')) {
+        return;
+    }
 
     try {
+        showLoader();
         await apiDelete(`/categorias/${id}/`);
-        showToast('Categoría eliminada', 'success');
+        showToast('Categoría eliminada correctamente', 'success');
 
-        // Reload appropriate table
+        // Reload
         if (tipo === 'producto') {
-            loadProductos();
+            await loadProductos();
         } else {
-            loadServicios();
+            await loadServicios();
         }
-
     } catch (error) {
-        console.error('Error deleting:', error);
-        showToast('Error al eliminar categoría', 'danger');
+        console.error('Error deactivating category:', error);
+        const errorMsg = error.response?.data?.error || 'Error al eliminar categoría';
+        showToast(errorMsg, 'danger');
+    } finally {
+        hideLoader();
+    }
+}
+
+/**
+ * Reactivate an inactive category
+ */
+async function reactivarCategoria(id, tipo) {
+    if (!confirm('¿Deseas reactivar esta categoría?')) {
+        return;
+    }
+
+    try {
+        showLoader();
+        await apiPatch(`/categorias/${id}/reactivar/`, {});
+        showToast('Categoría reactivada correctamente', 'success');
+
+        // Reload
+        if (tipo === 'producto') {
+            await loadProductos();
+        } else {
+            await loadServicios();
+        }
+    } catch (error) {
+        console.error('Error reactivating category:', error);
+        showToast('Error al reactivar categoría', 'danger');
+    } finally {
+        hideLoader();
     }
 }

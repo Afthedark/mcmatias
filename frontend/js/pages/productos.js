@@ -153,27 +153,40 @@ function renderProductosTable() {
     const tbody = document.getElementById('productosTable');
 
     if (productos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay productos registrados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay productos registrados</td></tr>';
         return;
     }
 
-    tbody.innerHTML = productos.map(producto => `
-        <tr>
-            <td><img src="${getImageUrl(producto.foto_producto)}" class="product-img" alt="${producto.nombre_producto}"></td>
-            <td>${producto.nombre_producto}</td>
-            <td>${producto.nombre_categoria || '-'}</td>
-            <td>${producto.codigo_barras || '-'}</td>
-            <td>${formatCurrency(producto.precio)}</td>
-            <td class="table-actions">
-                <button class="btn btn-sm btn-info" onclick="openEditModal(${producto.id_producto})" title="Editar">
-                    <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteProducto(${producto.id_producto})" title="Eliminar">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = productos.map(producto => {
+        const estadoClass = producto.activo ? 'success' : 'secondary';
+        const estadoTexto = producto.activo ? 'Activo' : 'Inactivo';
+        const rowClass = producto.activo ? '' : 'table-secondary text-decoration-line-through';
+
+        return `
+            <tr class="${rowClass}">
+                <td><img src="${getImageUrl(producto.foto_producto)}" class="product-img" alt="${producto.nombre_producto}"></td>
+                <td>${producto.nombre_producto}</td>
+                <td>${producto.nombre_categoria || '-'}</td>
+                <td>${producto.codigo_barras || '-'}</td>
+                <td>${formatCurrency(producto.precio)}</td>
+                <td><span class="badge bg-${estadoClass}">${estadoTexto}</span></td>
+                <td class="table-actions">
+                    ${producto.activo ? `
+                        <button class="btn btn-sm btn-info me-1" onclick="openEditModal(${producto.id_producto})" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProducto(${producto.id_producto})" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    ` : `
+                        <button class="btn btn-sm btn-success" onclick="reactivarProducto(${producto.id_producto})" title="Reactivar">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reactivar
+                        </button>
+                    `}
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 /**
@@ -313,10 +326,10 @@ async function saveProducto() {
 }
 
 /**
- * Delete product
+ * Delete product (soft delete with inventory validation)
  */
 async function deleteProducto(id) {
-    if (!confirmDelete('¿Estás seguro de eliminar este producto?')) {
+    if (!confirm('¿Estás seguro de eliminar este producto?')) {
         return;
     }
 
@@ -334,7 +347,52 @@ async function deleteProducto(id) {
         }
     } catch (error) {
         console.error('Error deleting product:', error);
-        showToast('Error al eliminar producto', 'danger');
+
+        // Manejar error detallado de stock
+        if (error.response && error.response.data) {
+            const errorData = error.response.data;
+
+            if (errorData.stock_total && errorData.detalle_sucursales) {
+                // Construir mensaje detallado
+                let mensaje = `❌ ${errorData.error}\n\n`;
+                mensaje += `📦 ${errorData.razon}\n`;
+                mensaje += `Stock total: ${errorData.stock_total} unidades\n\n`;
+                mensaje += `📍 Distribución por sucursal:\n`;
+
+                errorData.detalle_sucursales.forEach(detalle => {
+                    mensaje += `   • ${detalle.sucursal}: ${detalle.stock} unidades\n`;
+                });
+
+                mensaje += `\n💡 ${errorData.sugerencia}`;
+
+                alert(mensaje);
+            } else {
+                showToast(errorData.error || 'Error al eliminar producto', 'danger');
+            }
+        } else {
+            showToast('Error al eliminar producto', 'danger');
+        }
+    } finally {
+        hideLoader();
+    }
+}
+
+/**
+ * Reactivate inactive product
+ */
+async function reactivarProducto(id) {
+    if (!confirm('¿Deseas reactivar este producto?')) {
+        return;
+    }
+
+    try {
+        showLoader();
+        await apiPatch(`/productos/${id}/reactivar/`, {});
+        showToast('Producto reactivado correctamente', 'success');
+        await loadProductos(currentPage);
+    } catch (error) {
+        console.error('Error reactivating product:', error);
+        showToast('Error al reactivar producto', 'danger');
     } finally {
         hideLoader();
     }

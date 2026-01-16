@@ -50,11 +50,12 @@ class ClienteSerializer(serializers.ModelSerializer):
 
 class ProductoSerializer(serializers.ModelSerializer):
     nombre_categoria = serializers.CharField(source='id_categoria.nombre_categoria', read_only=True)
+    activo = serializers.BooleanField(default=True, required=False)
 
     class Meta:
         model = Producto
         fields = ['id_producto', 'nombre_producto', 'descripcion', 'codigo_barras', 
-                  'id_categoria', 'nombre_categoria', 'precio', 'foto_producto']
+                  'id_categoria', 'nombre_categoria', 'precio', 'foto_producto', 'activo']
 
 class InventarioSerializer(serializers.ModelSerializer):
     nombre_producto = serializers.CharField(source='id_producto.nombre_producto', read_only=True)

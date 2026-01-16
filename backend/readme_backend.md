@@ -101,6 +101,7 @@ Estos datos son visibles para todos los usuarios, independientemente de su rol o
 #### 🔒 **Aislados (Por Sucursal)**
 Cada usuario solo ve/modifica datos de su propia sucursal (excepto Super Admin que ve todo):
 - **Usuarios** - Empleados por sucursal
+- **Sucursales** - Cada usuario solo ve su sucursal asignada
 - **Inventario** - Stock por sucursal
 - **Ventas** - Ventas realizadas en cada sucursal
 - **Servicios Técnicos** - Órdenes de servicio por sucursal
@@ -165,7 +166,7 @@ Todos los ViewSets soportan:
 | Endpoint | Tipo | Búsqueda | Campos de Búsqueda | RBAC |
 |----------|------|----------|-------------------|------|
 | `/api/roles/` | Config | ❌ | - | 🌍 Global |
-| `/api/sucursales/` | Config | ❌ | - | 🌍 Global |
+| `/api/sucursales/` | Config | ❌ | - | 🔒 **Solo MI sucursal** |
 | `/api/categorias/` | 🌍 Global | 🔍 | `nombre_categoria`, `tipo` | Visible para todos |
 | `/api/categorias/?tipo=producto` | 🌍 Global | 🔍 | + Filtro por tipo | Visible para todos |
 | `/api/usuarios/` | 🔒 Aislado | ❌ | - | **Solo users de MI sucursal** |

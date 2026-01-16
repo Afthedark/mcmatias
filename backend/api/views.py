@@ -22,8 +22,20 @@ class RolViewSet(viewsets.ModelViewSet):
     serializer_class = RolSerializer
 
 class SucursalViewSet(viewsets.ModelViewSet):
+    """
+    🔒 AISLADO: Cada usuario solo ve su sucursal asignada
+    Super Admin (1) ve todas las sucursales
+    """
     queryset = Sucursal.objects.all().order_by('pk')
     serializer_class = SucursalSerializer
+    
+    def get_queryset(self):
+        user = self.request.user
+        # Super Admin ve todo
+        if user.id_rol.numero_rol == 1:
+            return Sucursal.objects.all().order_by('pk')
+        # Otros solo ven su sucursal
+        return Sucursal.objects.filter(pk=user.id_sucursal.pk).order_by('pk')
 
 class CategoriaViewSet(viewsets.ModelViewSet):
     """
@@ -37,15 +49,53 @@ class CategoriaViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         """
-        Opcionalmente filtra por tipo usando el parámetro ?tipo=producto o ?tipo=servicio
+        Filtra categorías activas por defecto.
+        - ?tipo=producto o ?tipo=servicio: filtra por tipo
+        - ?incluir_inactivas=true: incluye categorías inactivas
         """
         queryset = super().get_queryset()
-        tipo = self.request.query_params.get('tipo', None)
         
+        # Filtrar solo activas por defecto
+        incluir_inactivas = self.request.query_params.get('incluir_inactivas', 'false').lower() == 'true'
+        if not incluir_inactivas:
+            queryset = queryset.filter(activo=True)
+        
+        # Filtrar por tipo (producto/servicio)
+        tipo = self.request.query_params.get('tipo', None)
         if tipo:
             queryset = queryset.filter(tipo=tipo)
         
         return queryset
+    
+    def destroy(self, request, *args, **kwargs):
+        """
+        Soft delete: marca la categoría como inactiva sin validaciones.
+        """
+        categoria = self.get_object()
+        
+        # Soft delete directo
+        categoria.activo = False
+        categoria.save()
+        
+        return Response({'mensaje': 'Categoría desactivada correctamente'}, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['patch'])
+    def reactivar(self, request, pk=None):
+        """
+        Reactivar una categoría inactiva
+        """
+        categoria = self.get_object()
+        
+        if categoria.activo:
+            return Response(
+                {'error': 'La categoría ya está activa'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        categoria.activo = True
+        categoria.save()
+        
+        return Response({'mensaje': 'Categoría reactivada correctamente'}, status=status.HTTP_200_OK)
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     """
@@ -66,12 +116,62 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 class ClienteViewSet(viewsets.ModelViewSet):
     """
     🌍 GLOBAL: Todos los clientes son compartidos entre sucursales
+    Implementa soft delete (borrado lógico)
     """
     queryset = Cliente.objects.all().order_by('pk')
     serializer_class = ClienteSerializer
     # Búsqueda por nombre, CI, celular y email
     filter_backends = [filters.SearchFilter]
     search_fields = ['nombre_apellido', 'cedula_identidad', 'celular', 'correo_electronico']
+    
+    def get_queryset(self):
+        """
+        Por defecto, solo muestra clientes activos.
+        Usa ?incluir_inactivos=true para ver todos.
+        """
+        queryset = Cliente.objects.all().order_by('pk')
+        
+        # Filtrar solo activos por defecto
+        incluir_inactivos = self.request.query_params.get('incluir_inactivos', 'false')
+        if incluir_inactivos.lower() != 'true':
+            queryset = queryset.filter(activo=True)
+        
+        return queryset
+    
+    def destroy(self, request, *args, **kwargs):
+        """
+        Sobrescribe DELETE para hacer soft delete (marcar como inactivo).
+        """
+        cliente = self.get_object()
+        cliente.activo = False
+        cliente.save()
+        
+        return Response(
+            {'message': f'Cliente "{cliente.nombre_apellido}" marcado como inactivo'},
+            status=status.HTTP_200_OK
+        )
+    
+    @action(detail=True, methods=['patch'])
+    def reactivar(self, request, pk=None):
+        """
+        Endpoint custom para reactivar un cliente inactivo.
+        PATCH /api/clientes/{id}/reactivar/
+        """
+        cliente = self.get_object()
+        
+        if cliente.activo:
+            return Response(
+                {'message': 'El cliente ya está activo'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        cliente.activo = True
+        cliente.save()
+        
+        return Response(
+            {'message': f'Cliente "{cliente.nombre_apellido}" reactivado correctamente'},
+            status=status.HTTP_200_OK
+        )
 
 class ProductoViewSet(viewsets.ModelViewSet):
     """
@@ -81,6 +181,82 @@ class ProductoViewSet(viewsets.ModelViewSet):
     serializer_class = ProductoSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['nombre_producto', 'codigo_barras', 'descripcion']
+    
+    def get_queryset(self):
+        """
+        Filtra productos activos por defecto.
+        - ?incluir_inactivos=true: incluye productos inactivos
+        """
+        queryset = super().get_queryset()
+        
+        incluir_inactivos = self.request.query_params.get('incluir_inactivos', 'false').lower() == 'true'
+        if not incluir_inactivos:
+            queryset = queryset.filter(activo=True)
+        
+        return queryset
+    
+    def destroy(self, request, *args, **kwargs):
+        """
+        Soft delete con validación de inventario.
+        Solo permite eliminar si el stock es 0 en TODAS las sucursales.
+        Al eliminar: borra inventario físicamente + soft delete producto.
+        """
+        producto = self.get_object()
+        
+        # Verificar stock en todas las sucursales
+        inventarios = Inventario.objects.filter(id_producto=producto)
+        
+        stock_total = sum([inv.cantidad for inv in inventarios])
+        
+        if stock_total > 0:
+            # Construir detalles por sucursal
+            detalles_por_sucursal = []
+            for inv in inventarios:
+                if inv.cantidad > 0:
+                    detalles_por_sucursal.append({
+                        'sucursal': inv.id_sucursal.nombre,
+                        'stock': inv.cantidad
+                    })
+            
+            return Response({
+                'error': f'No se puede eliminar el producto "{producto.nombre_producto}"',
+                'razon': 'El producto aún tiene stock en inventario',
+                'stock_total': stock_total,
+                'detalle_sucursales': detalles_por_sucursal,
+                'sugerencia': 'Reduce el stock a 0 en todas las sucursales antes de eliminar'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Eliminar registros de inventario físicamente (stock ya es 0)
+        inventarios.delete()
+        
+        # Soft delete del producto
+        producto.activo = False
+        producto.save()
+        
+        return Response({
+            'mensaje': 'Producto eliminado correctamente'
+        }, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['patch'])
+    def reactivar(self, request, pk=None):
+        """
+        Reactivar un producto inactivo.
+        PATCH /api/productos/{id}/reactivar/
+        """
+        producto = self.get_object()
+        
+        if producto.activo:
+            return Response(
+                {'error': 'El producto ya está activo'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        producto.activo = True
+        producto.save()
+        
+        return Response({
+            'mensaje': 'Producto reactivado correctamente'
+        }, status=status.HTTP_200_OK)
 
 class InventarioViewSet(viewsets.ModelViewSet):
     """

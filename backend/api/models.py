@@ -37,6 +37,7 @@ class Categoria(models.Model):
     id_categoria = models.AutoField(primary_key=True)
     nombre_categoria = models.CharField(max_length=100)
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
+    activo = models.BooleanField(default=True)
 
     class Meta:
         db_table = 'categorias'
@@ -149,6 +150,7 @@ class Cliente(models.Model):
     correo_electronico = models.CharField(max_length=100, blank=True, null=True) 
     direccion = models.TextField(blank=True, null=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
+    activo = models.BooleanField(default=True)
 
     class Meta:
         db_table = 'clientes'
@@ -166,6 +168,7 @@ class Producto(models.Model):
     id_categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, db_column='id_categoria')
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     foto_producto = models.ImageField(upload_to='uploads/images/', blank=True, null=True)
+    activo = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -52,26 +52,39 @@ function renderClientesTable() {
     const tbody = document.getElementById('clientesTable');
 
     if (clientes.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay clientes registrados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay clientes registrados</td></tr>';
         return;
     }
 
-    tbody.innerHTML = clientes.map(cliente => `
-        <tr>
-            <td>${cliente.nombre_apellido}</td>
-            <td>${cliente.cedula_identidad || '-'}</td>
-            <td>${cliente.celular || '-'}</td>
-            <td>${cliente.correo_electronico || '-'}</td>
-            <td class="table-actions">
-                <button class="btn btn-sm btn-info" onclick="openEditModal(${cliente.id_cliente})" title="Editar">
-                    <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteCliente(${cliente.id_cliente})" title="Eliminar">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = clientes.map((cliente) => {
+        const estadoClass = cliente.activo ? 'success' : 'secondary';
+        const estadoTexto = cliente.activo ? 'Activo' : 'Inactivo';
+        const rowClass = cliente.activo ? '' : 'table-secondary text-decoration-line-through';
+
+        return `
+            <tr class="${rowClass}">
+                <td>${cliente.nombre_apellido || 'N/A'}</td>
+                <td>${cliente.cedula_identidad || 'N/A'}</td>
+                <td>${cliente.celular || 'N/A'}</td>
+                <td>${cliente.correo_electronico || 'N/A'}</td>
+                <td><span class="badge bg-${estadoClass}">${estadoTexto}</span></td>
+                <td>
+                    ${cliente.activo ? `
+                        <button class="btn btn-sm btn-info me-1" onclick="openEditModal(${cliente.id_cliente})" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCliente(${cliente.id_cliente})" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    ` : `
+                        <button class="btn btn-sm btn-success" onclick="reactivarCliente(${cliente.id_cliente})" title="Reactivar">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reactivar
+                        </button>
+                    `}
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 /**
@@ -189,7 +202,7 @@ async function saveCliente() {
 }
 
 /**
- * Delete client
+ * Delete client (soft delete - marks as inactive)
  */
 async function deleteCliente(id) {
     if (!confirmDelete('¿Estás seguro de eliminar este cliente?')) {
@@ -201,16 +214,33 @@ async function deleteCliente(id) {
         await apiDelete(`/clientes/${id}/`);
         showToast('Cliente eliminado correctamente', 'success');
 
-        // Reload current page or go back if it's empty
-        const newCount = clientes.length - 1;
-        if (newCount === 0 && currentPage > 1) {
-            await loadClientes(currentPage - 1);
-        } else {
-            await loadClientes(currentPage);
-        }
+        // Reload current page
+        await loadClientes(currentPage);
     } catch (error) {
-        console.error('Error deleting client:', error);
+        console.error('Error deactivating client:', error);
         showToast('Error al eliminar cliente', 'danger');
+    } finally {
+        hideLoader();
+    }
+}
+
+/**
+ * Reactivate an inactive client
+ */
+async function reactivarCliente(id) {
+    if (!confirm('¿Deseas reactivar este cliente?')) {
+        return;
+    }
+
+    try {
+        showLoader();
+        await apiPatch(`/clientes/${id}/reactivar/`, {});
+        showToast('Cliente reactivado correctamente', 'success');
+
+        await loadClientes(currentPage);
+    } catch (error) {
+        console.error('Error reactivating client:', error);
+        showToast('Error al reactivar cliente', 'danger');
     } finally {
         hideLoader();
     }
