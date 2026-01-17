@@ -169,16 +169,19 @@ Todos los ViewSets soportan:
 | `/api/sucursales/` | Config | ❌ | - | 🔒 **Solo MI sucursal** |
 | `/api/categorias/` | 🌍 Global | 🔍 | `nombre_categoria`, `tipo` | Visible para todos |
 | `/api/categorias/?tipo=producto` | 🌍 Global | 🔍 | + Filtro por tipo | Visible para todos |
+| `/api/categorias/{id}/reactivar/` | Custom Action | ❌ | - | Reactivar categoría inactiva |
 | `/api/usuarios/` | 🔒 Aislado | ❌ | - | **Solo users de MI sucursal** |
 | `/api/clientes/` | 🌍 Global | 🔍 | `nombre_apellido`, `cedula_identidad`, `celular`, `correo_electronico` | Visible para todos |
+| `/api/clientes/{id}/reactivar/` | Custom Action | ❌ | - | Reactivar cliente inactivo |
 | `/api/productos/` | 🌍 Global | 🔍 | `nombre_producto`, `codigo_barras`, `descripcion` | Visible para todos |
+| `/api/productos/{id}/reactivar/` | Custom Action | ❌ | - | Reactivar producto inactivo |
 | `/api/inventario/` | 🔒 Aislado | 🔍 | `id_producto__nombre_producto`, `id_producto__codigo_barras` | **Solo stock de MI sucursal** |
 | `/api/ventas/` | 🔒 Aislado | ❌ | - | **Solo ventas de MI sucursal** |
-| `/api/ventas/{id}/anular/` | Custom Action | ❌ | - | POST para anular venta |
+| `/api/ventas/{id}/anular/` | Custom Action | ❌ | - | PATCH para anular venta |
 | `/api/detalle_ventas/` | Relación | ❌ | - | Hereda de Venta |
 | `/api/detalle_ventas/?id_venta=X` | Relación | ❌ | - | Filtrado por venta |
-| `/api/servicios_tecnicos/` | 🔒 Aislado | ❌ | - | **Solo servicios de MI sucursal** |
-| `/api/servicios_tecnicos/{id}/anular/` | Custom Action | ❌ | - | PATCH para anular servicio (Solo Admin) |
+| `/api/servicios_tecnicos/` | 🔒 Aislado | 🔍 | `numero_servicio`, `cliente`, `dispositivo` | **Solo servicios de MI sucursal** |
+| `/api/servicios_tecnicos/{id}/anular/` | Custom Action | ❌ | - | PATCH para anular servicio |
 | `/api/perfil/` | Usuario Auth | ❌ | - | Perfil del usuario autenticado |
 
 **Ejemplo de búsqueda**:
@@ -250,6 +253,23 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
 - ✅ **Ventas Enriquecidas**: VentaSerializer incluye `nombre_cliente`, `nombre_usuario`, `nombre_sucursal`
 - ✅ **DetalleVenta Enriquecido**: Incluye `nombre_producto` para facilitar visualización
 - ✅ **Campo `tipo_pago`**: En modelo Ventas (Efectivo/QR)
+
+### Sistema de Soft Delete (Borrado Lógico)
+- ✅ **Campo `activo`**: Implementado en Productos, Clientes, Categorías y Sucursales
+- ✅ **Productos**:
+  - DELETE hace soft delete (marca como inactivo)
+  - Valida stock = 0 en TODAS las sucursales antes de eliminar
+  - Muestra mensaje detallado con stock por sucursal si hay inventario
+  - Endpoint `PATCH /api/productos/{id}/reactivar/` para reactivar
+  - Parámetro `?incluir_inactivos=true` para ver todos
+- ✅ **Clientes**:
+  - DELETE hace soft delete (marca como inactivo)
+  - Endpoint `PATCH /api/clientes/{id}/reactivar/` para reactivar
+  - Parámetro `?incluir_inactivos=true` para ver todos
+- ✅ **Categorías**:
+  - DELETE hace soft delete (marca como inactiva)
+  - Endpoint `PATCH /api/categorias/{id}/reactivar/` para reactivar
+  - Parámetro `?incluir_inactivas=true` para ver todas
 
 ### Módulo de Ventas
 - ✅ **Auto-generación de `numero_boleta`**: Formato `VTA-YYYY-XXXXX` con secuencia anual automática

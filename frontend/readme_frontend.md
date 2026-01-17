@@ -47,7 +47,7 @@ frontend/
 └── assets/                 # Logos, imágenes (opcional)
 ```
 
-**Nota**: Bootstrap 5 y Bootstrap Icons se cargan vía CDN.
+**Nota**: Bootstrap 5, Bootstrap Icons y Chart.js se cargan vía CDN.
 
 ## 🚀 Iniciando el Proyecto
 
@@ -65,16 +65,16 @@ frontend/
 
 | Módulo | Paginación | Búsqueda | PATCH | Características Especiales |
 |--------|------------|----------|-------|---------------------------|
-| **Productos** | ✅ 10/página | 🔍 Server-Side | ✅ | Upload de imágenes, Dropdown categorías con búsqueda |
-| **Clientes** | ✅ 10/página | ✅ | ✅ | Búsqueda en 4 campos |
+| **Productos** | ✅ 10/página | 🔍 Server-Side | ✅ | Upload de imágenes, Soft delete con validación de stock, Reactivación |
+| **Clientes** | ✅ 10/página | ✅ | ✅ | Búsqueda en 4 campos, Soft delete con reactivación |
 | **Inventario** | ✅ 10/página | 🔍 Dropdown | ✅ | RBAC sucursal, Dropdown productos y sucursales con búsqueda |
-| **Categorías** | ✅ 10/página | ✅ | ✅ | **Dual Table** (Productos/Servicios) |
-| **Ventas** | ✅ 10/página | ❌ | ✅ | Sistema completo con carrito, búsqueda de clientes/productos, anulación |
-| **Servicios Técnicos** | ✅ 10/página | 🔍 Server-Side | ✅ | Sistema completo con búsqueda de clientes/categorías, upload de 3 fotos, anulación |
-| **Roles** | ❌ | ❌ | ✅ | Simple CRUD |
-| **Usuarios** | ❌ | ❌ | ✅ | FK a Roles/Sucursales |
-| **Sucursales** | ❌ | ❌ | ✅ | Activar/Desactivar |
-| **Dashboard** | N/A | N/A | N/A | Client-side Data Processing, KPIs reales, últimas ventas y servicios |
+| **Categorías** | ✅ 10/página | ✅ | ✅ | **Dual Table** (Productos/Servicios), Soft delete con reactivación |
+| **Ventas** | ✅ 10/página | ❌ | ✅ | Sistema completo con carrito, búsqueda de clientes/productos, anulación, impresión |
+| **Servicios Técnicos** | ✅ 10/página | 🔍 Server-Side | ✅ | Sistema completo con búsqueda de clientes/categorías, upload de 3 fotos, anulación, impresión |
+| **Roles** | ✅ 10/página | ❌ | ✅ | Simple CRUD |
+| **Usuarios** | ✅ 10/página | ❌ | ✅ | FK a Roles/Sucursales |
+| **Sucursales** | ✅ 10/página | ❌ | ✅ | Activar/Desactivar, campo Dirección |
+| **Dashboard** | N/A | N/A | N/A | Client-side Data Processing, KPIs reales, **Gráficos Chart.js** (líneas + barras), Selector Día/Mes, últimas ventas y servicios |
 
 ## ✨ Funcionalidades Principales
 
@@ -129,7 +129,8 @@ frontend/
 // Funciones principales
 loadProductos(page)      // Carga paginada
 saveProducto()           // POST/PATCH con FormData (imagen)
-deleteProducto(id)       // DELETE con confirmación
+deleteProducto(id)       // Soft delete con validación de stock
+reactivarProducto(id)    // Reactivar producto inactivo
 renderPagination()       // Controles Anterior/Siguiente
 ```
 
@@ -207,7 +208,7 @@ abrirModalNuevoCliente()     // Crear cliente desde el formulario
 guardarNuevoCliente()        // Guardar y auto-seleccionar cliente
 ```
 
-#### dashboard.js (Client-side Data Processing)
+#### dashboard.js (Client-side Data Processing + Chart.js)
 ```javascript
 // Fetch Optimizado
 loadDashboardData()          // Promise.all para cargas paralelas
@@ -219,8 +220,22 @@ processAndRenderKPIs()       // Cálculos client-side (suma, filtrado, promedio)
 // - Productos/Clientes/Servicios (count de API)
 
 // Tablas de Datos Recientes
-renderLatestSales()          // Top 5 ventas con estado y tipo pago
-renderLatestServices()       // Top 5 servicios técnicos con estado
+renderLatestSalesTable()     // Top 5 ventas con estado y tipo pago
+renderLatestServicesTable()  // Top 5 servicios técnicos con estado
+
+// Gráficos Chart.js
+switchChartView(view)        // Cambia entre vista 'day' y 'month'
+renderAllCharts()            // Renderiza los 4 gráficos según la vista activa
+processSalesDataForCharts()  // Agrupa ventas por día (últimos 7 días)
+processSalesDataByMonth()    // Agrupa ventas por mes (últimos 12 meses)
+processServicesDataForCharts() // Agrupa servicios por día
+processServicesDataByMonth() // Agrupa servicios por mes
+
+// Funciones de creación de gráficos
+createVentasLineChart()      // Gráfico de líneas - Tendencia de ventas
+createVentasBarChart()       // Barras agrupadas - Efectivo vs QR
+createServiciosLineChart()   // Gráfico de líneas - Tendencia de servicios
+createServiciosBarChart()    // Barras agrupadas - Por estado
 ```
 
 ## ✨ Características Recientes
@@ -282,7 +297,14 @@ renderLatestServices()       // Top 5 servicios técnicos con estado
 - **Procesamiento Local**:
   - Filtra ventas anuladas
   - Calcula totales con `reduce`
-  - Agrupa por fecha para futuras gráficas
+  - Agrupa por fecha para gráficas
+- **Gráficos Interactivos (Chart.js)**:
+  - **Selector Día/Mes**: Botones para cambiar entre vista diaria (7 días) y mensual (12 meses)
+  - **Tendencia de Ventas**: Gráfico de líneas con total en Bs.
+  - **Ventas por Período**: Barras con total de ventas por día/mes
+  - **Tendencia de Servicios**: Gráfico de líneas con cantidad
+  - **Servicios por Estado**: Barras agrupadas (En Reparación, Para Retirar, Entregado)
+  - **Caché de Datos**: Los datos se cargan una vez y se reutilizan al cambiar de vista
 - **Tablas de Datos Recientes**:
   - **Últimas Ventas**: Top 5 con indicador de estado y tipo de pago
   - **Últimos Servicios Técnicos**: Top 5 con estado y detalles del dispositivo
@@ -366,7 +388,7 @@ async function deleteItem(id) { ... }
 
 ## 🎯 Próximas Implementaciones
 
-- [ ] Gráficos visuales en Dashboard (Chart.js)
+- [x] ~~Gráficos visuales en Dashboard (Chart.js)~~ ✅ Completado
 - [ ] Reportes y exportación (PDF/Excel)
 - [ ] Filtros avanzados por fecha en ventas y servicios
 - [ ] Sistema de notificaciones push
@@ -374,6 +396,10 @@ async function deleteItem(id) { ... }
 
 ## ✅ Implementado Recientemente
 
+- [x] **Gráficos Chart.js en Dashboard**: 4 gráficos interactivos (líneas + barras agrupadas) con selector Día/Mes
+- [x] **Sistema de Soft Delete (Borrado Lógico)**: Productos, Clientes y Categorías con campo `activo`
+- [x] **Reactivación de Productos**: Botón para reactivar productos inactivos
+- [x] **Validación de Stock al Eliminar Productos**: Muestra detalle de stock por sucursal
 - [x] **Sistema de Impresión de Boletas de Venta**: Formatos Ticket 80mm y Boleta A4 con CSS adaptativo
 - [x] **Sistema de Impresión de Órdenes de Servicio**: Formatos Ticket 80mm y Boleta A4 con CSS adaptativo
 - [x] **Dirección en Sucursales**: Campo dirección agregado y mostrado automáticamente en boletas
