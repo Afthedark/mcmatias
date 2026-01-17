@@ -69,7 +69,7 @@ function renderClientesTable() {
                 <td>${cliente.correo_electronico || 'N/A'}</td>
                 <td><span class="badge bg-${estadoClass}">${estadoTexto}</span></td>
                 <td>
-                    ${cliente.activo ? `
+                    ${(typeof canPerformAction !== 'function' || canPerformAction('editar_clientes')) ? (cliente.activo ? `
                         <button class="btn btn-sm btn-info me-1" onclick="openEditModal(${cliente.id_cliente})" title="Editar">
                             <i class="bi bi-pencil"></i>
                         </button>
@@ -80,7 +80,7 @@ function renderClientesTable() {
                         <button class="btn btn-sm btn-success" onclick="reactivarCliente(${cliente.id_cliente})" title="Reactivar">
                             <i class="bi bi-arrow-counterclockwise"></i> Reactivar
                         </button>
-                    `}
+                    `) : ''}
                 </td>
             </tr>
         `;

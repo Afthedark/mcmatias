@@ -169,9 +169,10 @@ function renderServiciosTable() {
                     <button class="btn btn-sm btn-warning" onclick="mostrarEditarServicio(${servicio.id_servicio})" title="Editar">
                         <i class="bi bi-pencil"></i>
                     </button>
+                    ${(typeof canPerformAction !== 'function' || canPerformAction('anular_servicios')) ? `
                     <button class="btn btn-sm btn-danger" onclick="abrirModalAnular(${servicio.id_servicio}, '${servicio.numero_servicio}')" title="Anular">
                         <i class="bi bi-x-circle"></i>
-                    </button>
+                    </button>` : ''}
                 ` : ''}
             </td>
         </tr>

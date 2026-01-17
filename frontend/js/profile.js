@@ -3,6 +3,8 @@
  * Handles user profile editing functionality
  */
 
+let userSucursalId = null;
+
 /**
  * Render profile modal HTML
  */
@@ -27,6 +29,22 @@ function renderProfileModal() {
                                 <label for="profileEmail" class="form-label">Correo Electrónico</label>
                                 <input type="email" class="form-control" id="profileEmail" required>
                             </div>
+                            
+                            <!-- Sección de Sucursal (Dinámica) -->
+                            <div id="sucursalSection" style="display: none;">
+                                <div class="border-top my-3 pt-3">
+                                    <h6 class="mb-3"><i class="bi bi-shop"></i> Datos de mi Sucursal</h6>
+                                    <div class="mb-3">
+                                        <label for="profileSucursalName" class="form-label">Nombre de Sucursal</label>
+                                        <input type="text" class="form-control" id="profileSucursalName">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="profileSucursalAddress" class="form-label">Dirección</label>
+                                        <input type="text" class="form-control" id="profileSucursalAddress">
+                                    </div>
+                                </div>
+                            </div>
+
                             <hr>
                             <p class="text-muted small">Dejar en blanco si no deseas cambiar la contraseña</p>
                             <div class="mb-3">
@@ -76,6 +94,29 @@ async function openProfileModal() {
         document.getElementById('profileEmail').value = userData.correo_electronico || '';
         document.getElementById('profilePassword').value = '';
         document.getElementById('profileConfirmPassword').value = '';
+
+        // Reset and check branch permissions
+        userSucursalId = null;
+        const sucursalSection = document.getElementById('sucursalSection');
+        sucursalSection.style.display = 'none';
+
+        // Check if user has permission AND a branch assigned
+        if (typeof canPerformAction === 'function' &&
+            canPerformAction('editar_mi_sucursal') &&
+            userData.id_sucursal) {
+
+            userSucursalId = userData.id_sucursal;
+
+            // Load Branch Data
+            try {
+                const sucursalData = await apiGet(`/sucursales/${userSucursalId}/`);
+                document.getElementById('profileSucursalName').value = sucursalData.nombre_sucursal || sucursalData.nombre || '';
+                document.getElementById('profileSucursalAddress').value = sucursalData.direccion || '';
+                sucursalSection.style.display = 'block';
+            } catch (err) {
+                console.error("Error cargando datos de sucursal", err);
+            }
+        }
 
         // Hide error message
         document.getElementById('profileError').classList.add('d-none');
@@ -137,37 +178,45 @@ async function saveProfile() {
 
         showLoader();
 
-        // Prepare data
-        const data = {
+        // 1. Update Profile Logic
+        const profileData = {
             nombre_apellido: name,
             correo_electronico: email
         };
 
-        // Add password only if provided
         if (password) {
-            data.password = password;
-            data.confirm_password = confirmPassword;
+            profileData.password = password;
+            profileData.confirm_password = confirmPassword;
         }
 
-        // Send PATCH request
-        const response = await api.patch('/perfil/', data);
+        const response = await api.patch('/perfil/', profileData);
+        localStorage.setItem('user_email', response.data.correo_electronico);
 
-        // Update localStorage
-        localStorage.setItem('user_email', response.correo_electronico);
+        // 2. Update Branch Logic (if applicable)
+        if (userSucursalId && document.getElementById('sucursalSection').style.display !== 'none') {
+            const sucursalName = document.getElementById('profileSucursalName').value.trim();
+            const sucursalAddress = document.getElementById('profileSucursalAddress').value.trim();
+
+            if (sucursalName) {
+                await apiPatch(`/sucursales/${userSucursalId}/`, {
+                    nombre_sucursal: sucursalName,
+                    direccion: sucursalAddress
+                });
+            }
+        }
 
         // Close modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
         modal.hide();
 
-        // Show success message
         showToast('Perfil actualizado correctamente', 'success');
 
-        // Update header with new name
-        const userName = response.correo_electronico.split('@')[0];
+        // Update header UI
+        const userName = response.data.correo_electronico.split('@')[0];
         const userNameElements = document.querySelectorAll('.user-name');
         userNameElements.forEach(el => el.textContent = userName);
 
-        // If password was changed, suggest re-login
+        // Password change handling
         if (password) {
             setTimeout(() => {
                 if (confirm('Se ha actualizado tu contraseña. ¿Deseas cerrar sesión para iniciar con la nueva contraseña?')) {
@@ -181,7 +230,6 @@ async function saveProfile() {
         const errorDiv = document.getElementById('profileError');
 
         if (error.response && error.response.data) {
-            // Display backend validation errors
             const errors = error.response.data;
             let errorMessage = '';
 

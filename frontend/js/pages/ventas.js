@@ -93,7 +93,7 @@ function renderVentasTable() {
                 <button class="btn btn-sm btn-primary" onclick="imprimirBoleta(${venta.id_venta})" title="Imprimir Boleta">
                     <i class="bi bi-printer"></i>
                 </button>
-                ${!esAnulada ? `
+                ${!esAnulada && (typeof canPerformAction !== 'function' || canPerformAction('anular_ventas')) ? `
                     <button class="btn btn-sm btn-warning" onclick="abrirModalAnular(${venta.id_venta}, '${venta.numero_boleta}')" title="Anular">
                         <i class="bi bi-x-circle"></i>
                     </button>

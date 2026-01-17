@@ -47,6 +47,7 @@ async function renderHeader(containerSelector = '#header-container') {
         if (userEmail) localStorage.setItem('user_email', userEmail);
         if (userName) localStorage.setItem('user_name', userName);
         if (userRole) localStorage.setItem('user_role', userRole);
+        if (userData.numero_rol) localStorage.setItem('user_numero_rol', userData.numero_rol);
         if (userSucursal) localStorage.setItem('user_sucursal', userSucursal);
 
     } catch (error) {
@@ -64,6 +65,7 @@ async function renderHeader(containerSelector = '#header-container') {
     const userInitial = userName.charAt(0).toUpperCase();
     const pageTitle = document.title.split(' - ')[0];
 
+    // ... header generation ...
     const headerHTML = `
         <header class="main-header">
             <div class="header-left">
@@ -154,7 +156,16 @@ function setupHeaderEventListeners() {
  * @param {string} activePage - Current page name to highlight
  */
 function renderSidebar(containerSelector = '#sidebar-container', activePage = '') {
-    const navItemsHTML = SIDEBAR_CONFIG.map(config => {
+    // Filter sidebar config based on role (using roles_vistas.js)
+    // We assume roles_vistas.js is loaded and getUserRoleNumber() works 
+    // (it reads from localStorage which renderHeader populated)
+
+    let configToRender = SIDEBAR_CONFIG;
+    if (typeof filterSidebarByRole === 'function') {
+        configToRender = filterSidebarByRole(SIDEBAR_CONFIG);
+    }
+
+    const navItemsHTML = configToRender.map(config => {
         if (config.type === 'section') {
             return `<li class="nav-section-title">${config.text}</li>`;
         }

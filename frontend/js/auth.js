@@ -112,6 +112,12 @@ async function refreshAccessToken() {
 function checkAuth() {
     if (!isAuthenticated()) {
         window.location.href = 'index.html';
+        return;
+    }
+
+    // Verificar permisos de rol para la página actual si roles_vistas.js está cargado
+    if (typeof protectCurrentPage === 'function') {
+        protectCurrentPage();
     }
 }
 

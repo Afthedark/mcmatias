@@ -81,6 +81,11 @@ async function loadUsuarios(page = 1) {
  * Render Users Table
  * @param {Array} users - List of users
  */
+
+/**
+ * Render Users Table
+ * @param {Array} users - List of users
+ */
 function renderTable(users) {
     const tbody = document.getElementById('usuariosTableBody');
     if (!users || users.length === 0) {
@@ -92,7 +97,25 @@ function renderTable(users) {
         return;
     }
 
-    tbody.innerHTML = users.map(user => {
+    // Get current user role
+    const currentUserRole = parseInt(localStorage.getItem('user_numero_rol'));
+
+    // Filter out Super Users if current user is not Super User
+    let displayUsers = users;
+    if (currentUserRole !== 1) {
+        displayUsers = users.filter(user => user.id_rol !== 1);
+    }
+
+    if (displayUsers.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center">No hay usuarios visibles</td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = displayUsers.map(user => {
         // Find names in cache
         const rol = rolesCache.find(r => r.id_rol === user.id_rol);
         const sucursal = sucursalesCache.find(s => s.id_sucursal === user.id_sucursal);
@@ -136,7 +159,14 @@ function populateSelects() {
     rolSelect.innerHTML = '<option value="">Seleccione...</option>';
     sucursalSelect.innerHTML = '<option value="">Seleccione...</option>';
 
+    // Get current user role
+    const currentUserRole = parseInt(localStorage.getItem('user_numero_rol'));
+
     rolesCache.forEach(rol => {
+        // Hide Super Admin role option if current user is not Super Admin
+        if (currentUserRole !== 1 && rol.id_rol === 1) {
+            return;
+        }
         rolSelect.innerHTML += `<option value="${rol.id_rol}">${rol.nombre_rol}</option>`;
     });
 
