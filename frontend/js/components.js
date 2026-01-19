@@ -48,6 +48,7 @@ async function renderHeader(containerSelector = '#header-container') {
         if (userName) localStorage.setItem('user_name', userName);
         if (userRole) localStorage.setItem('user_role', userRole);
         if (userData.numero_rol) localStorage.setItem('user_numero_rol', userData.numero_rol);
+        if (userData.id_usuario) localStorage.setItem('user_id_usuario', userData.id_usuario);
         if (userSucursal) localStorage.setItem('user_sucursal', userSucursal);
 
     } catch (error) {

@@ -89,15 +89,28 @@
                 <div class="card mb-4">
                     <div class="card-body">
                         <div class="row align-items-center">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                                     <input type="text" class="form-control" id="searchInput"
                                         placeholder="Buscar por N° servicio, cliente, dispositivo...">
                                 </div>
                             </div>
-                            <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                                <button class="btn btn-primary" onclick="mostrarNuevoServicio()">
+                            <div class="col-md-4 text-center mt-3 mt-md-0">
+                                <!-- Toggle de Vista (solo para roles 3 y 5) -->
+                                <div id="vistaToggle" style="display: none;" class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-primary active" id="btnVistaTodos"
+                                        onclick="cambiarVista('todos')">
+                                        <i class="bi bi-grid"></i> Todos
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary" id="btnVistaMios"
+                                        onclick="cambiarVista('mios')">
+                                        <i class="bi bi-person-check"></i> Mis Servicios
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                <button class="btn btn-primary" id="btnNuevoServicio" onclick="mostrarNuevoServicio()">
                                     <i class="bi bi-plus-circle"></i> Nuevo Servicio
                                 </button>
                             </div>
@@ -119,6 +132,7 @@
                                         <th>Cliente</th>
                                         <th>Dispositivo</th>
                                         <th>Categoría</th>
+                                        <th>Técnico</th>
                                         <th>Estado</th>
                                         <th>Fecha</th>
                                         <th>Costo</th>
@@ -263,6 +277,14 @@
                                         <option value="Entregado">🟢 Entregado</option>
                                     </select>
                                 </div>
+
+                                <!-- Técnico Asignado (solo para roles con permiso) -->
+                                <div class="mb-3" id="tecnicoAsignadoGroup" style="display: none;">
+                                    <label class="form-label">Técnico Asignado</label>
+                                    <select class="form-select" id="id_tecnico_asignado">
+                                        <option value="">Sin asignar</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
@@ -383,12 +405,20 @@
                                     <td id="detalleEstado"></td>
                                 </tr>
                                 <tr>
+                                    <th class="text-muted">Técnico Asignado:</th>
+                                    <td id="detalleTecnico"></td>
+                                </tr>
+                                <tr>
                                     <th class="text-muted">Costo:</th>
                                     <td id="detalleCosto"></td>
                                 </tr>
                                 <tr>
                                     <th class="text-muted">Fecha Inicio:</th>
                                     <td id="detalleFecha"></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">Fecha Entrega:</th>
+                                    <td id="detalleFechaEntrega"></td>
                                 </tr>
                                 <tr>
                                     <th class="text-muted">Atendido por:</th>

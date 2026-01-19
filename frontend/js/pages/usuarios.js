@@ -52,7 +52,7 @@ async function loadUsuarios(page = 1) {
     if (page !== currentPage) showLoadingTable(); // Use a lighter loading indicator for pagination if preferred
 
     try {
-        const response = await apiGet(`/usuarios/?page=${page}&page_size=${ITEMS_PER_PAGE}`);
+        const response = await apiGet(`/usuarios/?page=${page}&page_size=${ITEMS_PER_PAGE}&incluir_inactivos=true`);
 
         // Handle DRF pagination
         const results = response.results ? response.results : response;
@@ -119,9 +119,10 @@ function renderTable(users) {
         // Find names in cache
         const rol = rolesCache.find(r => r.id_rol === user.id_rol);
         const sucursal = sucursalesCache.find(s => s.id_sucursal === user.id_sucursal);
+        const rowClass = user.activo ? '' : 'table-secondary';
 
         return `
-            <tr>
+            <tr class="${rowClass}">
                 <td>${user.nombre_apellido}</td>
                 <td>${user.correo_electronico}</td>
                 <td><span class="badge bg-info text-dark">${rol ? rol.nombre_rol : 'N/A'}</span></td>
@@ -132,16 +133,24 @@ function renderTable(users) {
                 : '<span class="badge bg-secondary">Inactivo</span>'}
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-outline-primary me-1" 
-                            onclick="openEditModal(${user.id_usuario})"
-                            title="Editar">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" 
-                            onclick="confirmDelete(${user.id_usuario}, '${user.nombre_apellido}')"
-                            title="Eliminar">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                    ${user.activo ? `
+                        <button class="btn btn-sm btn-outline-primary me-1" 
+                                onclick="openEditModal(${user.id_usuario})"
+                                title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" 
+                                onclick="confirmarDesactivar(${user.id_usuario}, '${user.nombre_apellido}')"
+                                title="Desactivar">
+                            <i class="bi bi-person-x"></i>
+                        </button>
+                    ` : `
+                        <button class="btn btn-sm btn-outline-success" 
+                                onclick="reactivarUsuario(${user.id_usuario}, '${user.nombre_apellido}')"
+                                title="Reactivar">
+                            <i class="bi bi-person-check"></i>
+                        </button>
+                    `}
                 </td>
             </tr>
         `;
@@ -336,25 +345,43 @@ async function saveUsuario() {
 }
 
 /**
- * Confirm Delete
+ * Confirmar Desactivación
  */
-function confirmDelete(id, name) {
-    if (confirm(`¿Está seguro que desea eliminar al usuario "${name}"?`)) {
-        deleteUsuario(id);
+function confirmarDesactivar(id, name) {
+    if (confirm(`¿Está seguro que desea desactivar al usuario "${name}"?\n\nEl usuario no podrá iniciar sesión hasta que sea reactivado.`)) {
+        desactivarUsuario(id);
     }
 }
 
 /**
- * Execute Delete
+ * Ejecutar Desactivación (soft delete)
  */
-async function deleteUsuario(id) {
+async function desactivarUsuario(id) {
     try {
         await apiDelete(`/usuarios/${id}/`);
-        showToast('Usuario eliminado correctamente');
+        showToast('Usuario desactivado correctamente');
         loadUsuarios(currentPage);
     } catch (error) {
-        console.error('Error deleting user:', error);
-        showToast('Error al eliminar usuario', 'error');
+        console.error('Error desactivando usuario:', error);
+        const errorMsg = error.response?.data?.error || 'Error al desactivar usuario';
+        showToast(errorMsg, 'error');
+    }
+}
+
+/**
+ * Reactivar Usuario
+ */
+async function reactivarUsuario(id, name) {
+    if (confirm(`¿Desea reactivar al usuario "${name}"?\n\nEl usuario podrá iniciar sesión nuevamente.`)) {
+        try {
+            await apiPatch(`/usuarios/${id}/reactivar/`);
+            showToast('Usuario reactivado correctamente');
+            loadUsuarios(currentPage);
+        } catch (error) {
+            console.error('Error reactivando usuario:', error);
+            const errorMsg = error.response?.data?.error || 'Error al reactivar usuario';
+            showToast(errorMsg, 'error');
+        }
     }
 }
 

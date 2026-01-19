@@ -16,6 +16,10 @@ let editingId = null;
 let clienteSeleccionado = null;
 let categoriaSeleccionada = null;
 
+// Vista y Técnicos
+let vistaActual = 'todos'; // 'todos' o 'mios'
+let listaTecnicos = [];
+
 // Debounce timers
 let searchTimeout = null;
 let searchClienteTimeout = null;
@@ -26,7 +30,70 @@ let searchCategoriaTimeout = null;
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
+    configurarVistaSegunRol();
 });
+
+/**
+ * Configura la UI según el rol del usuario usando el sistema RBAC
+ */
+function configurarVistaSegunRol() {
+    // Mostrar toggle de vista si tiene permiso
+    if (typeof canPerformAction === 'function' && canPerformAction('ver_mis_servicios')) {
+        document.getElementById('vistaToggle').style.display = 'flex';
+
+        // Si NO puede crear servicios, default a "mis servicios"
+        if (!canPerformAction('crear_servicios')) {
+            vistaActual = 'mios';
+            document.getElementById('btnVistaMios').classList.add('active');
+            document.getElementById('btnVistaTodos').classList.remove('active');
+            document.getElementById('btnNuevoServicio').style.display = 'none';
+        }
+    }
+
+    // Cargar lista de técnicos si tiene permiso para asignar
+    if (typeof canPerformAction === 'function' && canPerformAction('asignar_tecnico')) {
+        cargarListaTecnicos();
+    }
+}
+
+/**
+ * Carga la lista de técnicos para el select de asignación
+ * Solo incluye usuarios con rol 3 (Técnico) o 5 (Téc+Cajero)
+ */
+async function cargarListaTecnicos() {
+    try {
+        const response = await apiGet('/usuarios/');
+        const usuarios = response.results || response;
+
+        // Filtrar solo roles 3 (Técnico) y 5 (Téc+Cajero) activos
+        const ROLES_TECNICOS = [3, 5];
+        listaTecnicos = usuarios.filter(u => u.activo && ROLES_TECNICOS.includes(u.numero_rol));
+
+        const select = document.getElementById('id_tecnico_asignado');
+        if (select) {
+            select.innerHTML = '<option value="">Sin asignar</option>';
+            listaTecnicos.forEach(tecnico => {
+                select.innerHTML += `<option value="${tecnico.id_usuario}">${tecnico.nombre_apellido}</option>`;
+            });
+        }
+    } catch (error) {
+        console.error('Error cargando técnicos:', error);
+    }
+}
+
+/**
+ * Cambia entre vista "Todos" y "Mis Servicios"
+ */
+function cambiarVista(vista) {
+    vistaActual = vista;
+    currentPage = 1;
+
+    // Actualizar UI de botones
+    document.getElementById('btnVistaTodos').classList.toggle('active', vista === 'todos');
+    document.getElementById('btnVistaMios').classList.toggle('active', vista === 'mios');
+
+    loadServicios(1);
+}
 
 function setupEventListeners() {
     // Búsqueda principal en tabla
@@ -114,6 +181,14 @@ async function loadServicios(page = 1) {
             url += `&search=${encodeURIComponent(searchQuery)}`;
         }
 
+        // Filtro por técnico asignado (vista "Mis Servicios")
+        if (vistaActual === 'mios') {
+            const userId = localStorage.getItem('user_id_usuario');
+            if (userId) {
+                url += `&id_tecnico_asignado=${userId}`;
+            }
+        }
+
         const data = await apiGet(url);
         servicios = data.results || [];
 
@@ -140,7 +215,7 @@ function renderServiciosTable() {
     const tbody = document.getElementById('serviciosTableBody');
 
     if (servicios.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No hay servicios registrados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No hay servicios registrados</td></tr>';
         return;
     }
 
@@ -149,12 +224,18 @@ function renderServiciosTable() {
         const rowClass = esAnulado ? 'table-secondary' : '';
         const textClass = esAnulado ? 'text-decoration-line-through text-muted' : '';
 
+        // Determinar si puede editar este servicio
+        const rolActual = parseInt(localStorage.getItem('user_numero_rol'));
+        const userId = parseInt(localStorage.getItem('user_id_usuario'));
+        const puedeEditar = rolActual !== 3 || servicio.id_tecnico_asignado === userId;
+
         return `
         <tr class="${rowClass}">
             <td class="${textClass}"><strong>${servicio.numero_servicio || '-'}</strong></td>
             <td class="${textClass}">${servicio.nombre_cliente || 'Sin cliente'}</td>
             <td class="${textClass}">${servicio.marca_dispositivo || ''} ${servicio.modelo_dispositivo || ''}</td>
             <td class="${textClass}">${servicio.nombre_categoria || '-'}</td>
+            <td class="${textClass}">${servicio.nombre_tecnico_asignado || '<span class="text-muted">Sin asignar</span>'}</td>
             <td>${getEstadoBadge(servicio.estado)}</td>
             <td class="${textClass}">${formatDate(servicio.fecha_inicio)}</td>
             <td class="${textClass}">${formatCurrency(servicio.costo_estimado || 0)}</td>
@@ -165,14 +246,15 @@ function renderServiciosTable() {
                 <button class="btn btn-sm btn-primary" onclick="imprimirBoletaServicio(${servicio.id_servicio})" title="Imprimir Orden">
                     <i class="bi bi-printer"></i>
                 </button>
-                ${!esAnulado ? `
+                ${!esAnulado && puedeEditar ? `
                     <button class="btn btn-sm btn-warning" onclick="mostrarEditarServicio(${servicio.id_servicio})" title="Editar">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    ${(typeof canPerformAction !== 'function' || canPerformAction('anular_servicios')) ? `
+                ` : ''}
+                ${!esAnulado && (typeof canPerformAction !== 'function' || canPerformAction('anular_servicios')) ? `
                     <button class="btn btn-sm btn-danger" onclick="abrirModalAnular(${servicio.id_servicio}, '${servicio.numero_servicio}')" title="Anular">
                         <i class="bi bi-x-circle"></i>
-                    </button>` : ''}
+                    </button>
                 ` : ''}
             </td>
         </tr>
@@ -288,6 +370,15 @@ async function mostrarEditarServicio(id) {
         // Mostrar campo de estado
         document.getElementById('estadoGroup').style.display = 'block';
 
+        // Mostrar campo técnico asignado si tiene permiso
+        if (typeof canPerformAction === 'function' && canPerformAction('asignar_tecnico')) {
+            document.getElementById('tecnicoAsignadoGroup').style.display = 'block';
+            const selectTecnico = document.getElementById('id_tecnico_asignado');
+            if (selectTecnico && servicio.id_tecnico_asignado) {
+                selectTecnico.value = servicio.id_tecnico_asignado;
+            }
+        }
+
         actualizarResumen();
         window.scrollTo(0, 0);
     } catch (error) {
@@ -328,6 +419,17 @@ function resetFormulario() {
     document.getElementById('costo_estimado').value = '';
     document.getElementById('descripcion_problema').value = '';
     document.getElementById('estado').value = 'En Reparación';
+
+    // Técnico asignado
+    const tecnicoSelect = document.getElementById('id_tecnico_asignado');
+    if (tecnicoSelect) tecnicoSelect.value = '';
+
+    // Mostrar campo técnico si tiene permiso (en nuevo servicio)
+    if (typeof canPerformAction === 'function' && canPerformAction('asignar_tecnico')) {
+        document.getElementById('tecnicoAsignadoGroup').style.display = 'block';
+    } else {
+        document.getElementById('tecnicoAsignadoGroup').style.display = 'none';
+    }
 
     // Fotos
     ['foto_1', 'foto_2', 'foto_3'].forEach((fieldName, index) => {
@@ -567,6 +669,14 @@ async function guardarServicio() {
             formData.append('estado', document.getElementById('estado').value);
         }
 
+        // Técnico asignado (si tiene permiso)
+        if (typeof canPerformAction === 'function' && canPerformAction('asignar_tecnico')) {
+            const tecnicoId = document.getElementById('id_tecnico_asignado')?.value;
+            if (tecnicoId) {
+                formData.append('id_tecnico_asignado', tecnicoId);
+            }
+        }
+
         // Fotos
         ['foto_1', 'foto_2', 'foto_3'].forEach(fieldName => {
             const input = document.getElementById(fieldName);
@@ -609,9 +719,11 @@ async function verDetalle(id) {
             `${servicio.marca_dispositivo || ''} ${servicio.modelo_dispositivo || ''}`.trim() || 'N/A';
         document.getElementById('detalleCategoria').textContent = servicio.nombre_categoria || 'N/A';
         document.getElementById('detalleEstado').innerHTML = getEstadoBadge(servicio.estado);
+        document.getElementById('detalleTecnico').textContent = servicio.nombre_tecnico_asignado || 'Sin asignar';
         document.getElementById('detalleDescripcion').textContent = servicio.descripcion_problema || 'Sin descripción';
         document.getElementById('detalleCosto').textContent = formatCurrency(servicio.costo_estimado || 0);
         document.getElementById('detalleFecha').textContent = formatDate(servicio.fecha_inicio);
+        document.getElementById('detalleFechaEntrega').textContent = servicio.fecha_entrega ? formatDate(servicio.fecha_entrega) : 'Pendiente';
         document.getElementById('detalleUsuario').textContent = servicio.nombre_usuario || 'N/A';
         document.getElementById('detalleSucursal').textContent = servicio.nombre_sucursal || 'N/A';
 

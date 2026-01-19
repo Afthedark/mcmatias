@@ -20,14 +20,13 @@ const PERMISOS_ROL = {
             'categorias_servicios.html',
             'clientes.html',
             'usuarios.html',
-            'roles.html',
             'perfil.html'
         ],
-        acciones: ['editar_mi_sucursal']
+        acciones: ['editar_mi_sucursal', 'crear_servicios', 'asignar_tecnico', 'anular_ventas']
     },
     3: { // Técnico
-        paginas: ['dashboard.html', 'servicios_tecnicos.html', 'categorias_servicios.html', 'clientes.html', 'perfil.html'], // Added perfil.html just in case, or modal
-        acciones: ['anular_servicios', 'editar_clientes']
+        paginas: ['dashboard.html', 'servicios_tecnicos.html', 'categorias_servicios.html', 'clientes.html', 'perfil.html'],
+        acciones: ['editar_clientes', 'ver_mis_servicios']
     },
     4: { // Cajero
         paginas: ['dashboard.html', 'ventas.html', 'productos.html', 'inventario.html', 'categorias_productos.html', 'clientes.html'],
@@ -36,7 +35,7 @@ const PERMISOS_ROL = {
     5: { // Técnico y Cajero
         paginas: ['dashboard.html', 'ventas.html', 'servicios_tecnicos.html', 'productos.html',
             'inventario.html', 'categorias_productos.html', 'categorias_servicios.html', 'clientes.html'],
-        acciones: ['crear_ventas', 'anular_ventas', 'anular_servicios', 'editar_clientes']
+        acciones: ['crear_ventas', 'anular_ventas', 'anular_servicios', 'editar_clientes', 'crear_servicios', 'asignar_tecnico', 'ver_mis_servicios']
     }
 };
 

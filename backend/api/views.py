@@ -101,17 +101,71 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     """
     🔒 AISLADO: Cada usuario solo ve compañeros de su sucursal
     Super Admin (1) ve todos los usuarios
+    Implementa soft delete (desactivar/reactivar)
     """
     queryset = Usuario.objects.all()  # Base queryset for DRF router
     serializer_class = UsuarioSerializer
     
     def get_queryset(self):
         user = self.request.user
+        # Parámetro para incluir inactivos
+        incluir_inactivos = self.request.query_params.get('incluir_inactivos', 'false') == 'true'
+        
         # Super Admin ve todo
         if user.id_rol.numero_rol == 1:
-            return Usuario.objects.all().order_by('pk')
-        # Otros solo ven usuarios de su sucursal
-        return Usuario.objects.filter(id_sucursal=user.id_sucursal).order_by('pk')
+            queryset = Usuario.objects.all()
+        else:
+            # Otros solo ven usuarios de su sucursal
+            queryset = Usuario.objects.filter(id_sucursal=user.id_sucursal)
+        
+        # Filtrar activos por defecto
+        if not incluir_inactivos:
+            queryset = queryset.filter(activo=True)
+        
+        return queryset.order_by('pk')
+    
+    def destroy(self, request, *args, **kwargs):
+        """
+        Soft delete: desactiva el usuario en lugar de eliminarlo.
+        El usuario desactivado no podrá iniciar sesión.
+        """
+        usuario = self.get_object()
+        
+        # No permitir auto-desactivarse
+        if usuario.id_usuario == request.user.id_usuario:
+            return Response(
+                {'error': 'No puedes desactivar tu propia cuenta'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        usuario.activo = False
+        usuario.save()
+        return Response({'message': 'Usuario desactivado correctamente'}, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['patch'])
+    def reactivar(self, request, pk=None):
+        """
+        Reactivar un usuario desactivado.
+        PATCH /api/usuarios/{id}/reactivar/
+        """
+        # Buscar en todos los usuarios (incluyendo inactivos)
+        try:
+            usuario = Usuario.objects.get(pk=pk)
+        except Usuario.DoesNotExist:
+            return Response(
+                {'error': 'Usuario no encontrado'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        if usuario.activo:
+            return Response(
+                {'error': 'Este usuario ya está activo'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        usuario.activo = True
+        usuario.save()
+        return Response({'message': 'Usuario reactivado correctamente'})
 
 class ClienteViewSet(viewsets.ModelViewSet):
     """
@@ -423,11 +477,23 @@ class ServicioTecnicoViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         user = self.request.user
-        # Super Admin ve todo
-        if user.id_rol.numero_rol == 1:
-            return ServicioTecnico.objects.all().order_by('-pk')
-        # Otros solo ven servicios de su sucursal
-        return ServicioTecnico.objects.filter(id_sucursal=user.id_sucursal).order_by('-pk')
+        queryset = ServicioTecnico.objects.all().order_by('-pk')
+        
+        # Aislamiento por sucursal (excepto Super Admin)
+        if user.id_rol.numero_rol != 1:
+            queryset = queryset.filter(id_sucursal=user.id_sucursal)
+        
+        # Filtro por técnico asignado (para vista "Mis Servicios")
+        id_tecnico = self.request.query_params.get('id_tecnico_asignado', None)
+        if id_tecnico:
+            queryset = queryset.filter(id_tecnico_asignado=id_tecnico)
+        
+        # Filtro por estado
+        estado = self.request.query_params.get('estado', None)
+        if estado:
+            queryset = queryset.filter(estado=estado)
+        
+        return queryset
     
     def perform_create(self, serializer):
         """Auto-asignar sucursal y usuario del request"""
@@ -438,19 +504,41 @@ class ServicioTecnicoViewSet(viewsets.ModelViewSet):
         else:
             # Otros: forzar su sucursal y usuario
             serializer.save(id_sucursal=user.id_sucursal, id_usuario=user)
+    
+    def perform_update(self, serializer):
+        """
+        Auto-capturar fecha_entrega cuando el estado cambia a 'Entregado'.
+        Restricción: Técnico (rol 3) solo puede editar servicios asignados a él.
+        """
+        user = self.request.user
+        instance = serializer.instance
+        
+        # Validación: Técnico (rol 3) solo puede editar sus servicios asignados
+        if user.id_rol.numero_rol == 3:
+            if instance.id_tecnico_asignado_id != user.id_usuario:
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied('Solo puedes editar servicios asignados a ti.')
+        
+        nuevo_estado = serializer.validated_data.get('estado', instance.estado)
+        
+        # Si cambia a Entregado y no tiene fecha_entrega, capturarla
+        if nuevo_estado == 'Entregado' and not instance.fecha_entrega:
+            serializer.save(fecha_entrega=timezone.now())
+        else:
+            serializer.save()
 
     @action(detail=True, methods=['patch'])
     def anular(self, request, pk=None):
         """
         Anula un servicio técnico.
         PATCH /api/servicios_tecnicos/{id}/anular/
-        Roles permitidos: 1 (Super Admin), 2 (Admin), 3 (Técnico), 5 (Técnico y Cajero)
+        Roles permitidos: 1 (Super Admin), 2 (Admin), 5 (Técnico y Cajero)
         """
         user = request.user
         
-        # RBAC: Roles permitidos: 1 (Super Admin), 2 (Admin), 3 (Técnico), 5 (Técnico y Cajero)
-        # Rol 4 (Cajero) NO puede anular
-        if user.id_rol.numero_rol not in [1, 2, 3, 5]:
+        # RBAC: Roles permitidos: 1 (Super Admin), 2 (Admin), 5 (Técnico y Cajero)
+        # Rol 3 (Técnico) y Rol 4 (Cajero) NO pueden anular
+        if user.id_rol.numero_rol not in [1, 2, 5]:
             return Response(
                 {'error': 'No tiene permisos para anular servicios'},
                 status=status.HTTP_403_FORBIDDEN

@@ -281,6 +281,16 @@ class ServicioTecnico(models.Model):
     foto_1 = models.ImageField(upload_to='uploads/images/', blank=True, null=True)
     foto_2 = models.ImageField(upload_to='uploads/images/', blank=True, null=True)
     foto_3 = models.ImageField(upload_to='uploads/images/', blank=True, null=True)
+    # Técnico asignado
+    id_tecnico_asignado = models.ForeignKey(
+        Usuario,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        db_column='id_tecnico_asignado',
+        related_name='servicios_asignados'
+    )
+    # Fecha de entrega (auto-capturada al cambiar estado a 'Entregado')
+    fecha_entrega = models.DateTimeField(null=True, blank=True)
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

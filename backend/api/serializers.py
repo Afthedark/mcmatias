@@ -1,8 +1,25 @@
 ﻿from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import (
     Rol, Sucursal, Categoria, Usuario, Cliente, Producto, 
     Inventario, Venta, DetalleVenta, ServicioTecnico
 )
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Custom JWT serializer that validates user is active before issuing token.
+    """
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        
+        # Verificar que el usuario esté activo
+        if not self.user.activo:
+            raise serializers.ValidationError(
+                {'detail': 'Esta cuenta ha sido desactivada. Contacte al administrador.'}
+            )
+        
+        return data
 
 class RolSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,10 +38,12 @@ class CategoriaSerializer(serializers.ModelSerializer):
 
 class UsuarioSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    numero_rol = serializers.IntegerField(source='id_rol.numero_rol', read_only=True)
 
     class Meta:
         model = Usuario
-        fields = '__all__'
+        fields = ['id_usuario', 'nombre_apellido', 'correo_electronico', 'password',
+                  'id_rol', 'numero_rol', 'id_sucursal', 'activo', 'created_at', 'updated_at']
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
@@ -96,6 +115,7 @@ class ServicioTecnicoSerializer(serializers.ModelSerializer):
     nombre_sucursal = serializers.CharField(source='id_sucursal.nombre', read_only=True)
     direccion_sucursal = serializers.CharField(source='id_sucursal.direccion', read_only=True)
     nombre_categoria = serializers.CharField(source='id_categoria.nombre_categoria', read_only=True)
+    nombre_tecnico_asignado = serializers.CharField(source='id_tecnico_asignado.nombre_apellido', read_only=True)
     
     class Meta:
         model = ServicioTecnico
@@ -107,11 +127,12 @@ class ServicioTecnicoSerializer(serializers.ModelSerializer):
             'id_categoria', 'nombre_categoria',
             'marca_dispositivo', 'modelo_dispositivo',
             'descripcion_problema', 'costo_estimado',
-            'estado', 'fecha_inicio',
+            'estado', 'fecha_inicio', 'fecha_entrega',
+            'id_tecnico_asignado', 'nombre_tecnico_asignado',
             'foto_1', 'foto_2', 'foto_3',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['numero_servicio', 'id_usuario', 'id_sucursal', 'created_at', 'updated_at']
+        read_only_fields = ['numero_servicio', 'id_usuario', 'id_sucursal', 'fecha_entrega', 'created_at', 'updated_at']
 
 class UserProfileSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False, allow_blank=True)
