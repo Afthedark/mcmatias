@@ -219,7 +219,10 @@ function renderServiciosTable() {
         return;
     }
 
-    tbody.innerHTML = servicios.map(servicio => {
+    // Calcular índice inicial basado en paginación (10 items por página)
+    const startNumber = (currentPage - 1) * 10 + 1;
+
+    tbody.innerHTML = servicios.map((servicio, index) => {
         const esAnulado = servicio.estado === 'Anulado';
         const rowClass = esAnulado ? 'table-secondary' : '';
         const textClass = esAnulado ? 'text-decoration-line-through text-muted' : '';
@@ -231,6 +234,7 @@ function renderServiciosTable() {
 
         return `
         <tr class="${rowClass}">
+            <td><strong>${startNumber + index}</strong></td>
             <td class="${textClass}"><strong>${servicio.numero_servicio || '-'}</strong></td>
             <td class="${textClass}">${servicio.nombre_cliente || 'Sin cliente'}</td>
             <td class="${textClass}">${servicio.marca_dispositivo || ''} ${servicio.modelo_dispositivo || ''}</td>

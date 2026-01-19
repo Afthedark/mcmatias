@@ -115,7 +115,10 @@ function renderTable(users) {
         return;
     }
 
-    tbody.innerHTML = displayUsers.map(user => {
+    // Calcular índice inicial basado en paginación
+    const startNumber = (currentPage - 1) * ITEMS_PER_PAGE + 1;
+
+    tbody.innerHTML = displayUsers.map((user, index) => {
         // Find names in cache
         const rol = rolesCache.find(r => r.id_rol === user.id_rol);
         const sucursal = sucursalesCache.find(s => s.id_sucursal === user.id_sucursal);
@@ -123,6 +126,7 @@ function renderTable(users) {
 
         return `
             <tr class="${rowClass}">
+                <td><strong>${startNumber + index}</strong></td>
                 <td>${user.nombre_apellido}</td>
                 <td>${user.correo_electronico}</td>
                 <td><span class="badge bg-info text-dark">${rol ? rol.nombre_rol : 'N/A'}</span></td>

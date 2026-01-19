@@ -56,13 +56,16 @@ function renderClientesTable() {
         return;
     }
 
-    tbody.innerHTML = clientes.map((cliente) => {
+    const startNumber = (currentPage - 1) * 10 + 1; // 10 items per page
+
+    tbody.innerHTML = clientes.map((cliente, index) => {
         const estadoClass = cliente.activo ? 'success' : 'secondary';
         const estadoTexto = cliente.activo ? 'Activo' : 'Inactivo';
         const rowClass = cliente.activo ? '' : 'table-secondary text-decoration-line-through';
 
         return `
             <tr class="${rowClass}">
+                <td><strong>${startNumber + index}</strong></td>
                 <td>${cliente.nombre_apellido || 'N/A'}</td>
                 <td>${cliente.cedula_identidad || 'N/A'}</td>
                 <td>${cliente.celular || 'N/A'}</td>

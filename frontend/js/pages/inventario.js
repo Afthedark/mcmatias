@@ -199,8 +199,12 @@ function renderInventarioTable() {
         return;
     }
 
-    tbody.innerHTML = inventarios.map(inv => `
+    // Calcular índice inicial basado en paginación (10 items por página)
+    const startNumber = (currentPage - 1) * 10 + 1;
+
+    tbody.innerHTML = inventarios.map((inv, index) => `
         <tr>
+            <td><strong>${startNumber + index}</strong></td>
             <td>${inv.nombre_producto}</td>
             <td>${inv.nombre_sucursal}</td>
             <td><span class="badge bg-primary">${inv.cantidad}</span></td>

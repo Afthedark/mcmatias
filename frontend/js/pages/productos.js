@@ -157,13 +157,17 @@ function renderProductosTable() {
         return;
     }
 
-    tbody.innerHTML = productos.map(producto => {
+    // Calcular índice inicial basado en paginación (10 items por página)
+    const startNumber = (currentPage - 1) * 10 + 1;
+
+    tbody.innerHTML = productos.map((producto, index) => {
         const estadoClass = producto.activo ? 'success' : 'secondary';
         const estadoTexto = producto.activo ? 'Activo' : 'Inactivo';
         const rowClass = producto.activo ? '' : 'table-secondary text-decoration-line-through';
 
         return `
             <tr class="${rowClass}">
+                <td><strong>${startNumber + index}</strong></td>
                 <td><img src="${getImageUrl(producto.foto_producto)}" class="product-img" alt="${producto.nombre_producto}"></td>
                 <td>${producto.nombre_producto}</td>
                 <td>${producto.nombre_categoria || '-'}</td>

@@ -66,13 +66,17 @@ function renderVentasTable() {
         return;
     }
 
-    tbody.innerHTML = ventas.map(venta => {
+    // Calcular índice inicial basado en paginación (10 items por página)
+    const startNumber = (currentPage - 1) * 10 + 1;
+
+    tbody.innerHTML = ventas.map((venta, index) => {
         const esAnulada = venta.estado === 'Anulada';
         const rowClass = esAnulada ? 'table-secondary' : '';
         const textClass = esAnulada ? 'text-decoration-line-through text-muted' : '';
 
         return `
         <tr class="${rowClass}">
+            <td><strong>${startNumber + index}</strong></td>
             <td class="${textClass}"><strong>${venta.numero_boleta || '-'}</strong></td>
             <td class="${textClass}">${venta.nombre_cliente || 'Sin cliente'}</td>
             <td class="${textClass}">${formatDate(venta.fecha_venta)}</td>

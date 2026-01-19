@@ -25,7 +25,7 @@ backend/
 │   └── urls.py          # Rutas de API con DefaultRouter
 ├── config/              # Configuraciones de Django
 │   ├── settings.py      # Configuración global (pagination, JWT, CORS)
-│   └──urls.py          # URLs principales
+│   └── urls.py          # URLs principales
 ├── instrucciones/       # Guías: Setup, Despliegue, Endpoints
 │   ├── deployment_cpanel.md # GUÍA PASO A PASO PARA CPANEL
 │   ├── endpoints.md     # Ejemplos de JSON para Testing con RBAC
@@ -165,22 +165,23 @@ Todos los ViewSets soportan:
 
 | Endpoint | Tipo | Búsqueda | Campos de Búsqueda | RBAC |
 |----------|------|----------|-------------------|------|
-| `/api/roles/` | Config | ❌ | - | 🌍 Global |
+| `/api/roles/` | Config | ❌ | - | 🔒 **Solo Super Admin** |
 | `/api/sucursales/` | Config | ❌ | - | 🔒 **Solo MI sucursal** |
 | `/api/categorias/` | 🌍 Global | 🔍 | `nombre_categoria`, `tipo` | Visible para todos |
 | `/api/categorias/?tipo=producto` | 🌍 Global | 🔍 | + Filtro por tipo | Visible para todos |
 | `/api/categorias/{id}/reactivar/` | Custom Action | ❌ | - | Reactivar categoría inactiva |
-| `/api/usuarios/` | 🔒 Aislado | ❌ | - | **Solo users de MI sucursal** |
+| `/api/usuarios/` | 🔒 Aislado | 🔍 | `nombre_apellido`, `correo_electronico` | **Solo users de MI sucursal** |
+| `/api/usuarios/{id}/reactivar/` | Custom Action | ❌ | - | Reactivar usuario inactivo |
 | `/api/clientes/` | 🌍 Global | 🔍 | `nombre_apellido`, `cedula_identidad`, `celular`, `correo_electronico` | Visible para todos |
 | `/api/clientes/{id}/reactivar/` | Custom Action | ❌ | - | Reactivar cliente inactivo |
 | `/api/productos/` | 🌍 Global | 🔍 | `nombre_producto`, `codigo_barras`, `descripcion` | Visible para todos |
 | `/api/productos/{id}/reactivar/` | Custom Action | ❌ | - | Reactivar producto inactivo |
 | `/api/inventario/` | 🔒 Aislado | 🔍 | `id_producto__nombre_producto`, `id_producto__codigo_barras` | **Solo stock de MI sucursal** |
-| `/api/ventas/` | 🔒 Aislado | ❌ | - | **Solo ventas de MI sucursal** |
+| `/api/ventas/` | 🔒 Aislado | 🔍 | `numero_boleta`, `id_cliente__nombre_apellido`, `id_cliente__cedula_identidad` | **Solo ventas de MI sucursal** |
 | `/api/ventas/{id}/anular/` | Custom Action | ❌ | - | PATCH para anular venta |
 | `/api/detalle_ventas/` | Relación | ❌ | - | Hereda de Venta |
 | `/api/detalle_ventas/?id_venta=X` | Relación | ❌ | - | Filtrado por venta |
-| `/api/servicios_tecnicos/` | 🔒 Aislado | 🔍 | `numero_servicio`, `cliente`, `dispositivo` | **Solo servicios de MI sucursal** |
+| `/api/servicios_tecnicos/` | 🔒 Aislado | 🔍 | `numero_servicio`, `id_cliente__nombre_apellido`, `marca_dispositivo`, `modelo_dispositivo` | **Solo servicios de MI sucursal** |
 | `/api/servicios_tecnicos/{id}/anular/` | Custom Action | ❌ | - | PATCH para anular servicio |
 | `/api/perfil/` | Usuario Auth | ❌ | - | Perfil del usuario autenticado |
 
@@ -190,6 +191,8 @@ GET /api/clientes/?search=juan&page=1
 GET /api/categorias/?tipo=servicio&search=reparacion
 GET /api/productos/?search=laptop
 GET /api/inventario/?search=samsung
+GET /api/ventas/?search=juan
+GET /api/usuarios/?search=maria
 GET /api/detalle_ventas/?id_venta=5
 ```
 
@@ -204,6 +207,7 @@ GET /api/detalle_ventas/?id_venta=5
 - ✅ Filtrado automático por sucursal en módulos aislados
 - ✅ Auto-asignación de sucursal al crear registros
 - ✅ Super Admin con acceso "Ojo de Dios" (ve todo)
+- ✅ **Módulo Roles restringido solo a Super Admin** (numero_rol=1)
 
 ### Paginación
 - Configurado globalmente en `settings.py`
@@ -243,11 +247,12 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
 - ✅ **Campo `numero_rol`**: Agregado al modelo `Rol` para jerarquías numéricas (1=SuperAdmin, 2+=Otros)
 - ✅ **Campo `id_sucursal` en Venta**: Para aislamiento correcto de ventas por sucursal
 - ✅ **Auto-Asignación de Sucursal**: Al crear inventario, ventas o servicios, se asigna automáticamente la sucursal del usuario
+- ✅ **Restricción de Módulo Roles**: Solo Super Admin puede acceder al endpoint `/api/roles/`
 
 ### API y Frontend
 - ✅ **Endpoint de Perfil**: `/api/perfil/` con actualización parcial (PATCH) y validación de contraseñas
 - ✅ **Paginación Universal**: 10 items/página en todos los endpoints
-- ✅ **Búsqueda Server-Side**: Implementado en Categorías, Clientes y Productos
+- ✅ **Búsqueda Server-Side**: Implementado en Categorías, Clientes, Productos, Inventario, Ventas, Usuarios y Servicios
 - ✅ **Productos Searchable**: Búsqueda por `nombre_producto`, `codigo_barras`, `descripcion`
 - ✅ **Serializers Enriquecidos**: Productos incluye `nombre_categoria`, Inventario incluye `nombre_producto` y `nombre_sucursal`
 - ✅ **Ventas Enriquecidas**: VentaSerializer incluye `nombre_cliente`, `nombre_usuario`, `nombre_sucursal`
@@ -255,7 +260,7 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
 - ✅ **Campo `tipo_pago`**: En modelo Ventas (Efectivo/QR)
 
 ### Sistema de Soft Delete (Borrado Lógico)
-- ✅ **Campo `activo`**: Implementado en Productos, Clientes, Categorías y Sucursales
+- ✅ **Campo `activo`**: Implementado en Productos, Clientes, Categorías, Sucursales y **Usuarios**
 - ✅ **Productos**:
   - DELETE hace soft delete (marca como inactivo)
   - Valida stock = 0 en TODAS las sucursales antes de eliminar
@@ -270,6 +275,11 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
   - DELETE hace soft delete (marca como inactiva)
   - Endpoint `PATCH /api/categorias/{id}/reactivar/` para reactivar
   - Parámetro `?incluir_inactivas=true` para ver todas
+- ✅ **Usuarios**:
+  - DELETE hace soft delete (marca como inactivo)
+  - Endpoint `PATCH /api/usuarios/{id}/reactivar/` para reactivar usuarios inactivos
+  - **Bloqueo de login**: Usuarios inactivos NO pueden iniciar sesión (validación en endpoint `/api/token/`)
+  - Parámetro `?incluir_inactivos=true` para ver todos
 
 ### Módulo de Ventas
 - ✅ **Auto-generación de `numero_boleta`**: Formato `VTA-YYYY-XXXXX` con secuencia anual automática
@@ -285,13 +295,7 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
   - Descuento automático de inventario al crear DetalleVenta
   - Restauración automática de stock al anular venta
   - Filtrado por `id_venta` en endpoint de detalles: `/api/detalle_ventas/?id_venta=X`
-- ✅ **Sistema de Impresión de Boletas**:
-  - Generación de boletas de venta en formatos Ticket 80mm y Boleta A4
-  - Modal de selección de formato de impresión
-  - Print CSS adaptativo para diferentes tipos de impresora
-  - Incluye dirección de sucursal automáticamente
-  - Marca visual "ANULADA" en ventas canceladas
-
+- ✅ **Búsqueda de Ventas**: Por número de boleta, nombre del cliente o cédula
 
 ### Sistema de Numeración Automática
 - ✅ **ServicioTecnico**: Auto-genera `numero_servicio` con formato `ST-YYYY-XXXXX`
@@ -313,12 +317,7 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
 - ✅ **Información del Dispositivo**: Marca, modelo, descripción del problema
 - ✅ **Categorización**: FK a categorías tipo "servicio"
 - ✅ **RBAC Completo**: Cada sucursal ve solo sus servicios (Super Admin ve todos)
-- ✅ **Sistema de Impresión de Boletas**:
-  - Generación de órdenes de servicio en formatos Ticket 80mm y Boleta A4
-  - Modal de selección de formato de impresión
-  - Print CSS adaptativo para diferentes tipos de impresora
-  - Incluye dirección de sucursal automáticamente
-
+- ✅ **Búsqueda de Servicios**: Por número de servicio, cliente, marca o modelo del dispositivo
 
 
 ## 🔧 Modelos de Datos
@@ -326,7 +325,16 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
 ### Rol
 - `id_rol` (PK)
 - `nombre_rol` (String, Unique)
-- **`numero_rol`** (Integer, Unique) - **NUEVO**: Para jerarquías (1=SuperAdmin, 2+=Otros)
+- **`numero_rol`** (Integer, Unique) - Para jerarquías (1=SuperAdmin, 2+=Otros)
+
+### Usuario
+- `id_usuario` (PK)
+- `nombre_apellido` (String)
+- `correo_electronico` (Email, Unique)
+- `password` (Hashed)
+- `id_rol` (FK → Rol)
+- `id_sucursal` (FK → Sucursal)
+- **`activo`** (Boolean, default=True) - Para soft delete
 
 ### Principales Relaciones
 - **Usuario** → Rol (FK), Sucursal (FK)
@@ -351,4 +359,3 @@ Consulta `instrucciones/deployment_cpanel.md` para la guía completa de subida a
 - Configura CORS correctamente para tu dominio frontend
 - Usa HTTPS en producción
 - **Asigna correctamente `numero_rol=1` solo al Super Admin**
-

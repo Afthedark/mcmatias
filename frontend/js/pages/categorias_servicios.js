@@ -73,9 +73,13 @@ function renderTable() {
         return;
     }
 
-    tbody.innerHTML = categorias.map(cat => {
+    // Calcular índice inicial basado en paginación (10 items por página)
+    const startNumber = (currentPage - 1) * 10 + 1;
+
+    tbody.innerHTML = categorias.map((cat, index) => {
         return `
             <tr>
+                <td><strong>${startNumber + index}</strong></td>
                 <td>${cat.nombre_categoria}</td>
                 <td>
                     <span class="badge bg-success">Activa</span>
