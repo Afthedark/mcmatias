@@ -265,3 +265,9 @@ async function initializePage(pageName) {
     await renderHeader();
     renderSidebar('#sidebar-container', pageName);
 }
+
+// Alias for backward compatibility or simple usage
+const initComponents = () => {
+    const pageName = window.location.pathname.split('/').pop() || 'index.html';
+    initializePage(pageName);
+};

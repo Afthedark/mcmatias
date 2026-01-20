@@ -6,6 +6,10 @@ from .views import (
     UsuarioViewSet, ClienteViewSet, ProductoViewSet, InventarioViewSet, 
     VentaViewSet, DetalleVentaViewSet, ServicioTecnicoViewSet, UserProfileView
 )
+from .views_reports import (
+    ReporteVentasDashboardView, ReporteVentasPDFView, ReporteVentasExcelView,
+    ReporteServiciosDashboardView, ReporteServiciosPDFView, ReporteServiciosExcelView
+)
 from .serializers import CustomTokenObtainPairSerializer
 
 router = DefaultRouter()
@@ -31,4 +35,14 @@ urlpatterns = [
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('perfil/', UserProfileView.as_view(), name='user_profile'),
+    
+    # Reportes Ventas
+    path('reportes/ventas/dashboard/', ReporteVentasDashboardView.as_view(), name='reportes_ventas_dashboard'),
+    path('reportes/ventas/pdf/', ReporteVentasPDFView.as_view(), name='reportes_ventas_pdf'),
+    path('reportes/ventas/excel/', ReporteVentasExcelView.as_view(), name='reportes_ventas_excel'),
+    
+    # Reportes Servicios
+    path('reportes/servicios/dashboard/', ReporteServiciosDashboardView.as_view(), name='reportes_servicios_dashboard'),
+    path('reportes/servicios/pdf/', ReporteServiciosPDFView.as_view(), name='reportes_servicios_pdf'),
+    path('reportes/servicios/excel/', ReporteServiciosExcelView.as_view(), name='reportes_servicios_excel'),
 ]
