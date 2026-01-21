@@ -301,6 +301,14 @@ class ReporteServiciosDashboardView(ReporteBaseView):
         labels_dia = [item['dia'].strftime('%d/%m') for item in por_dia]
         data_dia = [item['cantidad'] for item in por_dia]
 
+        # Agrupación por Técnico (Solo Entregados)
+        por_tecnico = queryset.filter(estado='Entregado').values('id_tecnico_asignado__nombre_apellido').annotate(
+                total=Count('id_servicio')
+        ).order_by('-total')
+
+        labels_tecnico = [item['id_tecnico_asignado__nombre_apellido'] or 'Sin Asignar' for item in por_tecnico]
+        data_tecnico = [item['total'] for item in por_tecnico]
+
         return Response({
             'grafico_estado': {
                 'labels': [item['estado'] for item in por_estado],
@@ -313,6 +321,10 @@ class ReporteServiciosDashboardView(ReporteBaseView):
             'grafico_evolucion': {
                 'labels': labels_dia,
                 'data': data_dia
+            },
+            'grafico_tecnicos': {
+                'labels': labels_tecnico,
+                'data': data_tecnico
             },
             'kpis': {
                 'total_servicios': queryset.count(),
