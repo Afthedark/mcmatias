@@ -342,7 +342,7 @@ class ReporteServiciosPDFView(ReporteBaseView):
         elements.append(Paragraph(f"Periodo: {fecha_desde.strftime('%d/%m/%Y')} - {fecha_hasta.strftime('%d/%m/%Y')}", styles['Normal']))
         elements.append(Spacer(1, 20))
         
-        data_tabla = [['#', 'Recepción', 'Entrega', 'Ticket', 'Cliente', 'Dispositivo', 'Estado', 'Costo Est.']]
+        data_tabla = [['#', 'Recepción', 'Entrega', 'Ticket', 'Cliente', 'Dispositivo', 'Estado', 'Tec. asignado', 'Costo']]
         total_estimado = 0
         
         for idx, s in enumerate(queryset, start=1):
@@ -357,11 +357,12 @@ class ReporteServiciosPDFView(ReporteBaseView):
                 s.id_cliente.nombre_apellido if s.id_cliente else '-',
                 f"{s.marca_dispositivo} {s.modelo_dispositivo}",
                 s.estado,
+                s.id_tecnico_asignado.nombre_apellido if s.id_tecnico_asignado else '-',
                 f"{s.costo_estimado:.2f}"
             ]
             data_tabla.append(row)
             
-        data_tabla.append(['', '', '', '', '', '', 'TOTAL:', f"{total_estimado:.2f}"])
+        data_tabla.append(['', '', '', '', '', '', '', 'TOTAL:', f"{total_estimado:.2f}"])
             
         t = Table(data_tabla)
         t.setStyle(TableStyle([
@@ -392,7 +393,7 @@ class ReporteServiciosExcelView(ReporteBaseView):
         ws = wb.active
         ws.title = "Servicios"
         
-        headers = ['#', 'Nro Servicio', 'Fecha Recepción', 'Fecha Entrega', 'Cliente', 'Dispositivo', 'Problema', 'Estado', 'Técnico', 'Costo Estimado']
+        headers = ['#', 'Nro Servicio', 'Fecha Recepción', 'Fecha Entrega', 'Cliente', 'Dispositivo', 'Problema', 'Estado', 'Tec. asignado', 'Costo']
         ws.append(headers)
         
         for idx, s in enumerate(queryset, start=1):

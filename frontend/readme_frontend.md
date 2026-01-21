@@ -294,7 +294,7 @@ renderLatestServices()       // Top 5 servicios técnicos con estado
   2. Búsqueda de Categoría tipo servicio (búsqueda server-side)
   3. Detalles del dispositivo (marca, modelo, problema)
   4. Upload de hasta 3 fotos con preview
-  5. Costo estimado
+  5. Costo
   6. Resumen lateral dinámico
 - **Auto-generación de Número**: `numero_servicio` se genera automáticamente en backend (ST-YYYY-XXXXX)
 - **Estados del Servicio**: En Reparación → Para Retirar → Entregado
@@ -308,7 +308,7 @@ renderLatestServices()       // Top 5 servicios técnicos con estado
   - Botón de impresión en cada servicio de la tabla
   - Modal de selección de formato (Ticket 80mm o Boleta A4)
   - Vista previa antes de imprimir
-  - Incluye información del dispositivo, cliente, problema y costo estimado
+  - Incluye información del dispositivo, cliente, problema y costo
   - Marca visual "SERVICIO ANULADO" en servicios cancelados
 
 ### Módulo de Ventas Completo
