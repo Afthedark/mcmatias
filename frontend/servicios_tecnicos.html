@@ -298,21 +298,39 @@
                                 <div class="row">
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">Foto 1</label>
-                                        <input type="file" class="form-control" id="foto_1" accept="image/*">
+                                        <div class="input-group">
+                                            <input type="file" class="form-control" id="foto_1" accept="image/*">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                onclick="abrirCamara('foto_1')">
+                                                <i class="bi bi-camera"></i>
+                                            </button>
+                                        </div>
                                         <div id="preview_container_1" style="display: none;" class="mt-2 text-center">
                                             <img id="preview_foto_1" class="preview-img">
                                         </div>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">Foto 2</label>
-                                        <input type="file" class="form-control" id="foto_2" accept="image/*">
+                                        <div class="input-group">
+                                            <input type="file" class="form-control" id="foto_2" accept="image/*">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                onclick="abrirCamara('foto_2')">
+                                                <i class="bi bi-camera"></i>
+                                            </button>
+                                        </div>
                                         <div id="preview_container_2" style="display: none;" class="mt-2 text-center">
                                             <img id="preview_foto_2" class="preview-img">
                                         </div>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">Foto 3</label>
-                                        <input type="file" class="form-control" id="foto_3" accept="image/*">
+                                        <div class="input-group">
+                                            <input type="file" class="form-control" id="foto_3" accept="image/*">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                onclick="abrirCamara('foto_3')">
+                                                <i class="bi bi-camera"></i>
+                                            </button>
+                                        </div>
                                         <div id="preview_container_3" style="display: none;" class="mt-2 text-center">
                                             <img id="preview_foto_3" class="preview-img">
                                         </div>
@@ -501,6 +519,28 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="guardarNuevoCliente()">
                         <i class="bi bi-save"></i> Guardar Cliente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalCamara" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title"><i class="bi bi-camera-fill"></i> Tomar Foto</h5>
+                    <button type="button" class="btn-close btn-close-white" onclick="cerrarCamara()"></button>
+                </div>
+                <div class="modal-body p-0 text-center bg-black">
+                    <video id="cameraFeed" autoplay playsinline
+                        style="width: 100%; max-height: 50vh; display: block;"></video>
+                    <canvas id="cameraCanvas" style="display: none;"></canvas>
+                </div>
+                <div class="modal-footer bg-dark border-top-0 justify-content-center">
+                    <button type="button" class="btn btn-outline-light" onclick="cerrarCamara()">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="capturarFoto()">
+                        <i class="bi bi-camera"></i> Capturar
                     </button>
                 </div>
             </div>

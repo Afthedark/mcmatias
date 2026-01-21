@@ -787,6 +787,72 @@ async function confirmarAnulacion() {
 }
 
 // ============================================
+// ============================================
+// CÁMARA
+// ============================================
+let mediaStream = null;
+let currentPhotoField = null;
+
+async function abrirCamara(fieldId) {
+    currentPhotoField = fieldId;
+    const modalElement = document.getElementById('modalCamara');
+    const modal = new bootstrap.Modal(modalElement);
+    const video = document.getElementById('cameraFeed');
+
+    try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' }
+        });
+        video.srcObject = mediaStream;
+        modal.show();
+    } catch (err) {
+        console.error("Error al acceder a la cámara:", err);
+        showToast("No se pudo acceder a la cámara. Verifique permisos.", "danger");
+    }
+}
+
+function cerrarCamara() {
+    if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+    }
+    const modalElement = document.getElementById('modalCamara');
+    const modal = bootstrap.Modal.getInstance(modalElement);
+    if (modal) modal.hide();
+}
+
+function capturarFoto() {
+    if (!mediaStream) return;
+
+    const video = document.getElementById('cameraFeed');
+    const canvas = document.getElementById('cameraCanvas');
+    const context = canvas.getContext('2d');
+
+    // Configurar canvas al tamaño del video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Dibujar video en canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Convertir a archivo
+    canvas.toBlob((blob) => {
+        const file = new File([blob], `foto_${Date.now()}.jpg`, { type: 'image/jpeg' });
+
+        // Asignar al input
+        const input = document.getElementById(currentPhotoField);
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        input.files = dataTransfer.files;
+
+        // Disparar evento change para el preview
+        input.dispatchEvent(new Event('change'));
+
+        cerrarCamara();
+    }, 'image/jpeg', 0.8);
+}
+
+// ============================================
 // Preview de Imágenes
 // ============================================
 function handleImagePreview(event, num) {

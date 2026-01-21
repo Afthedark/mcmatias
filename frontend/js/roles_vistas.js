@@ -24,7 +24,7 @@ const PERMISOS_ROL = {
             'reportes_ventas.html',
             'reportes_servicios.html'
         ],
-        acciones: ['editar_mi_sucursal', 'crear_servicios', 'asignar_tecnico', 'anular_ventas']
+        acciones: ['editar_mi_sucursal', 'crear_servicios', 'asignar_tecnico', 'anular_ventas', 'editar_clientes']
     },
     3: { // Técnico
         paginas: ['dashboard.html', 'servicios_tecnicos.html', 'categorias_servicios.html', 'clientes.html', 'perfil.html'],

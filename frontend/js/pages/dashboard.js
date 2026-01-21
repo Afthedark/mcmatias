@@ -62,6 +62,25 @@ async function loadDashboardData() {
     } finally {
         hideLoader();
     }
+
+    // Apply granular restrictions
+    restrictReportingButtons();
+}
+
+/**
+ * Restrict access to reporting buttons (Only Admin/SuperAdmin)
+ */
+function restrictReportingButtons() {
+    const userRole = getUserRoleNumber(); // Global from roles_vistas.js
+    const allowedRoles = [1, 2]; // Super Admin & Admin
+
+    if (userRole && !allowedRoles.includes(userRole)) {
+        const btnVentas = document.querySelector('a[href="reportes_ventas.html"]');
+        if (btnVentas) btnVentas.style.display = 'none';
+
+        const btnServicios = document.querySelector('a[href="reportes_servicios.html"]');
+        if (btnServicios) btnServicios.style.display = 'none';
+    }
 }
 
 /**
