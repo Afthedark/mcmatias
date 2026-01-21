@@ -346,7 +346,9 @@ class ReporteServiciosPDFView(ReporteBaseView):
         total_estimado = 0
         
         for idx, s in enumerate(queryset, start=1):
-            total_estimado += s.costo_estimado
+            if s.estado != 'Anulado':
+                total_estimado += s.costo_estimado
+            
             row = [
                 idx,
                 s.fecha_inicio.strftime('%d/%m/%Y'),
