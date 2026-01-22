@@ -42,6 +42,16 @@ function renderProfileModal() {
                                         <label for="profileSucursalAddress" class="form-label">Dirección</label>
                                         <input type="text" class="form-control" id="profileSucursalAddress">
                                     </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="profileSucursalCel1" class="form-label">Celular 1</label>
+                                            <input type="tel" class="form-control" id="profileSucursalCel1" placeholder="Ej: 77000000">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="profileSucursalCel2" class="form-label">Celular 2</label>
+                                            <input type="tel" class="form-control" id="profileSucursalCel2" placeholder="Opcional">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -112,6 +122,8 @@ async function openProfileModal() {
                 const sucursalData = await apiGet(`/sucursales/${userSucursalId}/`);
                 document.getElementById('profileSucursalName').value = sucursalData.nombre_sucursal || sucursalData.nombre || '';
                 document.getElementById('profileSucursalAddress').value = sucursalData.direccion || '';
+                document.getElementById('profileSucursalCel1').value = sucursalData.numero_cel1 || '';
+                document.getElementById('profileSucursalCel2').value = sucursalData.numero_cel2 || '';
                 sucursalSection.style.display = 'block';
             } catch (err) {
                 console.error("Error cargando datos de sucursal", err);
@@ -196,11 +208,15 @@ async function saveProfile() {
         if (userSucursalId && document.getElementById('sucursalSection').style.display !== 'none') {
             const sucursalName = document.getElementById('profileSucursalName').value.trim();
             const sucursalAddress = document.getElementById('profileSucursalAddress').value.trim();
+            const sucursalCel1 = document.getElementById('profileSucursalCel1').value.trim();
+            const sucursalCel2 = document.getElementById('profileSucursalCel2').value.trim();
 
             if (sucursalName) {
                 await apiPatch(`/sucursales/${userSucursalId}/`, {
                     nombre_sucursal: sucursalName,
-                    direccion: sucursalAddress
+                    direccion: sucursalAddress,
+                    numero_cel1: sucursalCel1,
+                    numero_cel2: sucursalCel2
                 });
             }
         }

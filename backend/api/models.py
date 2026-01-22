@@ -19,6 +19,8 @@ class Sucursal(models.Model):
     id_sucursal = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     direccion = models.TextField(blank=True, null=True)
+    numero_cel1 = models.CharField(max_length=20, blank=True, null=True)
+    numero_cel2 = models.CharField(max_length=20, blank=True, null=True)
     activo = models.BooleanField(default=True)
 
     class Meta:

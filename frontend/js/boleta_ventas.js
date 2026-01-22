@@ -184,11 +184,25 @@ function llenarBoletaTicket(venta, doc) {
 
     // Agregar dirección si existe
     const direccionElement = doc.getElementById('ticketDireccion');
-    if (direccionElement && venta.direccion_sucursal) {
-        direccionElement.textContent = venta.direccion_sucursal;
-        direccionElement.style.display = 'block';
-    } else if (direccionElement) {
-        direccionElement.style.display = 'none';
+    if (direccionElement) {
+        if (venta.direccion_sucursal) {
+            direccionElement.innerHTML = venta.direccion_sucursal;
+
+            // Construir línea de celulares
+            let celText = '';
+            if (venta.cel1_sucursal && venta.cel2_sucursal) {
+                celText = `${venta.cel1_sucursal} - ${venta.cel2_sucursal}`;
+            } else if (venta.cel1_sucursal || venta.cel2_sucursal) {
+                celText = venta.cel1_sucursal || venta.cel2_sucursal;
+            }
+
+            if (celText) {
+                direccionElement.innerHTML += `<br>${celText}`;
+            }
+            direccionElement.style.display = 'block';
+        } else {
+            direccionElement.style.display = 'none';
+        }
     }
 
     doc.getElementById('ticketNumero').textContent = venta.numero_boleta;
@@ -229,7 +243,24 @@ function llenarBoletaTicket(venta, doc) {
 // ============================================
 function llenarBoletaA4(venta, doc) {
     doc.getElementById('boletaSucursal').textContent = venta.nombre_sucursal || '';
-    doc.getElementById('boletaDireccion').textContent = venta.direccion_sucursal || '';
+    doc.getElementById('boletaSucursal').textContent = venta.nombre_sucursal || '';
+
+    // Dirección y Celulares
+    let dirText = venta.direccion_sucursal || '';
+    let celTextA4 = '';
+    if (venta.cel1_sucursal && venta.cel2_sucursal) {
+        celTextA4 = `${venta.cel1_sucursal} - ${venta.cel2_sucursal}`;
+    } else if (venta.cel1_sucursal || venta.cel2_sucursal) {
+        celTextA4 = venta.cel1_sucursal || venta.cel2_sucursal;
+    }
+
+    if (dirText && celTextA4) {
+        dirText += ` - ${celTextA4}`;
+    } else if (celTextA4) {
+        dirText = celTextA4;
+    }
+
+    doc.getElementById('boletaDireccion').textContent = dirText;
     doc.getElementById('boletaNumero').textContent = venta.numero_boleta;
 
     // Fecha formateada completa

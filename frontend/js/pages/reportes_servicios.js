@@ -30,7 +30,7 @@ async function loadSucursalesSelect() {
 
         const results = response.results || response;
         results.forEach(suc => {
-            select.innerHTML += `<option value="${suc.id_sucursal}">${suc.nombre_sucursal}</option>`;
+            select.innerHTML += `<option value="${suc.id_sucursal}">${suc.nombre || suc.nombre_sucursal}</option>`;
         });
     } catch (error) {
         console.error('Error loading sucursales:', error);

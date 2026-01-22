@@ -68,6 +68,8 @@ function renderTable(sucursales) {
         <tr>
             <td>${sucursal.nombre}</td>
             <td>${sucursal.direccion || '<span class="text-muted">Sin dirección</span>'}</td>
+            <td>${sucursal.numero_cel1 || '-'}</td>
+            <td>${sucursal.numero_cel2 || '-'}</td>
             <td>
                  ${sucursal.activo
             ? '<span class="badge bg-success">Activa</span>'
@@ -145,6 +147,8 @@ async function openEditModal(id = null) {
             const sucursal = await apiGet(`/sucursales/${id}/`);
             document.getElementById('nombreSucursal').value = sucursal.nombre;
             document.getElementById('direccion').value = sucursal.direccion || '';
+            document.getElementById('numeroCel1').value = sucursal.numero_cel1 || '';
+            document.getElementById('numeroCel2').value = sucursal.numero_cel2 || '';
             document.getElementById('activo').checked = sucursal.activo;
         } catch (error) {
             console.error('Error fetching sucursal details:', error);
@@ -177,6 +181,8 @@ async function saveSucursal() {
     const data = {
         nombre: document.getElementById('nombreSucursal').value,
         direccion: document.getElementById('direccion').value,
+        numero_cel1: document.getElementById('numeroCel1').value,
+        numero_cel2: document.getElementById('numeroCel2').value,
         activo: document.getElementById('activo').checked
     };
 

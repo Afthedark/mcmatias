@@ -159,11 +159,25 @@ function llenarBoletaTicket(servicio, doc) {
     doc.getElementById('ticketSucursal').textContent = servicio.nombre_sucursal || '';
 
     const direccionElement = doc.getElementById('ticketDireccion');
-    if (direccionElement && servicio.direccion_sucursal) {
-        direccionElement.textContent = servicio.direccion_sucursal;
-        direccionElement.style.display = 'block';
-    } else if (direccionElement) {
-        direccionElement.style.display = 'none';
+    if (direccionElement) {
+        if (servicio.direccion_sucursal) {
+            direccionElement.innerHTML = servicio.direccion_sucursal;
+
+            // Construir línea de celulares
+            let celText = '';
+            if (servicio.cel1_sucursal && servicio.cel2_sucursal) {
+                celText = `${servicio.cel1_sucursal} - ${servicio.cel2_sucursal}`;
+            } else if (servicio.cel1_sucursal || servicio.cel2_sucursal) {
+                celText = servicio.cel1_sucursal || servicio.cel2_sucursal;
+            }
+
+            if (celText) {
+                direccionElement.innerHTML += `<br>${celText}`;
+            }
+            direccionElement.style.display = 'block';
+        } else {
+            direccionElement.style.display = 'none';
+        }
     }
 
     doc.getElementById('ticketNumero').textContent = servicio.numero_servicio;
@@ -203,7 +217,24 @@ function llenarBoletaTicket(servicio, doc) {
 // ============================================
 function llenarBoletaA4(servicio, doc) {
     doc.getElementById('boletaSucursal').textContent = servicio.nombre_sucursal || '';
-    doc.getElementById('boletaDireccion').textContent = servicio.direccion_sucursal || '';
+    doc.getElementById('boletaSucursal').textContent = servicio.nombre_sucursal || '';
+
+    // Dirección y Celulares
+    let dirText = servicio.direccion_sucursal || '';
+    let celTextA4 = '';
+    if (servicio.cel1_sucursal && servicio.cel2_sucursal) {
+        celTextA4 = `${servicio.cel1_sucursal} - ${servicio.cel2_sucursal}`;
+    } else if (servicio.cel1_sucursal || servicio.cel2_sucursal) {
+        celTextA4 = servicio.cel1_sucursal || servicio.cel2_sucursal;
+    }
+
+    if (dirText && celTextA4) {
+        dirText += ` - ${celTextA4}`;
+    } else if (celTextA4) {
+        dirText = celTextA4;
+    }
+
+    doc.getElementById('boletaDireccion').textContent = dirText;
     doc.getElementById('boletaNumero').textContent = servicio.numero_servicio;
 
     const fecha = new Date(servicio.fecha_inicio);

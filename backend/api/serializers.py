@@ -89,11 +89,14 @@ class VentaSerializer(serializers.ModelSerializer):
     nombre_usuario = serializers.CharField(source='id_usuario.nombre_apellido', read_only=True)
     nombre_sucursal = serializers.CharField(source='id_sucursal.nombre', read_only=True)
     direccion_sucursal = serializers.CharField(source='id_sucursal.direccion', read_only=True)
+    cel1_sucursal = serializers.CharField(source='id_sucursal.numero_cel1', read_only=True)
+    cel2_sucursal = serializers.CharField(source='id_sucursal.numero_cel2', read_only=True)
     
     class Meta:
         model = Venta
         fields = ['id_venta', 'numero_boleta', 'id_cliente', 'nombre_cliente',
-                  'id_usuario', 'nombre_usuario', 'id_sucursal', 'nombre_sucursal', 'direccion_sucursal',
+                  'id_usuario', 'nombre_usuario', 'id_sucursal', 'nombre_sucursal', 
+                  'direccion_sucursal', 'cel1_sucursal', 'cel2_sucursal',
                   'fecha_venta', 'total_venta', 'tipo_pago',
                   'estado', 'motivo_anulacion', 'fecha_anulacion']
         read_only_fields = ['numero_boleta', 'id_usuario', 'id_sucursal',
@@ -114,6 +117,8 @@ class ServicioTecnicoSerializer(serializers.ModelSerializer):
     nombre_usuario = serializers.CharField(source='id_usuario.nombre_apellido', read_only=True)
     nombre_sucursal = serializers.CharField(source='id_sucursal.nombre', read_only=True)
     direccion_sucursal = serializers.CharField(source='id_sucursal.direccion', read_only=True)
+    cel1_sucursal = serializers.CharField(source='id_sucursal.numero_cel1', read_only=True)
+    cel2_sucursal = serializers.CharField(source='id_sucursal.numero_cel2', read_only=True)
     nombre_categoria = serializers.CharField(source='id_categoria.nombre_categoria', read_only=True)
     nombre_tecnico_asignado = serializers.CharField(source='id_tecnico_asignado.nombre_apellido', read_only=True)
     
@@ -123,7 +128,7 @@ class ServicioTecnicoSerializer(serializers.ModelSerializer):
             'id_servicio', 'numero_servicio', 
             'id_cliente', 'nombre_cliente', 'celular_cliente',
             'id_usuario', 'nombre_usuario',
-            'id_sucursal', 'nombre_sucursal', 'direccion_sucursal',
+            'id_sucursal', 'nombre_sucursal', 'direccion_sucursal', 'cel1_sucursal', 'cel2_sucursal',
             'id_categoria', 'nombre_categoria',
             'marca_dispositivo', 'modelo_dispositivo',
             'descripcion_problema', 'costo_estimado',
