@@ -513,6 +513,7 @@ function abrirModalNuevoCliente() {
     document.getElementById('ncNombre').value = '';
     document.getElementById('ncCI').value = '';
     document.getElementById('ncCelular').value = '';
+    document.getElementById('ncOtroCelular').value = '';
     new bootstrap.Modal(document.getElementById('nuevoClienteModal')).show();
 }
 
@@ -520,6 +521,7 @@ async function guardarNuevoCliente() {
     const nombre = document.getElementById('ncNombre').value.trim();
     const cedula = document.getElementById('ncCI').value.trim();
     const celular = document.getElementById('ncCelular').value.trim();
+    const otroCelular = document.getElementById('ncOtroCelular').value.trim();
 
     if (!nombre) {
         showToast('El nombre es obligatorio', 'warning');
@@ -531,7 +533,8 @@ async function guardarNuevoCliente() {
         const nuevoCliente = await apiPost('/clientes/', {
             nombre_apellido: nombre,
             cedula_identidad: cedula || null,
-            celular: celular || null
+            celular: celular || null,
+            otro_numero_celular: otroCelular || null
         });
 
         showToast('Cliente creado correctamente', 'success');

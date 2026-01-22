@@ -348,7 +348,8 @@ async function guardarNuevoCliente() {
     const data = {
         nombre_apellido: document.getElementById('ncNombre').value,
         cedula_identidad: document.getElementById('ncCI').value,
-        celular: document.getElementById('ncCelular').value
+        celular: document.getElementById('ncCelular').value,
+        otro_numero_celular: document.getElementById('ncOtroCelular').value || ''
     };
 
     try {

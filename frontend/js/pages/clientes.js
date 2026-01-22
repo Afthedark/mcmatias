@@ -69,6 +69,7 @@ function renderClientesTable() {
                 <td>${cliente.nombre_apellido || 'N/A'}</td>
                 <td>${cliente.cedula_identidad || 'N/A'}</td>
                 <td>${cliente.celular || 'N/A'}</td>
+                <td>${cliente.otro_numero_celular || '-'}</td>
                 <td>${cliente.correo_electronico || 'N/A'}</td>
                 <td><span class="badge bg-${estadoClass}">${estadoTexto}</span></td>
                 <td>
@@ -147,7 +148,9 @@ async function openEditModal(id) {
         document.getElementById('clienteId').value = cliente.id_cliente;
         document.getElementById('nombreApellido').value = cliente.nombre_apellido;
         document.getElementById('cedulaIdentidad').value = cliente.cedula_identidad || '';
+        document.getElementById('cedulaIdentidad').value = cliente.cedula_identidad || '';
         document.getElementById('celular').value = cliente.celular || '';
+        document.getElementById('otroCelular').value = cliente.otro_numero_celular || '';
         document.getElementById('correoElectronico').value = cliente.correo_electronico || '';
         document.getElementById('direccion').value = cliente.direccion || '';
 
@@ -173,6 +176,7 @@ async function saveCliente() {
         nombre_apellido: document.getElementById('nombreApellido').value,
         cedula_identidad: document.getElementById('cedulaIdentidad').value,
         celular: document.getElementById('celular').value,
+        otro_numero_celular: document.getElementById('otroCelular').value,
         correo_electronico: document.getElementById('correoElectronico').value,
         direccion: document.getElementById('direccion').value
     };

@@ -147,6 +147,7 @@ class Cliente(models.Model):
     nombre_apellido = models.CharField(max_length=100)
     cedula_identidad = models.CharField(max_length=20, blank=True, null=True)
     celular = models.CharField(max_length=20, blank=True, null=True)
+    otro_numero_celular = models.CharField(max_length=20, blank=True, null=True)
     correo_electronico = models.CharField(max_length=100, blank=True, null=True) 
     direccion = models.TextField(blank=True, null=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
