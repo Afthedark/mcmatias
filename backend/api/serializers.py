@@ -70,6 +70,10 @@ class ClienteSerializer(serializers.ModelSerializer):
 class ProductoSerializer(serializers.ModelSerializer):
     nombre_categoria = serializers.CharField(source='id_categoria.nombre_categoria', read_only=True)
     activo = serializers.BooleanField(default=True, required=False)
+    
+    # FIX: Convertir cadenas vacías a None para evitar error de unicidad en DB
+    def validate_codigo_barras(self, value):
+        return value if value else None
 
     class Meta:
         model = Producto
