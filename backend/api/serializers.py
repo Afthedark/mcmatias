@@ -1,4 +1,4 @@
-﻿from rest_framework import serializers
+from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import (
     Rol, Sucursal, Categoria, Usuario, Cliente, Producto, 
@@ -135,13 +135,13 @@ class ServicioTecnicoSerializer(serializers.ModelSerializer):
             'id_sucursal', 'nombre_sucursal', 'direccion_sucursal', 'cel1_sucursal', 'cel2_sucursal',
             'id_categoria', 'nombre_categoria',
             'marca_dispositivo', 'modelo_dispositivo',
-            'descripcion_problema', 'costo_estimado',
+            'descripcion_problema', 'costo_estimado', 'adelanto', 'saldo',
             'estado', 'fecha_inicio', 'fecha_entrega',
             'id_tecnico_asignado', 'nombre_tecnico_asignado',
             'foto_1', 'foto_2', 'foto_3',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['numero_servicio', 'id_usuario', 'id_sucursal', 'fecha_entrega', 'created_at', 'updated_at']
+        read_only_fields = ['numero_servicio', 'id_usuario', 'id_sucursal', 'fecha_entrega', 'created_at', 'updated_at', 'saldo']
 
 class UserProfileSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False, allow_blank=True)

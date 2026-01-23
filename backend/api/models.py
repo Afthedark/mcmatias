@@ -275,6 +275,8 @@ class ServicioTecnico(models.Model):
     descripcion_problema = models.TextField(blank=True, null=True)
     id_categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, db_column='id_categoria')
     costo_estimado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    adelanto = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True, null=True)
+    saldo = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True, null=True)
     # Fechas y estado
     fecha_inicio = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='En Reparación')

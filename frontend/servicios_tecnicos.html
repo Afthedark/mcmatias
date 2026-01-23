@@ -262,6 +262,12 @@
                                         <input type="number" class="form-control" id="costo_estimado" placeholder="0.00"
                                             step="0.01" min="0">
                                     </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Adelanto (Bs)</label>
+                                        <input type="number" class="form-control" id="adelanto" placeholder="0.00"
+                                            step="0.01" min="0">
+                                        <div class="form-text">Opcional: Monto dejado a cuenta</div>
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Descripción del Problema</label>
@@ -364,7 +370,15 @@
 
                             <div class="d-flex justify-content-between mb-3">
                                 <strong>Costo:</strong>
-                                <span class="fs-5 text-success fw-bold" id="resumenCosto">Bs 0.00</span>
+                                <span class="fs-5 fw-bold" id="resumenCosto">Bs 0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <strong>Adelanto:</strong>
+                                <span class="fs-5 fw-bold text-primary" id="resumenAdelanto">Bs 0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <strong>Saldo:</strong>
+                                <span class="fs-5 fw-bold text-danger" id="resumenSaldo">Bs 0.00</span>
                             </div>
 
                             <button class="btn btn-success w-100 mb-2" onclick="guardarServicio()"
@@ -430,6 +444,14 @@
                                 <tr>
                                     <th class="text-muted">Costo:</th>
                                     <td id="detalleCosto"></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">Adelanto:</th>
+                                    <td id="detalleAdelanto" class="text-primary"></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">Saldo:</th>
+                                    <td id="detalleSaldo" class="text-danger fw-bold"></td>
                                 </tr>
                                 <tr>
                                     <th class="text-muted">Fecha Inicio:</th>

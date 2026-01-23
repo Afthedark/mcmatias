@@ -496,19 +496,35 @@ class ServicioTecnicoViewSet(viewsets.ModelViewSet):
         return queryset
     
     def perform_create(self, serializer):
-        """Auto-asignar sucursal y usuario del request"""
+        """
+        Auto-asignar sucursal y usuario del request.
+        Calcular saldo = costo_estimado - adelanto
+        """
         user = self.request.user
+        
+        # Calcular saldo
+        costo = serializer.validated_data.get('costo_estimado') or 0
+        adelanto = serializer.validated_data.get('adelanto') or 0
+        
+        # Validar adelanto
+        if adelanto > costo:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'adelanto': 'El adelanto no puede ser mayor al costo estimado.'})
+        
+        saldo = costo - adelanto
+        
         if user.id_rol.numero_rol == 1:
             # Super Admin puede especificar sucursal, pero siempre se asigna el usuario
-            serializer.save(id_usuario=user)
+            serializer.save(id_usuario=user, saldo=saldo)
         else:
             # Otros: forzar su sucursal y usuario
-            serializer.save(id_sucursal=user.id_sucursal, id_usuario=user)
+            serializer.save(id_sucursal=user.id_sucursal, id_usuario=user, saldo=saldo)
     
     def perform_update(self, serializer):
         """
         Auto-capturar fecha_entrega cuando el estado cambia a 'Entregado'.
         Restricción: Técnico (rol 3) solo puede editar servicios asignados a él.
+        Recalcular saldo si cambia costo o adelanto.
         """
         user = self.request.user
         instance = serializer.instance
@@ -519,13 +535,24 @@ class ServicioTecnicoViewSet(viewsets.ModelViewSet):
                 from rest_framework.exceptions import PermissionDenied
                 raise PermissionDenied('Solo puedes editar servicios asignados a ti.')
         
+        # Recalcular saldo
+        costo = serializer.validated_data.get('costo_estimado', instance.costo_estimado) or 0
+        adelanto = serializer.validated_data.get('adelanto', instance.adelanto) or 0
+        
+        # Validar adelanto
+        if adelanto > costo:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'adelanto': 'El adelanto no puede ser mayor al costo estimado.'})
+            
+        saldo = costo - adelanto
+        
         nuevo_estado = serializer.validated_data.get('estado', instance.estado)
         
         # Si cambia a Entregado y no tiene fecha_entrega, capturarla
         if nuevo_estado == 'Entregado' and not instance.fecha_entrega:
-            serializer.save(fecha_entrega=timezone.now())
+            serializer.save(fecha_entrega=timezone.now(), saldo=saldo)
         else:
-            serializer.save()
+            serializer.save(saldo=saldo)
 
     @action(detail=True, methods=['patch'])
     def anular(self, request, pk=None):

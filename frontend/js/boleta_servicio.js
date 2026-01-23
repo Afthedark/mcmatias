@@ -202,6 +202,8 @@ function llenarBoletaTicket(servicio, doc) {
     estadoBadge.className = 'badge ' + getBadgeClass(servicio.estado);
 
     doc.getElementById('ticketCosto').textContent = formatCurrency(servicio.costo_estimado || 0);
+    doc.getElementById('ticketAdelanto').textContent = formatCurrency(servicio.adelanto || 0);
+    doc.getElementById('ticketSaldo').textContent = formatCurrency(servicio.saldo || 0);
     doc.getElementById('ticketUsuario').textContent = servicio.nombre_tecnico_asignado || 'Sin asignar';
 
     if (servicio.estado === 'Anulado') {
@@ -267,6 +269,8 @@ function llenarBoletaA4(servicio, doc) {
     estadoBadge.className = 'badge ' + getBadgeClass(servicio.estado);
 
     doc.getElementById('boletaCosto').textContent = formatCurrency(servicio.costo_estimado || 0);
+    doc.getElementById('boletaAdelanto').textContent = formatCurrency(servicio.adelanto || 0);
+    doc.getElementById('boletaSaldo').textContent = formatCurrency(servicio.saldo || 0);
     doc.getElementById('boletaUsuario').textContent = servicio.nombre_tecnico_asignado || 'Sin asignar';
 
     if (servicio.estado === 'Anulado') {

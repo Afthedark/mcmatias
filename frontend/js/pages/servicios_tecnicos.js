@@ -164,6 +164,7 @@ function setupEventListeners() {
 
     // Actualizar resumen en tiempo real
     document.getElementById('costo_estimado')?.addEventListener('input', actualizarResumen);
+    document.getElementById('adelanto')?.addEventListener('input', actualizarResumen);
     document.getElementById('marca_dispositivo')?.addEventListener('input', actualizarResumen);
     document.getElementById('modelo_dispositivo')?.addEventListener('input', actualizarResumen);
 }
@@ -356,6 +357,7 @@ async function mostrarEditarServicio(id) {
         document.getElementById('marca_dispositivo').value = servicio.marca_dispositivo || '';
         document.getElementById('modelo_dispositivo').value = servicio.modelo_dispositivo || '';
         document.getElementById('costo_estimado').value = servicio.costo_estimado || '';
+        document.getElementById('adelanto').value = servicio.adelanto || '';
         document.getElementById('descripcion_problema').value = servicio.descripcion_problema || '';
         document.getElementById('estado').value = servicio.estado || 'En Reparación';
 
@@ -421,6 +423,7 @@ function resetFormulario() {
     document.getElementById('marca_dispositivo').value = '';
     document.getElementById('modelo_dispositivo').value = '';
     document.getElementById('costo_estimado').value = '';
+    document.getElementById('adelanto').value = '';
     document.getElementById('descripcion_problema').value = '';
     document.getElementById('estado').value = 'En Reparación';
 
@@ -448,6 +451,8 @@ function resetFormulario() {
     document.getElementById('resumenDispositivo').textContent = '-';
     document.getElementById('resumenCategoria').textContent = '-';
     document.getElementById('resumenCosto').textContent = 'Bs 0.00';
+    document.getElementById('resumenAdelanto').textContent = 'Bs 0.00';
+    document.getElementById('resumenSaldo').textContent = 'Bs 0.00';
 }
 
 // ============================================
@@ -634,9 +639,14 @@ function actualizarResumen() {
     document.getElementById('resumenCategoria').textContent =
         categoriaSeleccionada ? categoriaSeleccionada.nombre_categoria : '-';
 
-    // Costo
+    // Costo, Adelanto y Saldo
     const costo = parseFloat(document.getElementById('costo_estimado')?.value) || 0;
+    const adelanto = parseFloat(document.getElementById('adelanto')?.value) || 0;
+    const saldo = Math.max(0, costo - adelanto);
+
     document.getElementById('resumenCosto').textContent = formatCurrency(costo);
+    document.getElementById('resumenAdelanto').textContent = formatCurrency(adelanto);
+    document.getElementById('resumenSaldo').textContent = formatCurrency(saldo);
 }
 
 // ============================================
@@ -664,7 +674,8 @@ async function guardarServicio() {
             modelo_dispositivo: document.getElementById('modelo_dispositivo').value.trim(),
             descripcion_problema: document.getElementById('descripcion_problema').value.trim(),
             id_categoria: document.getElementById('id_categoria').value,
-            costo_estimado: document.getElementById('costo_estimado').value
+            costo_estimado: document.getElementById('costo_estimado').value,
+            adelanto: document.getElementById('adelanto').value
         };
 
         Object.entries(campos).forEach(([key, value]) => {
@@ -729,6 +740,8 @@ async function verDetalle(id) {
         document.getElementById('detalleTecnico').textContent = servicio.nombre_tecnico_asignado || 'Sin asignar';
         document.getElementById('detalleDescripcion').textContent = servicio.descripcion_problema || 'Sin descripción';
         document.getElementById('detalleCosto').textContent = formatCurrency(servicio.costo_estimado || 0);
+        document.getElementById('detalleAdelanto').textContent = formatCurrency(servicio.adelanto || 0);
+        document.getElementById('detalleSaldo').textContent = formatCurrency(servicio.saldo || 0);
         document.getElementById('detalleFecha').textContent = formatDate(servicio.fecha_inicio);
         document.getElementById('detalleFechaEntrega').textContent = servicio.fecha_entrega ? formatDate(servicio.fecha_entrega) : 'Pendiente';
         document.getElementById('detalleUsuario').textContent = servicio.nombre_usuario || 'N/A';
