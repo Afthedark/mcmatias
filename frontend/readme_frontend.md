@@ -9,10 +9,12 @@ frontend/
 ├── productos.html          # Gestión de productos
 ├── clientes.html           # Gestión de clientes
 ├── ventas.html             # Gestión de ventas
+├── reportes_ventas.html    # Reportes de ventas (gráficos + exportación)
 ├── boleta_ventas.html      # Plantilla de boletas de venta
 ├── boleta_servicio.html    # Plantilla de órdenes de servicio
 ├── inventario.html         # Control de inventario (Stock por sucursal)
 ├── servicios_tecnicos.html # Órdenes de servicio
+├── reportes_servicios.html # Reportes de servicios técnicos
 ├── categorias_productos.html # Gestión de categorías de productos
 ├── categorias_servicios.html # Gestión de categorías de servicios
 ├── sucursales.html         # Gestión de sucursales
@@ -42,7 +44,9 @@ frontend/
 │       ├── categorias_productos.js  # CRUD con paginación, búsqueda y PATCH
 │       ├── categorias_servicios.js  # CRUD con paginación, búsqueda y PATCH
 │       ├── ventas.js           # Sistema completo de ventas con carrito + impresión
+│       ├── reportes_ventas.js  # Reportes con filtros, KPIs, gráficos y exportación
 │       ├── servicios_tecnicos.js # CRUD completo con imágenes + impresión
+│       ├── reportes_servicios.js # Reportes con KPIs, gráficos y exportación
 │       ├── usuarios.js         # Gestión de usuarios con soft delete
 │       ├── roles.js            # Gestión de roles
 │       └── sucursales.js       # Gestión de sucursales
@@ -50,7 +54,7 @@ frontend/
 └── assets/                 # Logos, imágenes (opcional)
 ```
 
-**Nota**: Bootstrap 5 y Bootstrap Icons se cargan vía CDN.
+**Nota**: Bootstrap 5, Bootstrap Icons y Chart.js se cargan vía CDN.
 
 ## 🚀 Iniciando el Proyecto
 
@@ -74,7 +78,9 @@ frontend/
 | **Categorías Productos** | ✅ 10/página | 🔍 Server-Side | ✅ | ✅ | Soft delete con reactivación |
 | **Categorías Servicios** | ✅ 10/página | 🔍 Server-Side | ✅ | ✅ | Soft delete con reactivación |
 | **Ventas** | ✅ 10/página | 🔍 Server-Side | ✅ | ✅ | Sistema completo con carrito, búsqueda de clientes/productos, anulación, impresión |
+| **Reportes Ventas** | N/A | N/A | N/A | N/A | KPIs, gráficos (Chart.js), exportación PDF/Excel, filtros por fecha y sucursal |
 | **Servicios Técnicos** | ✅ 10/página | 🔍 Server-Side | ✅ | ✅ | Sistema completo con búsqueda de clientes/categorías, upload de 3 fotos, anulación, impresión |
+| **Reportes Servicios** | N/A | N/A | N/A | N/A | KPIs, gráficos (Chart.js), exportación PDF/Excel, filtros por fecha y sucursal |
 | **Roles** | ✅ 10/página | ❌ | ✅ | ❌ | Simple CRUD, **Solo Super Admin** |
 | **Usuarios** | ✅ 10/página | 🔍 Server-Side | ✅ | ✅ | FK a Roles/Sucursales, Soft delete con reactivación, Bloqueo de login |
 | **Sucursales** | ✅ 10/página | ❌ | ✅ | ❌ | Activar/Desactivar, campo Dirección |
@@ -123,7 +129,13 @@ Todas las tablas principales cuentan con una columna **#** (numerador) en la pri
 - Bootstrap 5.3
 - Bootstrap Icons integrados
 
-## 🔧 Módulos JavaScript
+### � Reportes (Ventas y Servicios)
+- KPIs agregados con filtros por fecha (hoy/mes/año + rango manual)
+- Filtro por sucursal visible solo para Super Admin
+- Gráficos con Chart.js
+- Exportación a PDF y Excel desde el frontend
+
+## �🔧 Módulos JavaScript
 
 ### Core
 - **api.js**: Axios configurado con interceptores JWT
@@ -222,6 +234,16 @@ searchProductos()            // Debounce 300ms en nombre y código de barras
 imprimirBoleta(id)           // Genera boleta en formato seleccionado
 ```
 
+#### reportes_ventas.js (Reportes de Ventas)
+```javascript
+// Funciones principales
+initFilters()                // Muestra filtro sucursal según rol
+setQuickDate(type)           // Rangos rápidos (hoy/mes/año)
+loadReporteData()            // Llama a /reportes/ventas/dashboard/
+renderCharts(data)           // Chart.js: ventas, pagos, productos, horas
+downloadReport(type)         // Exporta PDF/Excel con token JWT
+```
+
 #### servicios_tecnicos.js (Sistema Completo de Servicios Técnicos)
 ```javascript
 // Funciones principales
@@ -246,6 +268,16 @@ guardarNuevoCliente()        // Guardar y auto-seleccionar cliente
 
 // Impresión
 imprimirBoletaServicio(id)   // Genera orden en formato seleccionado
+```
+
+#### reportes_servicios.js (Reportes de Servicios)
+```javascript
+// Funciones principales
+initFilters()                // Muestra filtro sucursal según rol
+setQuickDate(type)           // Rangos rápidos (hoy/mes/año)
+loadReporteData()            // Llama a /reportes/servicios/dashboard/
+renderCharts(data)           // Chart.js: estado, marcas, evolución, técnicos
+downloadReport(type)         // Exporta PDF/Excel con token JWT
 ```
 
 #### dashboard.js (Client-side Data Processing)
@@ -299,7 +331,7 @@ renderLatestServices()       // Top 5 servicios técnicos con estado
 - **Auto-generación de Número**: `numero_servicio` se genera automáticamente en backend (ST-YYYY-XXXXX)
 - **Estados del Servicio**: En Reparación → Para Retirar → Entregado
 - **Sistema de Anulación**:
-  - Botón "Anular" visible para roles 1, 2, 3, y 5 (NO para Cajero puro)
+  - Botón "Anular" visible para roles 1 y 5 (NO para Cajero puro)
   - Modal de confirmación simple (sin motivo obligatorio)
   - Servicios anulados se muestran con badge rojo y tachados
 - **RBAC**: Cada sucursal ve solo sus servicios (Super Admin ve todos)
@@ -392,9 +424,11 @@ const SIDEBAR_CONFIG = [
 
 **Orden actual del menú**:
 1. Dashboard
-2. **Logística**: Productos, Inventario
-3. **Ventas & Clientes**: Ventas, Servicios Técnicos, Clientes
-4. **Configuración**: Categorías (separadas en Productos/Servicios), Sucursales, Usuarios, Roles (Solo Super Admin)
+2. **Logística**: Productos, Categorías Productos, Inventario
+3. **Ventas & Clientes**: Ventas, Servicios Técnicos, Categorías Servicios, Clientes
+4. **Configuración**: Sucursales, Usuarios, Roles (Solo Super Admin)
+
+**Nota**: Los reportes están disponibles como páginas dedicadas; si deseas mostrarlos en el menú, agrégalos en `SIDEBAR_CONFIG`.
 
 ## 📊 Consistencia entre Módulos
 
@@ -434,14 +468,13 @@ async function deleteItem(id) { ... }  // Soft delete donde aplique
 ## 🎯 Próximas Implementaciones
 
 - [ ] Gráficos visuales en Dashboard (Chart.js)
-- [ ] Reportes y exportación (PDF/Excel)
-- [ ] Filtros avanzados por fecha en ventas y servicios
 - [ ] Sistema de notificaciones push
 - [ ] Gestión de garantías de productos
 
 ## ✅ Implementado Recientemente
 
 - [x] **Sistema de Numerador Universal**: Columna # en todas las tablas principales (Usuarios, Clientes, Productos, Inventario, Categorías, Ventas, Servicios)
+- [x] **Reportes de Ventas y Servicios**: KPIs, gráficos y exportación PDF/Excel con filtros por fecha y sucursal
 - [x] **Soft Delete para Usuarios**: Desactivación con reactivación y bloqueo de login
 - [x] **Restricción RBAC del Módulo Roles**: Solo accesible para Super Admin
 - [x] **Búsqueda Server-Side Expandida**: Usuarios y Ventas ahora con búsqueda

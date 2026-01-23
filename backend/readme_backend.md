@@ -12,6 +12,7 @@ Este es el proyecto backend para el sistema de gestión **MCMatias**, desarrolla
 - **Base de Datos**: MySQL / MariaDB
 - **Driver**: **PyMySQL** + **cryptography** (Universal, optimizado para **cPanel** y compatible con MariaDB/MySQL 8.0+)
 - **Archivos**: **Pillow** (Gestión de imágenes para productos y servicios)
+- **Reportes**: **openpyxl** (Excel) y **reportlab** (PDF)
 - **Filtros**: **SearchFilter** de DRF para búsquedas server-side
 
 ## 📂 Estructura del Proyecto
@@ -21,6 +22,7 @@ backend/
 ├── api/                 # Aplicación principal
 │   ├── models.py        # Modelos de datos (Producto, Cliente, Inventario, etc.)
 │   ├── views.py         # ViewSets con RBAC, paginación y búsqueda
+│   ├── views_reports.py # Endpoints de reportes (dashboard, PDF, Excel)
 │   ├── serializers.py   # Serializadores con validaciones
 │   └── urls.py          # Rutas de API con DefaultRouter
 ├── config/              # Configuraciones de Django
@@ -183,6 +185,12 @@ Todos los ViewSets soportan:
 | `/api/detalle_ventas/?id_venta=X` | Relación | ❌ | - | Filtrado por venta |
 | `/api/servicios_tecnicos/` | 🔒 Aislado | 🔍 | `numero_servicio`, `id_cliente__nombre_apellido`, `marca_dispositivo`, `modelo_dispositivo` | **Solo servicios de MI sucursal** |
 | `/api/servicios_tecnicos/{id}/anular/` | Custom Action | ❌ | - | PATCH para anular servicio |
+| `/api/reportes/ventas/dashboard/` | Reporte | ❌ | - | KPIs + gráficos (ventas) |
+| `/api/reportes/ventas/pdf/` | Reporte | ❌ | - | Exportación PDF |
+| `/api/reportes/ventas/excel/` | Reporte | ❌ | - | Exportación Excel |
+| `/api/reportes/servicios/dashboard/` | Reporte | ❌ | - | KPIs + gráficos (servicios) |
+| `/api/reportes/servicios/pdf/` | Reporte | ❌ | - | Exportación PDF |
+| `/api/reportes/servicios/excel/` | Reporte | ❌ | - | Exportación Excel |
 | `/api/perfil/` | Usuario Auth | ❌ | - | Perfil del usuario autenticado |
 
 **Ejemplo de búsqueda**:
@@ -227,6 +235,11 @@ GET /api/detalle_ventas/?id_venta=5
 ### Filtros Personalizados
 - **Categorías**: Filtro por `tipo` vía `get_queryset()`
 - Ejemplo: `/api/categorias/?tipo=servicio` devuelve solo servicios técnicos
+
+### Reportes (Ventas y Servicios)
+- KPIs agregados por rango de fechas
+- Filtro por sucursal disponible para Super Admin
+- Exportación a PDF y Excel desde endpoints dedicados
 
 ## 📚 Documentación de API (Swagger)
 
@@ -289,7 +302,6 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
   - Campo `motivo_anulacion` y `fecha_anulacion`
   - Endpoint custom `PATCH /api/ventas/{id}/anular/` que restaura inventario automáticamente
   - Validación para evitar doble anulación
-  - **Roles permitidos**: 1 (Super Admin), 2 (Administrador)
 - ✅ **Gestión Automática de Stock**:
   - Validación de stock disponible antes de confirmar venta
   - Descuento automático de inventario al crear DetalleVenta
@@ -301,7 +313,7 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
 - ✅ **ServicioTecnico**: Auto-genera `numero_servicio` con formato `ST-YYYY-XXXXX`
 - ✅ **Venta**: Auto-genera `numero_boleta` con formato `VTA-YYYY-XXXXX`
 - ✅ **Secuencias anuales**: Los contadores se reinician automáticamente cada año
-- ✅ **Thread-safe**: Implementado en el método `save()` de cada modelo
+- ✅ **Implementado en modelos**: Se genera dentro del método `save()` de cada modelo
 
 ### Módulo de Servicios Técnicos
 - ✅ **CRUD Completo**: Crear, leer, actualizar servicios técnicos
@@ -310,7 +322,7 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
 - ✅ **Sistema de Anulación de Servicios**:
   - Campo `estado` (En Reparación/Para Retirar/Entregado/Anulado)
   - Endpoint custom `PATCH /api/servicios_tecnicos/{id}/anular/`
-  - **Roles permitidos**: 1 (Super Admin), 2 (Administrador), 3 (Técnico), 5 (Técnico y Cajero)
+  - **Roles permitidos**: 1 (Super Admin), 2 (Administrador), 5 (Técnico y Cajero)
   - Rol 4 (Cajero) **NO** puede anular servicios
   - Validación para evitar doble anulación
 - ✅ **Upload de Imágenes**: Hasta 3 fotos por servicio (`foto_1`, `foto_2`, `foto_3`)
