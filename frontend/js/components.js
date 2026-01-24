@@ -206,7 +206,9 @@ function createNavItem(href, icon, text, activePage) {
     const isActive = activePage === href ? 'active' : '';
     return `
         <li class="nav-item">
-            <a href="${href}" class="nav-link ${isActive}" title="${text}">
+            <a href="${href}" class="nav-link ${isActive}" 
+               onclick="handleModuleTransition(event, '${href}')" 
+               title="${text}">
                 <i class="bi ${icon}"></i>
                 <span>${text}</span>
             </a>
@@ -236,6 +238,73 @@ function toggleSidebar() {
 
     if (sidebar) sidebar.classList.toggle('show');
     if (overlay) overlay.classList.toggle('show');
+}
+
+/**
+ * Handle smooth module transitions
+ * @param {Event} event - Click event
+ * @param {string} href - Target page URL
+ */
+function handleModuleTransition(event, href) {
+    event.preventDefault();
+    
+    const currentContent = document.querySelector('.content-wrapper');
+    const sidebar = document.querySelector('.sidebar');
+    
+    // En móvil, cerrar sidebar después de click
+    if (window.innerWidth <= 992 && sidebar) {
+        sidebar.classList.remove('show');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if (overlay) overlay.classList.remove('show');
+    }
+    
+    // Mostrar indicador de carga
+    showNavigationLoader();
+    
+    // Animación de salida
+    if (currentContent) {
+        currentContent.classList.add('page-transition-out');
+    }
+    
+    setTimeout(() => {
+        // Navegar a la nueva página
+        window.location.href = href;
+    }, 300);
+}
+
+/**
+ * Show loading indicator during navigation
+ */
+function showNavigationLoader() {
+    const loader = document.createElement('div');
+    loader.className = 'navigation-loader';
+    loader.innerHTML = '<div class="spinner-border spinner-border-sm text-primary"></div>';
+    document.body.appendChild(loader);
+    
+    setTimeout(() => {
+        loader.remove();
+    }, 300);
+}
+
+/**
+ * Initialize page entry animation
+ */
+function initializePageAnimations() {
+    const content = document.querySelector('.content-wrapper');
+    if (content) {
+        content.classList.add('page-transition-in');
+        
+        setTimeout(() => {
+            content.classList.remove('page-transition-in');
+        }, 300);
+    }
+}
+
+// Llamar al cargar cada página
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePageAnimations);
+} else {
+    initializePageAnimations();
 }
 
 /**
