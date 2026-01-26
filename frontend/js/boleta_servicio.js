@@ -224,8 +224,16 @@ function llenarBoletaPanoramica(servicio, doc) {
     const fechaIngreso = formatDateTimeCompact(servicio.fecha_inicio);
     const fechaIngresoShort = formatDateOnly(servicio.fecha_inicio);
 
-    const fechaEntrega = servicio.fecha_entrega ? formatDateTimeCompact(servicio.fecha_entrega) : 'Pendiente';
-    const fechaEntregaShort = servicio.fecha_entrega ? formatDateOnly(servicio.fecha_entrega) : 'Pendiente';
+    // Lógica para determinar la fecha de entrega efectiva a mostrar
+    let fechaEntregaEfectivaRaw = servicio.fecha_entrega;
+    
+    // Si no tiene fecha pero el estado indica que ya está listo o entregado, usamos la fecha actual como fallback visual
+    if (!fechaEntregaEfectivaRaw && (servicio.estado === 'Entregado' || servicio.estado === 'Para Retirar')) {
+        fechaEntregaEfectivaRaw = new Date();
+    }
+
+    const fechaEntrega = fechaEntregaEfectivaRaw ? formatDateTimeCompact(fechaEntregaEfectivaRaw) : 'Pendiente';
+    const fechaEntregaShort = fechaEntregaEfectivaRaw ? formatDateOnly(fechaEntregaEfectivaRaw) : 'Pendiente';
 
     container.querySelectorAll('.fecha-ingreso-val').forEach(el => el.textContent = fechaIngreso);
     container.querySelectorAll('.fecha-ingreso-short').forEach(el => el.textContent = fechaIngresoShort);
@@ -256,6 +264,10 @@ function llenarBoletaPanoramica(servicio, doc) {
     // Dispositivo
     const dispositivo = `${servicio.marca_dispositivo || ''} ${servicio.modelo_dispositivo || ''}`.trim();
     container.querySelectorAll('.dispositivo-desc, .dispositivo-full').forEach(el => el.textContent = dispositivo);
+
+    // Marca y Modelo individuales
+    container.querySelectorAll('.dispositivo-marca').forEach(el => el.textContent = servicio.marca_dispositivo || '-');
+    container.querySelectorAll('.dispositivo-modelo').forEach(el => el.textContent = servicio.modelo_dispositivo || '-');
 
     // Servicio (categoría)
     // Priorizamos nombre_categoria para mostrar texto legible en lugar de ID
