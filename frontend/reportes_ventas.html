@@ -28,13 +28,13 @@
         <!-- Main Content -->
         <div class="content-wrapper">
 
-            <div class="page-header">
-                <h1 class="page-title">
-                    <i class="bi bi-bar-chart-line text-primary"></i> Reportes de Ventas
-                </h1>
-            </div>
+            <div class="container-xxl">
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <i class="bi bi-bar-chart-line text-primary"></i> Reportes de Ventas
+                    </h1>
+                </div>
 
-            <div class="container-fluid p-0">
                 <!-- Filtros -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-white py-3">
@@ -87,24 +87,29 @@
 
                 <!-- KPIs -->
                 <div class="row mb-4">
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col-md-6">
                         <div class="card bg-primary text-white h-100">
-                            <div class="card-body">
+                            <div class="card-body text-center">
                                 <h6 class="text-uppercase mb-2 opacity-75">Total Vendido</h6>
-                                <h2 class="mb-0" id="kpiMonto">Bs 0.00</h2>
+                                <h2 class="mb-0 display-6 fw-bold" id="kpiMonto">Bs 0.00</h2>
+                                <p class="mb-0 mt-2"><i class="bi bi-cash-coin me-1"></i>Ingresos netos</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col-md-6">
                         <div class="card bg-success text-white h-100">
-                            <div class="card-body">
-                                <h6 class="text-uppercase mb-2 opacity-75">Transacciones</h6>
-                                <h2 class="mb-0" id="kpiTransacciones">0</h2>
+                            <div class="card-body text-center">
+                                <h6 class="text-uppercase mb-2 opacity-75">Transacciones Exitosas</h6>
+                                <h2 class="mb-0 display-6 fw-bold" id="kpiTransacciones">0</h2>
+                                <p class="mb-0 mt-2"><i class="bi bi-receipt me-1"></i>Ventas completadas</p>
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="row mb-4 justify-content-end">
                     <!-- Export Buttons -->
-                    <div class="col-md-12 col-lg-6 d-flex align-items-center justify-content-end gap-2 mt-3 mt-lg-0">
+                    <div class="col-md-12 col-lg-6 d-flex align-items-center justify-content-end gap-2">
                         <button class="btn btn-danger btn-lg" onclick="downloadReport('pdf')">
                             <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
                         </button>
@@ -163,6 +168,22 @@
                             </div>
                             <div class="card-body">
                                 <canvas id="chartHora"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico Racha de Ventas por Usuario -->
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-white">
+                                <h5 class="card-title mb-0"><i class="bi bi-person-workspace me-2"></i>Racha de Ventas - Top 10 Vendedores</h5>
+                            </div>
+                            <div class="card-body">
+                                <div style="height: 300px; position: relative;">
+                                    <canvas id="chartVendedores"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>

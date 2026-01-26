@@ -36,8 +36,7 @@ const PERMISOS_ROL = {
     },
     5: { // Técnico y Cajero
         paginas: ['dashboard.html', 'ventas.html', 'servicios_tecnicos.html', 'productos.html',
-            'inventario.html', 'categorias_productos.html', 'categorias_servicios.html', 'clientes.html',
-            'reportes_ventas.html', 'reportes_servicios.html'],
+            'inventario.html', 'categorias_productos.html', 'categorias_servicios.html', 'clientes.html'],
         acciones: ['crear_ventas', 'anular_ventas', 'anular_servicios', 'editar_clientes', 'crear_servicios', 'asignar_tecnico', 'ver_mis_servicios']
     }
 };

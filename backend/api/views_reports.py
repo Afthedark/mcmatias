@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from django.db.models import Sum, Count, F
+from django.db.models import Sum, Count, F, Q
 from django.db.models.functions import TruncDate, ExtractHour
 from django.utils import timezone
 from django.http import HttpResponse
@@ -140,6 +140,18 @@ class ReporteVentasDashboardView(ReporteBaseView):
             'data': [horas_dict[h] for h in range(24)]
         }
 
+        # Racha de Ventas por Usuario (Top 10)
+        racha_vendedores = queryset.values('id_usuario__nombre_apellido').annotate(
+            cantidad_ventas=Count('id_venta'),
+            monto_total=Sum('total_venta')
+        ).order_by('-cantidad_ventas')[:10]  # Top 10 vendedores
+
+        data_vendedores = {
+            'labels': [item['id_usuario__nombre_apellido'] or 'Sin Usuario' for item in racha_vendedores],
+            'data': [item['cantidad_ventas'] for item in racha_vendedores],
+            'monto': [float(item['monto_total']) for item in racha_vendedores]
+        }
+
         return Response({
             'grafico_dias': {
                 'labels': labels,
@@ -151,6 +163,7 @@ class ReporteVentasDashboardView(ReporteBaseView):
             'grafico_pago': data_tipo_pago,
             'grafico_productos': data_productos,
             'grafico_hora': data_por_hora,
+            'grafico_vendedores': data_vendedores,
             'kpis': {
                 'total_monto': total_acumulado,
                 'total_transacciones': total_transacciones
@@ -188,11 +201,11 @@ class ReporteVentasPDFView(ReporteBaseView):
         elements.append(Spacer(1, 20))
         
         # Tabla
-        data_tabla = [['#', 'Fecha', 'Boleta', 'Cliente', 'Estado', 'Monto (Bs)']]
+        data_tabla = [['#', 'Fecha', 'Boleta', 'Cliente', 'Vendedor', 'Estado', 'Monto (Bs)']]
         total_general = 0
         
         for idx, v in enumerate(queryset, start=1):
-            estado = "ANULADA" if v.estado == 'Anulada' else "OK"
+            estado = "Anulado" if v.estado == 'Anulada' else "Completado"
             monto = f"{v.total_venta:.2f}"
             if v.estado == 'Anulada':
                 monto = f"({monto})" # Mostrar entre parentesis si es anulada
@@ -204,13 +217,14 @@ class ReporteVentasPDFView(ReporteBaseView):
                 v.fecha_venta.strftime('%d/%m/%Y %H:%M'),
                 v.numero_boleta,
                 v.id_cliente.nombre_apellido if v.id_cliente else 'S/N',
+                v.id_usuario.nombre_apellido if v.id_usuario else 'S/N',
                 estado,
                 monto
             ]
             data_tabla.append(row)
             
         # Fila Total
-        data_tabla.append(['', '', '', '', 'TOTAL VÁLIDO:', f"{total_general:.2f}"])
+        data_tabla.append(['', '', '', '', '', 'TOTAL VÁLIDO:', f"{total_general:.2f}"])
             
         t = Table(data_tabla)
         t.setStyle(TableStyle([
@@ -245,7 +259,7 @@ class ReporteVentasExcelView(ReporteBaseView):
         ws.title = "Reporte Ventas"
         
         # Headers
-        headers = ['#', 'Fecha', 'Boleta', 'Cliente', 'Usuario', 'Sucursal', 'Tipo Pago', 'Estado', 'Motivo Anulacion', 'Monto Total']
+        headers = ['#', 'Fecha', 'Boleta', 'Cliente', 'Vendedor', 'Sucursal', 'Tipo Pago', 'Estado', 'Motivo Anulacion', 'Monto Total']
         ws.append(headers)
         
         for idx, v in enumerate(queryset, start=1):
@@ -304,7 +318,7 @@ class ReporteServiciosDashboardView(ReporteBaseView):
         # Agrupación por Técnico (Solo Entregados)
         por_tecnico = queryset.filter(estado='Entregado').values('id_tecnico_asignado__nombre_apellido').annotate(
                 total=Count('id_servicio')
-        ).order_by('-total')
+        ).order_by('-total')[:10]  # Top 10 técnicos
 
         labels_tecnico = [item['id_tecnico_asignado__nombre_apellido'] or 'Sin Asignar' for item in por_tecnico]
         data_tecnico = [item['total'] for item in por_tecnico]
@@ -348,9 +362,10 @@ class ReporteServiciosDashboardView(ReporteBaseView):
                 'data': data_por_hora['data']
             },
             'kpis': {
-                'total_servicios': queryset.count(),
-                'pendientes': queryset.filter(estado='En Reparación').count(),
-                'entregados': queryset.filter(estado='Entregado').count()
+                'monto_realizado': queryset.filter(Q(estado='Entregado') | Q(estado='Para Retirar')).aggregate(Sum('costo_estimado'))['costo_estimado__sum'] or 0,
+                'transacciones_realizado': queryset.filter(Q(estado='Entregado') | Q(estado='Para Retirar')).count(),
+                'monto_pendiente': queryset.filter(estado='En Reparación').aggregate(Sum('costo_estimado'))['costo_estimado__sum'] or 0,
+                'transacciones_pendiente': queryset.filter(estado='En Reparación').count()
             }
         })
 

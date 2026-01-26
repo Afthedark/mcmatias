@@ -106,9 +106,11 @@ async function loadReporteData() {
  * Render KPIs
  */
 function renderKpis(kpis) {
-    document.getElementById('kpiTotal').innerText = kpis.total_servicios;
-    document.getElementById('kpiPendientes').innerText = kpis.pendientes;
-    document.getElementById('kpiEntregados').innerText = kpis.entregados;
+    document.getElementById('kpiMontoRealizado').innerText = formatCurrency(kpis.monto_realizado);
+    document.getElementById('kpiTransaccionesRealizado').innerText = kpis.transacciones_realizado;
+    
+    document.getElementById('kpiMontoPendiente').innerText = formatCurrency(kpis.monto_pendiente);
+    document.getElementById('kpiTransaccionesPendiente').innerText = kpis.transacciones_pendiente;
 }
 
 /**

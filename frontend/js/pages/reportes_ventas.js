@@ -245,6 +245,35 @@ function renderCharts(data) {
             }
         );
     }
+
+    // 5. Nuevo: Chart Racha de Ventas por Usuario (Barra Horizontal)
+    if (data.grafico_vendedores && data.grafico_vendedores.labels) {
+        renderChart(
+            'chartVendedores',
+            'bar',
+            data.grafico_vendedores.labels,
+            [{
+                label: 'Ventas Realizadas',
+                data: data.grafico_vendedores.data,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }],
+            {
+                indexAxis: 'y', // Horizontal bars
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Cantidad de Ventas' },
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        );
+    }
 }
 
 /**
