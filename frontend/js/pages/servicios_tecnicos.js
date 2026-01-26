@@ -268,10 +268,10 @@ function renderServiciosTable() {
 
 function getEstadoBadge(estado) {
     const estados = {
-        'En Reparación': '<span class="badge bg-primary">🔵 En Reparación</span>',
-        'Para Retirar': '<span class="badge bg-warning text-dark">🟡 Para Retirar</span>',
-        'Entregado': '<span class="badge bg-success">🟢 Entregado</span>',
-        'Anulado': '<span class="badge bg-danger">❌ Anulado</span>'
+        'En Reparación': '<span class="badge bg-primary"><i class="bi bi-tools me-1"></i> En Reparación</span>',
+        'Para Retirar': '<span class="badge bg-warning text-dark"><i class="bi bi-exclamation-circle-fill me-1"></i> Para Retirar</span>',
+        'Entregado': '<span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i> Entregado</span>',
+        'Anulado': '<span class="badge bg-danger"><i class="bi bi-x-circle-fill me-1"></i> Anulado</span>'
     };
     return estados[estado] || `<span class="badge bg-secondary">${estado}</span>`;
 }
