@@ -16,9 +16,9 @@ const SIDEBAR_CONFIG = [
     { type: 'item', href: 'servicios_tecnicos.html', icon: 'bi-tools', text: 'Servicios Técnicos' },
     { type: 'item', href: 'categorias_servicios.html', icon: 'bi-bookmark-star', text: 'Categorías<br>Servicios Técnicos' },
     { type: 'item', href: 'clientes.html', icon: 'bi-people', text: 'Clientes' },
-    { type: 'section', text: 'Reportes' },
-    { type: 'item', href: 'reportes_servicios.html', icon: 'bi-tools', text: 'Graficos y Reportes de Servicios Tecnico' },
-    { type: 'item', href: 'reportes_ventas.html', icon: 'bi-bar-chart-line', text: 'Graficos y Reportes de Ventas' },
+    { type: 'section', text: 'REPORTES Y GRAFICOS' },
+    { type: 'item', href: 'reportes_servicios.html', icon: 'bi-tools', text: 'Reportes<br>Servicios Técnicos' },
+    { type: 'item', href: 'reportes_ventas.html', icon: 'bi-bar-chart-line', text: 'Reportes<br>Ventas' },
     { type: 'section', text: 'Configuración' },
     { type: 'item', href: 'sucursales.html', icon: 'bi-shop', text: 'Sucursales' },
     { type: 'item', href: 'usuarios.html', icon: 'bi-person-badge', text: 'Usuarios' },
@@ -180,7 +180,7 @@ function renderSidebar(containerSelector = '#sidebar-container', activePage = ''
         <aside class="sidebar">
             <div class="sidebar-brand">
                 <i class="bi bi-shop-window"></i>
-                <h3>MCMatias</h3>
+                <h3>MULTICENTRO<br>MATIAS</h3>
             </div>
             
             <nav class="sidebar-nav">
