@@ -34,38 +34,27 @@ function mostrarSelectorFormato(idServicio) {
         <div class="modal fade" id="modalFormatoImpresion" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="bi bi-printer me-2"></i>
-                            Seleccionar Formato de Impresión
-                        </h5>
+                    <div class="modal-header border-0 pb-0">
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body text-center">
-                        <p class="mb-4">¿Qué formato desea utilizar para la orden de servicio?</p>
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <button class="btn btn-outline-primary w-100 p-3 h-100" 
-                                        onclick="seleccionarFormato('TICKET', ${idServicio})">
-                                    <i class="bi bi-receipt fs-1 d-block mb-2"></i>
-                                    <strong>Ticket 80mm</strong>
-                                    <small class="d-block text-muted mt-1">Impresora térmica</small>
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button class="btn btn-outline-primary w-100 p-3 h-100" 
-                                        onclick="seleccionarFormato('A4', ${idServicio})">
-                                    <i class="bi bi-file-earmark-text fs-1 d-block mb-2"></i>
-                                    <strong>Boleta A4</strong>
-                                    <small class="d-block text-muted mt-1">Impresora estándar</small>
-                                </button>
-                            </div>
-                            <div class="col-12">
-                                <button class="btn btn-outline-success w-100 p-3" 
+                    <div class="modal-body text-center pt-0 pb-4">
+                        <div class="mb-4">
+                            <i class="bi bi-printer-fill text-primary" style="font-size: 3rem;"></i>
+                            <h4 class="mt-2">Imprimir Orden de Servicio</h4>
+                            <p class="text-muted">Generar documento en formato oficial</p>
+                        </div>
+                        
+                        <div class="row justify-content-center">
+                            <div class="col-10">
+                                <button class="btn btn-primary w-100 p-3 shadow-sm" 
                                         onclick="seleccionarFormato('PANORAMICA', ${idServicio})">
-                                    <i class="bi bi-card-heading fs-1 d-block mb-2"></i>
-                                    <strong>Formato 21.5x9cm</strong>
-                                    <small class="d-block text-muted mt-1">Orden de Servicio / Nota de Entrega</small>
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-file-earmark-richtext fs-3 me-3"></i>
+                                        <div class="text-start">
+                                            <div class="fw-bold fs-5">Formato Oficial</div>
+                                            <small class="text-white-50">21.5cm x 9cm (Panorámico)</small>
+                                        </div>
+                                    </div>
                                 </button>
                             </div>
                         </div>
