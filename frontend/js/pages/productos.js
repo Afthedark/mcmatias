@@ -238,6 +238,15 @@ function openCreateModal() {
     document.getElementById('idCategoria').value = '';
     document.querySelector('#btnSelectCategoria span').textContent = 'Seleccione...';
     document.getElementById('busquedaCategoria').value = '';
+    
+    // Reset photo preview
+    const imgPreview = document.getElementById('previewFotoEdit');
+    if (imgPreview) {
+        imgPreview.classList.add('d-none');
+        imgPreview.src = '';
+    }
+    document.getElementById('fotoProducto').value = '';
+
     // Reload initial categories from server
     searchCategoriasServer('');
 
@@ -261,6 +270,16 @@ async function openEditModal(id) {
         document.getElementById('codigoBarras').value = producto.codigo_barras || '';
 
         document.getElementById('precio').value = producto.precio;
+
+        // Mostrar preview de foto si existe
+        const imgPreview = document.getElementById('previewFotoEdit');
+        if (producto.foto_producto) {
+            imgPreview.src = getImageUrl(producto.foto_producto);
+            imgPreview.classList.remove('d-none');
+        } else {
+            imgPreview.classList.add('d-none');
+            imgPreview.src = '';
+        }
 
         // Set category in dropdown
         document.getElementById('idCategoria').value = producto.id_categoria || '';

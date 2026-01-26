@@ -283,6 +283,11 @@ class ProductoViewSet(viewsets.ModelViewSet):
         # Eliminar registros de inventario físicamente (stock ya es 0)
         inventarios.delete()
         
+        # Eliminar imagen física si existe
+        if producto.foto_producto:
+            producto.foto_producto.delete(save=False)
+            producto.foto_producto = None
+        
         # Soft delete del producto
         producto.activo = False
         producto.save()
