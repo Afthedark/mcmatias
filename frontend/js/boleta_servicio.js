@@ -43,9 +43,9 @@ function mostrarSelectorFormato(idServicio) {
                     </div>
                     <div class="modal-body text-center">
                         <p class="mb-4">¿Qué formato desea utilizar para la orden de servicio?</p>
-                        <div class="row mt-4">
+                        <div class="row g-3">
                             <div class="col-6">
-                                <button class="btn btn-outline-primary w-100 p-4" 
+                                <button class="btn btn-outline-primary w-100 p-3 h-100" 
                                         onclick="seleccionarFormato('TICKET', ${idServicio})">
                                     <i class="bi bi-receipt fs-1 d-block mb-2"></i>
                                     <strong>Ticket 80mm</strong>
@@ -53,11 +53,19 @@ function mostrarSelectorFormato(idServicio) {
                                 </button>
                             </div>
                             <div class="col-6">
-                                <button class="btn btn-outline-primary w-100 p-4" 
+                                <button class="btn btn-outline-primary w-100 p-3 h-100" 
                                         onclick="seleccionarFormato('A4', ${idServicio})">
                                     <i class="bi bi-file-earmark-text fs-1 d-block mb-2"></i>
                                     <strong>Boleta A4</strong>
                                     <small class="d-block text-muted mt-1">Impresora estándar</small>
+                                </button>
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-outline-success w-100 p-3" 
+                                        onclick="seleccionarFormato('PANORAMICA', ${idServicio})">
+                                    <i class="bi bi-card-heading fs-1 d-block mb-2"></i>
+                                    <strong>Formato 21.5x9cm</strong>
+                                    <small class="d-block text-muted mt-1">Orden de Servicio / Nota de Entrega</small>
                                 </button>
                             </div>
                         </div>
@@ -117,7 +125,7 @@ async function generarBoleta(idServicio, formato = 'A4') {
 // Abrir Ventana de Impresión
 // ============================================
 function abrirVentanaImpresion(servicio, formato) {
-    const ventanaImpresion = window.open('boleta_servicio.html', '_blank', 'width=800,height=600');
+    const ventanaImpresion = window.open('boleta_servicio.html', '_blank', 'width=1000,height=600');
 
     if (!ventanaImpresion) {
         alert('Por favor, permita ventanas emergentes para imprimir la boleta');
@@ -127,19 +135,30 @@ function abrirVentanaImpresion(servicio, formato) {
     ventanaImpresion.addEventListener('load', function () {
         setTimeout(() => {
             try {
+                const doc = ventanaImpresion.document;
+                
+                // Ocultar todo primero
+                doc.getElementById('boletaTicket').style.display = 'none';
+                doc.getElementById('boletaA4').style.display = 'none';
+                doc.getElementById('boletaPanoramica').style.display = 'none';
+
+                let claseBody = '';
+
                 if (formato === 'TICKET') {
-                    llenarBoletaTicket(servicio, ventanaImpresion.document);
-                    ventanaImpresion.document.getElementById('boletaTicket').style.display = 'block';
-                    ventanaImpresion.document.getElementById('boletaTicket').style.visibility = 'visible';
-                    ventanaImpresion.document.getElementById('boletaA4').style.display = 'none';
-                } else {
-                    llenarBoletaA4(servicio, ventanaImpresion.document);
-                    ventanaImpresion.document.getElementById('boletaA4').style.display = 'block';
-                    ventanaImpresion.document.getElementById('boletaA4').style.visibility = 'visible';
-                    ventanaImpresion.document.getElementById('boletaTicket').style.display = 'none';
+                    llenarBoletaTicket(servicio, doc);
+                    doc.getElementById('boletaTicket').style.display = 'block';
+                    claseBody = 'formato-ticket';
+                } else if (formato === 'A4') {
+                    llenarBoletaA4(servicio, doc);
+                    doc.getElementById('boletaA4').style.display = 'block';
+                    claseBody = 'formato-a4';
+                } else if (formato === 'PANORAMICA') {
+                    llenarBoletaPanoramica(servicio, doc);
+                    doc.getElementById('boletaPanoramica').style.display = 'block';
+                    claseBody = 'formato-panoramica';
                 }
 
-                ventanaImpresion.document.body.classList.add(formato === 'TICKET' ? 'formato-ticket' : 'formato-a4');
+                doc.body.className = claseBody;
 
                 setTimeout(() => {
                     ventanaImpresion.print();
@@ -151,6 +170,105 @@ function abrirVentanaImpresion(servicio, formato) {
         }, 100);
     });
 }
+
+// ============================================
+// Llenar Plantilla PANORAMICA (21.5x9)
+// ============================================
+function llenarBoletaPanoramica(servicio, doc) {
+    // Determinar qué sub-formato usar: Orden de Servicio (Recepción) o Nota de Entrega (Salida)
+    const esEntrega = servicio.estado === 'Entregado' || servicio.estado === 'Para Retirar';
+    
+    // Ocultar ambos sub-formatos primero
+    doc.getElementById('formatoOrdenServicio').style.display = 'none';
+    doc.getElementById('formatoNotaEntrega').style.display = 'none';
+
+    // Seleccionar contenedor activo
+    const containerId = esEntrega ? 'formatoNotaEntrega' : 'formatoOrdenServicio';
+    const container = doc.getElementById(containerId);
+    container.style.display = 'block';
+
+    // ==========================================
+    // DATOS COMUNES
+    // ==========================================
+    
+    // Números de Orden
+    container.querySelectorAll('.talon-numero, .cuerpo-numero').forEach(el => {
+        // Extraer solo el número (ej: 6693 de ST-2026-06693)
+        const num = servicio.numero_servicio.split('-').pop();
+        el.textContent = parseInt(num); // Quitar ceros a la izquierda
+    });
+
+    // Sucursal
+    container.querySelectorAll('.talon-sucursal-nombre, .sucursal-nombre-full').forEach(el => {
+        el.textContent = servicio.nombre_sucursal || '';
+    });
+
+    // Fechas
+    const fechaIngreso = formatDate(servicio.fecha_inicio, true) + ' ' + 
+                        new Date(servicio.fecha_inicio).toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
+    
+    const fechaEntrega = servicio.fecha_entrega ? 
+                        formatDate(servicio.fecha_entrega, true) + ' ' + new Date(servicio.fecha_entrega).toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'}) : 
+                        'Pendiente';
+
+    container.querySelectorAll('.fecha-ingreso-val').forEach(el => el.textContent = fechaIngreso);
+    container.querySelectorAll('.fecha-entrega-val').forEach(el => el.textContent = fechaEntrega);
+    
+    // Fecha actual (Pie de página)
+    const fechaHoy = new Date().toLocaleDateString('es-ES');
+    container.querySelectorAll('.fecha-hoy').forEach(el => el.textContent = fechaHoy);
+
+    // Cliente
+    container.querySelectorAll('.cliente-nombre').forEach(el => el.textContent = servicio.nombre_cliente || '');
+    container.querySelectorAll('.cliente-celular').forEach(el => el.textContent = servicio.celular_cliente || '');
+
+    // Técnico
+    container.querySelectorAll('.tecnico-nombre').forEach(el => el.textContent = servicio.nombre_tecnico_asignado || 'Sin asignar');
+
+    // Financiero
+    const total = formatCurrency(servicio.costo_estimado || 0);
+    const adelanto = formatCurrency(servicio.adelanto || 0);
+    const saldo = formatCurrency(servicio.saldo || 0);
+
+    container.querySelectorAll('.monto-total').forEach(el => el.textContent = total);
+    container.querySelectorAll('.monto-adelanto').forEach(el => el.textContent = adelanto);
+    container.querySelectorAll('.monto-saldo').forEach(el => el.textContent = saldo);
+
+    // Dispositivo
+    const dispositivo = `${servicio.marca_dispositivo || ''} ${servicio.modelo_dispositivo || ''}`.trim();
+    container.querySelectorAll('.dispositivo-desc, .dispositivo-full').forEach(el => el.textContent = dispositivo);
+
+    // ==========================================
+    // DATOS ESPECÍFICOS POR TIPO
+    // ==========================================
+    
+    if (esEntrega) {
+        // NOTA DE ENTREGA
+        container.querySelectorAll('.fecha-entrega-real').forEach(el => el.textContent = fechaEntrega);
+        container.querySelectorAll('.diagnostico-final').forEach(el => el.textContent = 'Revisión'); // Valor por defecto o campo futuro
+        container.querySelectorAll('.solucion-final').forEach(el => el.textContent = 'MANTENIMIENTO'); // Valor por defecto o campo futuro
+    } else {
+        // ORDEN DE SERVICIO
+        container.querySelectorAll('.servicio-id').forEach(el => el.textContent = '1'); // Placeholder
+        container.querySelectorAll('.falla-desc').forEach(el => el.textContent = servicio.descripcion_problema || '');
+        container.querySelectorAll('.estado-val').forEach(el => el.textContent = servicio.estado.toUpperCase());
+    }
+
+    // Dirección Sucursal (si existe elemento)
+    const dirContainer = container.querySelector('.sucursal-direccion');
+    if (dirContainer && servicio.direccion_sucursal) {
+        dirContainer.textContent = servicio.direccion_sucursal;
+    }
+    
+    const fonosContainer = container.querySelector('.sucursal-fonos');
+    if (fonosContainer) {
+        let fonos = [];
+        if (servicio.cel1_sucursal) fonos.push(servicio.cel1_sucursal);
+        if (servicio.cel2_sucursal) fonos.push(servicio.cel2_sucursal);
+        fonosContainer.textContent = fonos.join(' - ');
+    }
+}
+
 
 // ============================================
 // Llenar Plantilla TICKET
