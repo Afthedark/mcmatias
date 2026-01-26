@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.db.models import Sum, Count, F
-from django.db.models.functions import TruncDate
+from django.db.models.functions import TruncDate, ExtractHour
 from django.utils import timezone
 from django.http import HttpResponse
 from datetime import datetime, time
@@ -309,6 +309,23 @@ class ReporteServiciosDashboardView(ReporteBaseView):
         labels_tecnico = [item['id_tecnico_asignado__nombre_apellido'] or 'Sin Asignar' for item in por_tecnico]
         data_tecnico = [item['total'] for item in por_tecnico]
 
+        # Distribución por Hora del Día
+        servicios_por_hora = queryset.annotate(
+            hora=ExtractHour('fecha_inicio')
+        ).values('hora').annotate(
+            cantidad=Count('id_servicio')
+        ).order_by('hora')
+        
+        # Rellenar horas faltantes con 0
+        horas_dict = {i: 0 for i in range(24)}
+        for item in servicios_por_hora:
+            horas_dict[item['hora']] = item['cantidad']
+        
+        data_por_hora = {
+            'labels': [f"{h:02d}:00" for h in range(24)],
+            'data': [horas_dict[h] for h in range(24)]
+        }
+
         return Response({
             'grafico_estado': {
                 'labels': [item['estado'] for item in por_estado],
@@ -325,6 +342,10 @@ class ReporteServiciosDashboardView(ReporteBaseView):
             'grafico_tecnicos': {
                 'labels': labels_tecnico,
                 'data': data_tecnico
+            },
+            'grafico_hora': {
+                'labels': data_por_hora['labels'],
+                'data': data_por_hora['data']
             },
             'kpis': {
                 'total_servicios': queryset.count(),

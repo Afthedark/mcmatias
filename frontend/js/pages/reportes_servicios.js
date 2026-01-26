@@ -181,6 +181,39 @@ function renderCharts(data) {
             }
         );
     }
+
+    // 5. Nuevo: Chart Distribución por Hora (Line)
+    if (data.grafico_hora && data.grafico_hora.labels) {
+        renderChart(
+            'chartHora',
+            'line',
+            data.grafico_hora.labels,
+            [{
+                label: 'Servicios por Hora',
+                data: data.grafico_hora.data,
+                backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                borderColor: 'rgba(255, 193, 7, 1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }],
+            {
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Cantidad de Servicios' },
+                        ticks: { stepSize: 1 }
+                    },
+                    x: {
+                        title: { display: true, text: 'Hora del Día' }
+                    }
+                }
+            }
+        );
+    }
 }
 
 /**
