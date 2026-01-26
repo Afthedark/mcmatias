@@ -318,7 +318,9 @@ body {
     .boleta-ticket,
     .boleta-ticket *,
     .boleta-a4,
-    .boleta-a4 * {
+    .boleta-a4 *,
+    .boleta-panoramica,
+    .boleta-panoramica * {
         visibility: visible;
     }
 
@@ -416,6 +418,7 @@ body.formato-a4 .boleta-a4 {
     overflow: hidden;
     position: relative;
     box-sizing: border-box;
+    page: panoramica;
 }
 
 .panoramica-container {
@@ -424,7 +427,6 @@ body.formato-a4 .boleta-a4 {
     height: 100%;
 }
 
-/* --- TALÓN IZQUIERDO (30%) --- */
 .talon-izquierdo {
     width: 30%;
     height: 100%;
@@ -439,11 +441,11 @@ body.formato-a4 .boleta-a4 {
 .talon-header {
     font-size: 10pt;
     line-height: 1.2;
-    margin-bottom: 2px;
+    margin-bottom: 2mm;
 }
 
 .talon-numero {
-    font-size: 11pt;
+    font-size: 12pt;
     font-weight: bold;
 }
 
@@ -452,15 +454,39 @@ body.formato-a4 .boleta-a4 {
     font-weight: bold;
 }
 
-.talon-datos div,
-.talon-fechas div {
-    margin-bottom: 1px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.talon-fecha-ingreso {
+    font-size: 8pt;
+    margin-bottom: 2mm;
 }
 
-/* --- CUERPO DERECHO (70%) --- */
+.field {
+    display: flex;
+    gap: 2mm;
+    margin-bottom: 1mm;
+}
+
+.field .label {
+    min-width: 28mm;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.field .value {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.field-multiline .value {
+    white-space: normal;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
 .cuerpo-derecho {
     width: 70%;
     height: 100%;
@@ -471,14 +497,17 @@ body.formato-a4 .boleta-a4 {
     position: relative;
 }
 
-/* Información de empresa flotante a la derecha */
+.header-grid {
+    display: grid;
+    grid-template-columns: 1fr 2.2fr 1.4fr;
+    column-gap: 4mm;
+    align-items: start;
+}
+
 .empresa-info-top {
-    position: absolute;
-    top: 3mm;
-    right: 5mm;
     text-align: right;
     font-size: 7pt;
-    width: 45%;
+    line-height: 1.2;
 }
 
 .empresa-nombre {
@@ -487,10 +516,10 @@ body.formato-a4 .boleta-a4 {
     text-decoration: underline;
 }
 
-.cuerpo-header h2 {
+.titulo-principal {
     font-size: 12pt;
     font-weight: bold;
-    margin: 0;
+    line-height: 1.1;
 }
 
 .cuerpo-numero {
@@ -499,8 +528,9 @@ body.formato-a4 .boleta-a4 {
     margin: 1mm 0;
 }
 
-.cuerpo-fechas {
+.subtitulo-fechas {
     font-size: 8pt;
+    line-height: 1.2;
 }
 
 .divider-black {
@@ -514,9 +544,21 @@ body.formato-a4 .boleta-a4 {
     border-top: 1px solid black;
 }
 
-/* Filas de contenido */
-.cuerpo-fila-1 {
+.row-2col {
+    display: flex;
+    justify-content: space-between;
+    gap: 6mm;
     font-size: 9pt;
+}
+
+.row-2col .col-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.row-2col .col-right {
+    width: 42%;
+    text-align: right;
 }
 
 .cuerpo-detalle {
@@ -527,16 +569,76 @@ body.formato-a4 .boleta-a4 {
 .cuerpo-footer {
     font-size: 8pt;
     margin-top: auto;
+    padding-top: 2mm;
 }
 
-/* Firmas */
 .firma-linea {
     border-top: 1px solid black;
     width: 120px;
     margin: 0 auto 2px auto;
 }
 
-/* Clases específicas para impresión 21.5x9 */
+.firma-linea-ancha {
+    width: 80%;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: end;
+    gap: 4mm;
+}
+
+.footer-grid-3 .linea {
+    font-size: 8pt;
+}
+
+.linea {
+    display: flex;
+    gap: 2mm;
+    margin-bottom: 1mm;
+}
+
+.linea .label {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.linea .value {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.line-multiline .value {
+    white-space: normal;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.texto-conformidad {
+    font-size: 8pt;
+    line-height: 1.2;
+    margin: 4mm 0;
+}
+
+.firma-box {
+    margin-top: auto;
+    padding-top: 6mm;
+}
+
 body.formato-panoramica .boleta-panoramica {
     display: block !important;
 }

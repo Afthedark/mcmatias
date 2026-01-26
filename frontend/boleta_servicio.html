@@ -169,91 +169,93 @@
                     <div class="talon-sucursal text-center">
                         Sucursal: <span class="talon-sucursal-nombre"></span>
                     </div>
-                    <div class="talon-fecha-ingreso small text-center mb-2">
+                    <div class="talon-fecha-ingreso text-center">
                         Ingresado: <span class="fecha-ingreso-val"></span>
                     </div>
                     
                     <div class="talon-datos">
-                        <div><strong>CLIENTE:</strong> <span class="cliente-nombre"></span></div>
-                        <div><strong>CELULAR:</strong> <span class="cliente-celular"></span></div>
-                        <div><strong>SERVICIO:</strong> <span class="servicio-id"></span></div>
-                        <div><strong>DESCRIPCIÓN:</strong> <span class="dispositivo-desc"></span></div>
-                        <div><strong>FALLA:</strong> <span class="falla-desc"></span></div>
-                        <div><strong>DIAGNÓSTICO:</strong> <span class="diagnostico-desc">Revisión</span></div>
-                        <div><strong>SOLUCIÓN:</strong> <span class="solucion-desc">Revisión</span></div>
+                        <div class="field"><span class="label">CLIENTE:</span><span class="value cliente-nombre"></span></div>
+                        <div class="field"><span class="label">CELULAR:</span><span class="value cliente-celular"></span></div>
+                        <div class="field field-multiline"><span class="label">SERVICIO:</span><span class="value servicio-id"></span></div>
+                        <div class="field"><span class="label">DESCRIPCIÓN:</span><span class="value dispositivo-desc"></span></div>
+                        <div class="field field-multiline"><span class="label">FALLA:</span><span class="value falla-desc"></span></div>
+                        <div class="field"><span class="label">DIAGNÓSTICO:</span><span class="value diagnostico-desc">Revisión</span></div>
+                        <div class="field"><span class="label">SOLUCIÓN:</span><span class="value solucion-desc">Revisión</span></div>
                     </div>
 
                     <div class="talon-fechas mt-1">
-                        <div><strong>F. RECEPCIÓN:</strong> <span class="fecha-ingreso-val"></span></div>
-                        <div><strong>F. ENTREGA:</strong> <span class="fecha-entrega-val"></span></div>
-                        <div><strong>TIPO SERV.:</strong> NORMAL</div>
-                        <div><strong>RESP. TÉCNICO:</strong> <span class="tecnico-nombre"></span></div>
+                        <div class="field"><span class="label">F. RECEPCIÓN:</span><span class="value fecha-ingreso-short"></span></div>
+                        <div class="field"><span class="label">F. ENTREGA:</span><span class="value fecha-entrega-short"></span></div>
+                        <div class="field"><span class="label">RESP. TÉCNICO:</span><span class="value tecnico-nombre"></span></div>
                     </div>
 
-                    <div class="talon-totales mt-2 text-end">
-                        <div><strong>TOTALES:</strong> <span class="monto-total"></span></div>
-                        <div><strong>A CUENTA:</strong> <span class="monto-adelanto"></span></div>
-                        <div><strong>SALDO:</strong> <span class="monto-saldo fw-bold"></span></div>
+                    <div class="talon-totales">
+                        <div class="field field-money"><span class="label">TOTALES:</span><span class="value monto-total"></span></div>
+                        <div class="field field-money"><span class="label">A CUENTA:</span><span class="value monto-adelanto"></span></div>
+                        <div class="field field-money"><span class="label">SALDO:</span><span class="value monto-saldo"></span></div>
                     </div>
                 </div>
 
                 <!-- Cuerpo Derecho (70%) -->
                 <div class="cuerpo-derecho">
-                    <div class="cuerpo-header text-center mb-2">
-                        <h2 class="mb-0">ORDEN DE SERVICIO TÉCNICO</h2>
-                        <h3 class="cuerpo-numero mb-0"></h3>
-                        <div class="cuerpo-fechas">
-                            <span class="fecha-ingreso-val"></span><br>
-                            Entregado en: <span class="fecha-entrega-val"></span>
+                    <div class="cuerpo-header">
+                        <div class="header-grid">
+                            <div class="header-left"></div>
+                            <div class="header-center text-center">
+                                <div class="titulo-principal">ORDEN DE SERVICIO TÉCNICO</div>
+                                <div class="cuerpo-numero"></div>
+                                <div class="subtitulo-fechas"><span class="fecha-ingreso-val"></span></div>
+                                <div class="subtitulo-fechas">Entregado en: <span class="fecha-entrega-val"></span></div>
+                            </div>
+                            <div class="header-right empresa-info-top">
+                                <div class="empresa-nombre">Multicentro Matias</div>
+                                <div>Sucursal: <span class="sucursal-nombre-full"></span></div>
+                                <div class="sucursal-direccion"></div>
+                                <div class="sucursal-fonos"></div>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Datos Empresa Flotante Derecha -->
-                    <div class="empresa-info-top">
-                        <div class="empresa-nombre">Multicentro Matias</div>
-                        <div>Sucursal: <span class="sucursal-nombre-full"></span></div>
-                        <div class="sucursal-direccion"></div>
-                        <div class="sucursal-fonos"></div>
                     </div>
 
                     <hr class="divider-black">
 
-                    <div class="cuerpo-fila-1 d-flex justify-content-between">
-                        <div>
-                            <strong>FECHA:</strong> <span class="fecha-ingreso-val"></span><br>
-                            <strong>CLIENTE:</strong> <span class="cliente-nombre"></span>
+                    <div class="row-2col">
+                        <div class="col-left">
+                            <div class="linea"><span class="label">FECHA:</span><span class="value fecha-ingreso-short"></span></div>
+                            <div class="linea"><span class="label">CLIENTE:</span><span class="value cliente-nombre"></span></div>
                         </div>
-                        <div class="text-end">
-                            <strong>TOTAL:</strong> <span class="monto-total"></span><br>
-                            <strong>A CUENTA:</strong> <span class="monto-adelanto"></span><br>
-                            <strong>SALDO:</strong> <span class="monto-saldo"></span>
+                        <div class="col-right">
+                            <div class="linea"><span class="label">TOTAL:</span><span class="value monto-total"></span></div>
+                            <div class="linea"><span class="label">A CUENTA:</span><span class="value monto-adelanto"></span></div>
+                            <div class="linea"><span class="label">SALDO:</span><span class="value monto-saldo"></span></div>
                         </div>
                     </div>
 
                     <hr class="divider-black">
 
                     <div class="cuerpo-detalle">
-                        <div><strong>SERVICIO:</strong> <span class="servicio-id"></span></div>
-                        <div><strong>DESCRIPCIÓN:</strong> <span class="dispositivo-full"></span></div>
-                        <div><strong>FALLA SEGUN CLIENTE:</strong> <span class="falla-desc"></span></div>
-                        <div><strong>DIAGNÓSTICO:</strong> Revisión</div>
-                        <div><strong>SOLUCIÓN:</strong> Revisión</div>
-                        <div><strong>FECHA ENTREGA APROX.:</strong> <span class="fecha-entrega-val"></span></div>
-                        <div><strong>RESPONSABLE TÉCNICO:</strong> <span class="tecnico-nombre"></span></div>
-                        <div><strong>ESTADO:</strong> <span class="estado-val">PENDIENTE</span></div>
+                        <div class="linea line-multiline"><span class="label">SERVICIO:</span><span class="value servicio-id"></span></div>
+                        <div class="linea"><span class="label">DESCRIPCIÓN:</span><span class="value dispositivo-full"></span></div>
+                        <div class="linea line-multiline"><span class="label">FALLA SEGUN CLIENTE:</span><span class="value falla-desc"></span></div>
+                        <div class="linea"><span class="label">DIAGNÓSTICO:</span><span class="value diagnostico-desc">Revisión</span></div>
+                        <div class="linea"><span class="label">SOLUCIÓN:</span><span class="value solucion-desc">Revisión</span></div>
+                        <div class="linea"><span class="label">FECHA ENTREGA APROX.:</span><span class="value fecha-entrega-val"></span></div>
+                        <div class="linea"><span class="label">RESPONSABLE TÉCNICO:</span><span class="value tecnico-nombre"></span></div>
+                        <div class="linea"><span class="label">ESTADO:</span><span class="value estado-val">PENDIENTE</span></div>
                     </div>
 
-                    <div class="cuerpo-footer mt-auto pt-2 border-top-black d-flex justify-content-between align-items-end">
-                        <div class="firma-tecnico text-center">
+                    <div class="cuerpo-footer border-top-black">
+                        <div class="footer-grid">
+                            <div class="firma-tecnico text-center">
                             <div class="firma-linea"></div>
                             RESPONSABLE TÉCNICO: <span class="tecnico-nombre"></span>
                         </div>
-                        <div class="pie-info small text-muted">
+                            <div class="pie-info text-center">
                             CCA: Multicentro Matias | <span class="fecha-hoy"></span>
                         </div>
-                        <div class="firma-cliente text-center">
+                            <div class="firma-cliente text-center">
                             <div class="firma-linea"></div>
                             CLIENTE: <span class="cliente-nombre"></span>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -265,80 +267,79 @@
             <div class="panoramica-container">
                 <!-- Talón Izquierdo (30%) -->
                 <div class="talon-izquierdo">
-                    <div class="talon-header text-center mb-2">
+                    <div class="talon-header text-center">
                         <strong>NOTA DE ENTREGA</strong><br>
-                        <span class="talon-numero fs-5"></span>
+                        <span class="talon-numero"></span>
                     </div>
                     
-                    <div class="talon-fecha mb-2">
-                        <strong>Fecha:</strong> _________________
+                    <div class="talon-fecha">
+                        <span class="label">Fecha:</span><span class="value nota-fecha"></span>
                     </div>
 
-                    <div class="texto-conformidad text-justify small mb-4" style="font-size: 8pt; line-height: 1.2;">
+                    <div class="texto-conformidad">
                         En calidad de cliente, estoy conforme con el servicio técnico que me brindó Multicentro Matias. 
                         He verificado la funcionalidad de mi equipo y estoy en pleno conocimiento de la recepción del mismo.
                     </div>
 
-                    <div class="firma-cliente-box mt-auto text-center">
-                        <div class="firma-linea mb-1" style="border-top: 1px solid black; width: 80%; margin: 0 auto;"></div>
-                        <strong>Firma</strong>
+                    <div class="firma-box text-center">
+                        <div class="firma-linea firma-linea-ancha"></div>
+                        Firma
                     </div>
 
-                    <div class="nombre-cliente-box mt-3 text-center">
-                        <div class="firma-linea mb-1" style="border-top: 1px solid black; width: 80%; margin: 0 auto;"></div>
-                        <strong>Nombre Completo</strong>
+                    <div class="firma-box text-center">
+                        <div class="firma-linea firma-linea-ancha"></div>
+                        Nombre Completo
                     </div>
                 </div>
 
                 <!-- Cuerpo Derecho (70%) -->
                 <div class="cuerpo-derecho">
-                    <div class="cuerpo-header text-center mb-3">
-                        <h2 class="mb-0">INFORME TÉCNICO</h2>
-                        <h3 class="cuerpo-numero mb-0"></h3>
-                        <div class="small">Fecha Recepción: <span class="fecha-ingreso-val"></span></div>
-                    </div>
-
-                    <!-- Datos Empresa Flotante Derecha -->
-                    <div class="empresa-info-top">
-                        <div class="empresa-nombre">Multicentro Matias</div>
-                        <div>Sucursal: <span class="sucursal-nombre-full"></span></div>
-                        <div class="sucursal-direccion"></div>
-                        <div class="sucursal-fonos"></div>
-                    </div>
-
-                    <hr class="divider-black">
-
-                    <div class="cuerpo-fila-1 d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>FECHA TERMINADO:</strong> <span class="fecha-entrega-real"></span><br>
-                            <strong>CLIENTE:</strong> <span class="cliente-nombre"></span>
-                        </div>
-                        <div class="text-end">
-                            <strong>TOTAL:</strong> <span class="monto-total"></span><br>
-                            <strong>A CUENTA:</strong> <span class="monto-adelanto"></span><br>
-                            <strong>SALDO:</strong> <span class="monto-saldo"></span>
+                    <div class="cuerpo-header">
+                        <div class="header-grid">
+                            <div class="header-left"></div>
+                            <div class="header-center text-center">
+                                <div class="titulo-principal">INFORME TÉCNICO</div>
+                                <div class="cuerpo-numero"></div>
+                                <div class="subtitulo-fechas">Fecha Recepción: <span class="fecha-ingreso-val"></span></div>
+                            </div>
+                            <div class="header-right empresa-info-top">
+                                <div class="empresa-nombre">Multicentro Matias</div>
+                                <div>Sucursal: <span class="sucursal-nombre-full"></span></div>
+                                <div class="sucursal-direccion"></div>
+                                <div class="sucursal-fonos"></div>
+                            </div>
                         </div>
                     </div>
 
                     <hr class="divider-black">
 
-                    <div class="cuerpo-detalle mt-3 mb-3">
-                        <div class="mb-2"><strong>EQUIPO:</strong> <span class="dispositivo-full"></span></div>
-                        <div class="mb-2"><strong>DIAGNÓSTICO:</strong> <span class="diagnostico-final">Revisión</span></div>
-                        <div class="mb-2"><strong>SOLUCIÓN:</strong> <span class="solucion-final">MANTENIMIENTO</span></div>
+                    <div class="row-2col">
+                        <div class="col-left">
+                            <div class="linea"><span class="label">FECHA TERMINADO:</span><span class="value fecha-entrega-real"></span></div>
+                            <div class="linea"><span class="label">CLIENTE:</span><span class="value cliente-nombre"></span></div>
+                        </div>
+                        <div class="col-right">
+                            <div class="linea"><span class="label">TOTAL:</span><span class="value monto-total"></span></div>
+                            <div class="linea"><span class="label">A CUENTA:</span><span class="value monto-adelanto"></span></div>
+                            <div class="linea"><span class="label">SALDO:</span><span class="value monto-saldo"></span></div>
+                        </div>
                     </div>
 
-                    <hr class="divider-black mt-auto">
+                    <hr class="divider-black">
 
-                    <div class="cuerpo-footer pt-1 d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>RESPONSABLE TÉCNICO:</strong> <span class="tecnico-nombre"></span>
-                        </div>
-                        <div class="small text-muted text-center">
-                            CCA: Multicentro Matias | <span class="fecha-hoy"></span>
-                        </div>
-                        <div>
-                            <strong>CLIENTE:</strong> <span class="cliente-nombre"></span>
+                    <div class="cuerpo-detalle">
+                        <div class="linea line-multiline"><span class="label">EQUIPO:</span><span class="value dispositivo-full"></span></div>
+                        <div class="linea line-multiline"><span class="label">DIAGNÓSTICO:</span><span class="value diagnostico-final">Revisión</span></div>
+                        <div class="linea line-multiline"><span class="label">SOLUCIÓN:</span><span class="value solucion-final">MANTENIMIENTO</span></div>
+                    </div>
+
+                    <hr class="divider-black">
+
+                    <div class="cuerpo-footer">
+                        <div class="footer-grid footer-grid-3">
+                            <div class="linea"><span class="label">RESPONSABLE TÉCNICO:</span><span class="value tecnico-nombre"></span></div>
+                            <div class="pie-info text-center">CCA: Multicentro Matias | <span class="fecha-hoy"></span></div>
+                            <div class="linea text-right"><span class="label">CLIENTE:</span><span class="value cliente-nombre"></span></div>
                         </div>
                     </div>
                 </div>

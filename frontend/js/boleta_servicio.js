@@ -193,9 +193,10 @@ function llenarBoletaPanoramica(servicio, doc) {
     
     // Números de Orden
     container.querySelectorAll('.talon-numero, .cuerpo-numero').forEach(el => {
-        // Extraer solo el número (ej: 6693 de ST-2026-06693)
-        const num = servicio.numero_servicio.split('-').pop();
-        el.textContent = parseInt(num); // Quitar ceros a la izquierda
+        const raw = (servicio.numero_servicio || '').toString();
+        const lastPart = raw.split('-').pop() || '';
+        const orderNum = parseInt(lastPart, 10);
+        el.textContent = Number.isFinite(orderNum) ? String(orderNum) : (raw || String(servicio.id_servicio || ''));
     });
 
     // Sucursal
@@ -203,16 +204,45 @@ function llenarBoletaPanoramica(servicio, doc) {
         el.textContent = servicio.nombre_sucursal || '';
     });
 
+    function formatDateTimeCompact(dateString) {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        if (Number.isNaN(date.getTime())) return 'N/A';
+        return date
+            .toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+            .replace(',', '')
+            .trim();
+    }
+
+    function formatDateOnly(dateString) {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        if (Number.isNaN(date.getTime())) return 'N/A';
+        return date.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    }
+
     // Fechas
-    const fechaIngreso = formatDate(servicio.fecha_inicio, true) + ' ' + 
-                        new Date(servicio.fecha_inicio).toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
-    
-    const fechaEntrega = servicio.fecha_entrega ? 
-                        formatDate(servicio.fecha_entrega, true) + ' ' + new Date(servicio.fecha_entrega).toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'}) : 
-                        'Pendiente';
+    const fechaIngreso = formatDateTimeCompact(servicio.fecha_inicio);
+    const fechaIngresoShort = formatDateOnly(servicio.fecha_inicio);
+
+    const fechaEntrega = servicio.fecha_entrega ? formatDateTimeCompact(servicio.fecha_entrega) : 'Pendiente';
+    const fechaEntregaShort = servicio.fecha_entrega ? formatDateOnly(servicio.fecha_entrega) : 'Pendiente';
 
     container.querySelectorAll('.fecha-ingreso-val').forEach(el => el.textContent = fechaIngreso);
+    container.querySelectorAll('.fecha-ingreso-short').forEach(el => el.textContent = fechaIngresoShort);
+    
     container.querySelectorAll('.fecha-entrega-val').forEach(el => el.textContent = fechaEntrega);
+    container.querySelectorAll('.fecha-entrega-short').forEach(el => el.textContent = fechaEntregaShort);
     
     // Fecha actual (Pie de página)
     const fechaHoy = new Date().toLocaleDateString('es-ES');
@@ -238,6 +268,11 @@ function llenarBoletaPanoramica(servicio, doc) {
     const dispositivo = `${servicio.marca_dispositivo || ''} ${servicio.modelo_dispositivo || ''}`.trim();
     container.querySelectorAll('.dispositivo-desc, .dispositivo-full').forEach(el => el.textContent = dispositivo);
 
+    // Servicio (categoría)
+    // Priorizamos nombre_categoria para mostrar texto legible en lugar de ID
+    const servicioIdValue = servicio.nombre_categoria || (servicio.id_categoria ? String(servicio.id_categoria) : '-');
+    container.querySelectorAll('.servicio-id').forEach(el => el.textContent = servicioIdValue);
+
     // ==========================================
     // DATOS ESPECÍFICOS POR TIPO
     // ==========================================
@@ -245,13 +280,19 @@ function llenarBoletaPanoramica(servicio, doc) {
     if (esEntrega) {
         // NOTA DE ENTREGA
         container.querySelectorAll('.fecha-entrega-real').forEach(el => el.textContent = fechaEntrega);
-        container.querySelectorAll('.diagnostico-final').forEach(el => el.textContent = 'Revisión'); // Valor por defecto o campo futuro
-        container.querySelectorAll('.solucion-final').forEach(el => el.textContent = 'MANTENIMIENTO'); // Valor por defecto o campo futuro
+        container.querySelectorAll('.diagnostico-final').forEach(el => el.textContent = 'Revisión');
+        container.querySelectorAll('.solucion-final').forEach(el => el.textContent = 'MANTENIMIENTO');
+
+        const notaFecha = container.querySelector('.nota-fecha');
+        if (notaFecha) {
+            notaFecha.textContent = fechaEntrega === 'Pendiente' ? '_________________' : fechaEntrega;
+        }
     } else {
         // ORDEN DE SERVICIO
-        container.querySelectorAll('.servicio-id').forEach(el => el.textContent = '1'); // Placeholder
         container.querySelectorAll('.falla-desc').forEach(el => el.textContent = servicio.descripcion_problema || '');
-        container.querySelectorAll('.estado-val').forEach(el => el.textContent = servicio.estado.toUpperCase());
+        container.querySelectorAll('.estado-val').forEach(el => el.textContent = (servicio.estado || 'Pendiente').toString().toUpperCase());
+        container.querySelectorAll('.diagnostico-desc').forEach(el => el.textContent = 'Revisión');
+        container.querySelectorAll('.solucion-desc').forEach(el => el.textContent = 'Revisión');
     }
 
     // Dirección Sucursal (si existe elemento)
