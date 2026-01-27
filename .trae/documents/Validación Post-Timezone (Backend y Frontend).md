@@ -1,18 +1,29 @@
-## Análisis de Impacto y Seguridad
+## Objetivo
+Preparar el backend para producción (VPS) asegurando el manejo correcto de subida de archivos (imágenes/videos) y corrigiendo la configuración de Git.
 
-### 1. ¿El backend funcionará con normalidad? **SÍ, mejor que antes.**
-*   **Consistencia de Datos:** Al eliminar la configuración duplicada y fijar `America/La_Paz`, eliminamos la ambigüedad. Django ahora sabe exactamente cuándo empieza y termina el día en Bolivia.
-*   **Reportes Precisos:** Antes, al estar en UTC, un reporte de "Hoy" podía incluir ventas de ayer a las 20:00 (por las 4 horas de diferencia). Ahora, "Hoy" es estrictamente de 00:00 a 23:59 hora boliviana.
-*   **Correlativos (Boletas/Servicios):** Se calculan basados en el año local. Esto evita que una venta hecha el 31 de diciembre a las 22:00 se guarde erróneamente con el prefijo del año siguiente (ej. `VTA-2027` en vez de `2026`).
+## 1. Configuración de límites de subida (10 MB)
+- **Archivo**: [settings.py](file:///d:/myProjects/mcmatias/backend/config/settings.py)
+- **Acción**: Agregar las siguientes configuraciones para permitir uploads de hasta 10 MB:
+  ```python
+  DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
+  FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
+  ```
+  *Nota*: Esto evita errores `413 Request Entity Too Large` a nivel de Django (si Nginx está delante, también requerirá `client_max_body_size 10M`, pero eso es config de servidor).
 
-### 2. ¿Al frontend le afecta? **NO, es totalmente compatible.**
-*   **Visualización de Fechas:** He revisado tu código frontend (`js/utils.js` y `boleta_servicio.js`). Usas `new Date(fecha_recibida)` y métodos como `.getDate()`, `.getHours()`.
-    *   Estos métodos trabajan con la **hora del navegador del usuario**.
-    *   El backend envía las fechas en formato estándar (ISO 8601) que incluye la información de zona horaria.
-    *   El navegador recibe esa fecha y automáticamente la muestra en la hora local del usuario (Bolivia). No se requiere ningún cambio en el JavaScript.
-*   **Filtros de Reportes:** El frontend envía solo la fecha (ej. `2026-01-27`) sin hora. El backend ahora interpreta esa fecha correctamente como "inicio del día en Bolivia" en lugar de "inicio del día en Londres (UTC)", por lo que los resultados que veas en pantalla coincidirán exactamente con lo que esperas.
+## 2. Ajuste de .gitignore para Media
+- **Archivo**: [backend/.gitignore](file:///d:/myProjects/mcmatias/backend/.gitignore)
+- **Acción**: Modificar la sección de `media/` para que:
+  1. Ignore todo el contenido (`media/*`).
+  2. Mantenga la estructura de carpetas usando `.gitkeep` (`!media/.gitkeep`).
+  3. Esto asegura que la carpeta exista en el VPS al clonar, pero sin “basura” local, y con permisos listos para escritura.
 
-### Conclusión
-El sistema es **más robusto y preciso**. No se han introducido cambios que rompan la comunicación entre backend y frontend. Los tests agregados confirman que la configuración está activa y funcionando.
+## 3. Verificación de permisos y estructura
+- **Acción**:
+  - Asegurar que existe `backend/media/.gitkeep` (crearlo si no existe).
+  - Verificar que `backend/media` tenga permisos de escritura (en local es automático, en VPS se gestiona al desplegar, pero la estructura ayuda).
 
-**¿Deseas que proceda con alguna otra verificación o cerramos esta tarea de ajuste horario?**
+## Pasos de ejecución
+1. Modificar [settings.py](file:///d:/myProjects/mcmatias/backend/config/settings.py) con los límites de 10 MB.
+2. Actualizar [backend/.gitignore](file:///d:/myProjects/mcmatias/backend/.gitignore) con las reglas de exclusión/inclusión.
+3. Crear el archivo `backend/media/.gitkeep` para persistencia en Git.
+4. Verificar la configuración ejecutando `manage.py check`.

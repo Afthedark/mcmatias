@@ -8,8 +8,11 @@ __pycache__/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-media/
 staticfiles/
+
+# Media (Mantener carpeta pero ignorar contenido)
+media/*
+!media/.gitkeep
 
 # Entornos virtuales
 venv/

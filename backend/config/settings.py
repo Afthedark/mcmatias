@@ -165,3 +165,7 @@ CORS_ALLOW_ALL_ORIGINS = True # For dev
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# File Upload Limits (10 MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+
