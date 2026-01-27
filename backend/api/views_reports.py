@@ -3,11 +3,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.db.models import Sum, Count, F, Q
-from django.db.models.functions import TruncDate, ExtractHour
 from django.utils import timezone
 from django.http import HttpResponse
 from datetime import datetime, time
 import openpyxl
+from decimal import Decimal
+from collections import defaultdict
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -26,12 +27,12 @@ class ReporteBaseView(APIView):
         
         # Default: Hoy si no se especifica
         if not fecha_desde:
-            fecha_desde = timezone.now().date()
+            fecha_desde = timezone.localdate()
         else:
             fecha_desde = datetime.strptime(str(fecha_desde), '%Y-%m-%d').date()
             
         if not fecha_hasta:
-            fecha_hasta = timezone.now().date()
+            fecha_hasta = timezone.localdate()
         else:
             fecha_hasta = datetime.strptime(str(fecha_hasta), '%Y-%m-%d').date()
             
@@ -66,24 +67,20 @@ class ReporteVentasDashboardView(ReporteBaseView):
         if sucursal_id:
             queryset = queryset.filter(id_sucursal_id=sucursal_id)
             
-        # Agrupación por día (Manual sin Pandas)
-        # Usamos TruncDate de Django
-        ventas_por_dia = queryset.annotate(
-            dia=TruncDate('fecha_venta')
-        ).values('dia').annotate(
-            total=Sum('total_venta'),
-            cantidad=Count('id_venta')
-        ).order_by('dia')
-        
-        # Preparar datos para Chart.js
+        ventas_por_dia = defaultdict(lambda: {"total": Decimal("0"), "cantidad": 0})
+        for fecha_venta, total_venta in queryset.values_list('fecha_venta', 'total_venta'):
+            dia_local = timezone.localtime(fecha_venta).date()
+            ventas_por_dia[dia_local]["total"] += total_venta or Decimal("0")
+            ventas_por_dia[dia_local]["cantidad"] += 1
+
         labels = []
         data_monto = []
         data_cantidad = []
         
-        for item in ventas_por_dia:
-            labels.append(item['dia'].strftime('%d/%m/%Y'))
-            data_monto.append(float(item['total']) if item['total'] else 0)
-            data_cantidad.append(item['cantidad'])
+        for dia in sorted(ventas_por_dia.keys()):
+            labels.append(dia.strftime('%d/%m/%Y'))
+            data_monto.append(float(ventas_por_dia[dia]["total"]))
+            data_cantidad.append(ventas_por_dia[dia]["cantidad"])
             
         # Totales Generales y por Tipo de Pago
         total_acumulado = queryset.aggregate(Sum('total_venta'))['total_venta__sum'] or 0
@@ -121,19 +118,10 @@ class ReporteVentasDashboardView(ReporteBaseView):
             'monto': [float(item['monto_total']) for item in productos_vendidos]
         }
         
-        # Ventas por Hora del Día
-        from django.db.models.functions import ExtractHour
-        
-        ventas_por_hora = queryset.annotate(
-            hora=ExtractHour('fecha_venta')
-        ).values('hora').annotate(
-            cantidad=Count('id_venta')
-        ).order_by('hora')
-        
-        # Rellenar horas faltantes con 0
         horas_dict = {i: 0 for i in range(24)}
-        for item in ventas_por_hora:
-            horas_dict[item['hora']] = item['cantidad']
+        for fecha_venta in queryset.values_list('fecha_venta', flat=True):
+            hora_local = timezone.localtime(fecha_venta).hour
+            horas_dict[hora_local] += 1
         
         data_por_hora = {
             'labels': [f"{h:02d}:00" for h in range(24)],
@@ -214,7 +202,7 @@ class ReporteVentasPDFView(ReporteBaseView):
             
             row = [
                 idx,
-                v.fecha_venta.strftime('%d/%m/%Y %H:%M'),
+                timezone.localtime(v.fecha_venta).strftime('%d/%m/%Y %H:%M'),
                 v.numero_boleta,
                 v.id_cliente.nombre_apellido if v.id_cliente else 'S/N',
                 v.id_usuario.nombre_apellido if v.id_usuario else 'S/N',
@@ -265,7 +253,7 @@ class ReporteVentasExcelView(ReporteBaseView):
         for idx, v in enumerate(queryset, start=1):
             ws.append([
                 idx,
-                v.fecha_venta.strftime('%d/%m/%Y %H:%M'),
+                timezone.localtime(v.fecha_venta).strftime('%d/%m/%Y %H:%M'),
                 v.numero_boleta,
                 v.id_cliente.nombre_apellido if v.id_cliente else '',
                 v.id_usuario.nombre_apellido if v.id_usuario else '',
@@ -277,7 +265,7 @@ class ReporteVentasExcelView(ReporteBaseView):
             ])
             
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename=ventas_{timezone.now().strftime("%Y%m%d")}.xlsx'
+        response['Content-Disposition'] = f'attachment; filename=ventas_{timezone.localdate().strftime("%Y%m%d")}.xlsx'
         wb.save(response)
         return response
 
@@ -306,14 +294,13 @@ class ReporteServiciosDashboardView(ReporteBaseView):
         ).order_by('-total')[:5] # Top 5
         
         # Datos cronológicos (opcional, por recepción)
-        por_dia = queryset.annotate(
-            dia=TruncDate('fecha_inicio')
-        ).values('dia').annotate(
-            cantidad=Count('id_servicio')
-        ).order_by('dia')
-        
-        labels_dia = [item['dia'].strftime('%d/%m') for item in por_dia]
-        data_dia = [item['cantidad'] for item in por_dia]
+        servicios_por_dia = defaultdict(int)
+        for fecha_inicio in queryset.values_list('fecha_inicio', flat=True):
+            dia_local = timezone.localtime(fecha_inicio).date()
+            servicios_por_dia[dia_local] += 1
+
+        labels_dia = [dia.strftime('%d/%m') for dia in sorted(servicios_por_dia.keys())]
+        data_dia = [servicios_por_dia[dia] for dia in sorted(servicios_por_dia.keys())]
 
         # Agrupación por Técnico (Solo Entregados)
         por_tecnico = queryset.filter(estado='Entregado').values('id_tecnico_asignado__nombre_apellido').annotate(
@@ -324,16 +311,10 @@ class ReporteServiciosDashboardView(ReporteBaseView):
         data_tecnico = [item['total'] for item in por_tecnico]
 
         # Distribución por Hora del Día
-        servicios_por_hora = queryset.annotate(
-            hora=ExtractHour('fecha_inicio')
-        ).values('hora').annotate(
-            cantidad=Count('id_servicio')
-        ).order_by('hora')
-        
-        # Rellenar horas faltantes con 0
         horas_dict = {i: 0 for i in range(24)}
-        for item in servicios_por_hora:
-            horas_dict[item['hora']] = item['cantidad']
+        for fecha_inicio in queryset.values_list('fecha_inicio', flat=True):
+            hora_local = timezone.localtime(fecha_inicio).hour
+            horas_dict[hora_local] += 1
         
         data_por_hora = {
             'labels': [f"{h:02d}:00" for h in range(24)],
@@ -399,8 +380,8 @@ class ReporteServiciosPDFView(ReporteBaseView):
             
             row = [
                 idx,
-                s.fecha_inicio.strftime('%d/%m/%Y'),
-                s.fecha_entrega.strftime('%d/%m/%Y') if s.fecha_entrega else '-',
+                timezone.localtime(s.fecha_inicio).strftime('%d/%m/%Y'),
+                timezone.localtime(s.fecha_entrega).strftime('%d/%m/%Y') if s.fecha_entrega else '-',
                 s.numero_servicio,
                 s.id_cliente.nombre_apellido if s.id_cliente else '-',
                 f"{s.marca_dispositivo} {s.modelo_dispositivo}",
@@ -448,8 +429,8 @@ class ReporteServiciosExcelView(ReporteBaseView):
             ws.append([
                 idx,
                 s.numero_servicio,
-                s.fecha_inicio.strftime('%d/%m/%Y %H:%M') if s.fecha_inicio else '',
-                s.fecha_entrega.strftime('%d/%m/%Y %H:%M') if s.fecha_entrega else '',
+                timezone.localtime(s.fecha_inicio).strftime('%d/%m/%Y %H:%M') if s.fecha_inicio else '',
+                timezone.localtime(s.fecha_entrega).strftime('%d/%m/%Y %H:%M') if s.fecha_entrega else '',
                 s.id_cliente.nombre_apellido if s.id_cliente else '',
                 f"{s.marca_dispositivo} {s.modelo_dispositivo}",
                 s.descripcion_problema,
@@ -459,6 +440,6 @@ class ReporteServiciosExcelView(ReporteBaseView):
             ])
             
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename=servicios_{timezone.now().strftime("%Y%m%d")}.xlsx'
+        response['Content-Disposition'] = f'attachment; filename=servicios_{timezone.localdate().strftime("%Y%m%d")}.xlsx'
         wb.save(response)
         return response

@@ -114,9 +114,7 @@ AUTH_USER_MODEL = 'api.Usuario'
 
 LANGUAGE_CODE = 'es-es'
 
-TIME_ZONE = 'America/La_Paz' # Adjusting to a likely timezone or keeping UTC. Sticking to UTC is cleaner often, but let's go with Chile/Bolivia time if hinted by "sucursales"? defaulting to UTC first to be safe or just 'UTC'.
-# The user prompted in Spanish, maybe generic 'es-es'.
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/La_Paz'
 
 USE_I18N = True
 

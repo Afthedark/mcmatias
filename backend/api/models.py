@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.utils import timezone
 
 # 1. Tabla de Roles
 class Rol(models.Model):
@@ -226,8 +227,7 @@ class Venta(models.Model):
     def save(self, *args, **kwargs):
         """Auto-genera numero_boleta con formato VTA-YYYY-XXXXX"""
         if not self.numero_boleta:
-            from datetime import datetime
-            año_actual = datetime.now().year
+            año_actual = timezone.localdate().year
             
             ultimo = Venta.objects.filter(
                 numero_boleta__startswith=f'VTA-{año_actual}-'
@@ -307,8 +307,7 @@ class ServicioTecnico(models.Model):
     def save(self, *args, **kwargs):
         """Auto-genera numero_servicio con formato ST-YYYY-XXXXX"""
         if not self.numero_servicio:
-            from datetime import datetime
-            año_actual = datetime.now().year
+            año_actual = timezone.localdate().year
             
             # Buscar último servicio del año actual
             ultimo = ServicioTecnico.objects.filter(
