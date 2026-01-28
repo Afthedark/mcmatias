@@ -1,34 +1,21 @@
-### **Clarificación del nuevo comando con Gunicorn**
+**Plan: Creación de setup\_guide\_vps.md**
 
-Es una excelente pregunta. Al pasar de **Uvicorn** (ASGI) a **Gunicorn** (WSGI), el comando cambia ligeramente pero el resultado es el mismo. Aquí tienes la equivalencia:
+Crearé una guía completa y profesional adaptada específicamente para el despliegue en un VPS (Linux/Ubuntu), integrando todas las mejoras que hemos realizado (Gunicorn, python-dotenv, etc.).
 
-#### **1. Comando Equivalente para Desarrollo (Local)**
-Si antes usabas:
-`uvicorn config.asgi:application --reload`
+**Contenido de la nueva guía `setup_guide_vps.md`:**
 
-Ahora con **Gunicorn** usarás:
-`gunicorn config.wsgi:application --reload`
+1.  **Preparación del VPS**: Requisitos de sistema (Linux), instalación de Python y MySQL.
+2.  **Configuración del Entorno**:
+    *   Clonación y creación de `venv` (estilo Linux).
+    *   Instalación de dependencias (incluyendo Gunicorn).
+    *   Configuración del `.env` para producción (`DEBUG=False`).
+3.  **Base de Datos en Producción**: Pasos para crear la BD y aplicar migraciones.
+4.  **Servidor de Aplicación (Gunicorn)**:
+    *   Uso de `gunicorn.conf.py`.
+    *   Ejecución mediante `run_prod.sh`.
+5.  **Despliegue Profesional (Extras Críticos)**:
+    *   **Systemd**: Plantilla y comandos para que el backend inicie solo con el servidor.
+    *   **Nginx**: Plantilla de configuración para servir archivos estáticos/media y actuar como proxy.
+6.  **Mantenimiento**: Gestión de logs en la carpeta `logs/` y comandos de actualización.
 
-**¿Qué cambió?**
-- Usamos `config.wsgi` en lugar de `config.asgi`. Gunicorn es un servidor WSGI (el estándar de Django), lo cual es más estable para la mayoría de las aplicaciones web.
-
----
-
-#### **2. Uso con el archivo de configuración (Recomendado)**
-Como te preparé el archivo [gunicorn.conf.py](file:///d:/myProjects/mcmatias/backend/gunicorn.conf.py), ya no necesitas escribir comandos largos. Solo tienes que ejecutar:
-
-**En Desarrollo (Local):**
-`gunicorn --config gunicorn.conf.py --reload`
-*(Esto es lo que hace automáticamente tu nuevo script `run_local.sh`)*.
-
-**En Producción (VPS):**
-`gunicorn --config gunicorn.conf.py`
-*(Esto es lo que hace tu script `run_prod.sh`, sin la recarga automática para ser más eficiente)*.
-
----
-
-### **Resumen de diferencias clave:**
-- **Protocolo**: Pasamos de **ASGI** (Uvicorn) a **WSGI** (Gunicorn). A menos que estés usando WebSockets (Django Channels), no notarás ninguna diferencia en el funcionamiento, pero ganarás en estabilidad de procesos.
-- **Multiprocesamiento**: Uvicorn corre en un solo proceso. Gunicorn, gracias a la configuración que creamos, abrirá varios "trabajadores" (workers) automáticamente según la potencia de tu servidor, permitiendo manejar muchas más visitas simultáneas.
-
-**¿Te gustaría que probemos ejecutar el script `run_local.sh` para verificar que todo inicia correctamente?** (Recuerda hacerlo desde una terminal Linux/WSL).
+**¿Deseas que proceda a crear este archivo en `backend/instrucciones/setup_guide_vps.md`?**
