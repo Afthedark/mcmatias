@@ -1,27 +1,30 @@
 
 from pathlib import Path
 import os
-import environ
-
-# Inicializar environ
-env = environ.Env()
-# Leer archivo .env
-environ.Env.read_env(os.path.join(Path(__file__).resolve().parent.parent, '.env'))
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables
+# Carga robusta: siempre desde BASE_DIR/.env para evitar depender del cwd
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY', default='django-insecure-default-key')
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', default=False)
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
+ALLOWED_HOSTS = (
+    os.getenv('ALLOWED_HOSTS', '').split(',')
+    if os.getenv('ALLOWED_HOSTS')
+    else []
+)
 
 
 # Application definition
