@@ -4,10 +4,15 @@ import os
 from dotenv import load_dotenv
 
 # Load environment variables
+# Carga robusta: siempre desde BASE_DIR/.env para evitar depender del cwd
+# BASE_DIR se define más abajo, por lo que temporalmente cargamos sin ruta y luego re-cargamos con ruta explícita
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Re-cargar .env usando ruta explícita (si existe)
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -19,7 +24,11 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = (
+    os.getenv('ALLOWED_HOSTS', '').split(',')
+    if os.getenv('ALLOWED_HOSTS')
+    else []
+)
 
 
 # Application definition
@@ -168,4 +177,3 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # File Upload Limits (10 MB)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
-
