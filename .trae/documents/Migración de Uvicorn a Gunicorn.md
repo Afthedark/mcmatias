@@ -1,32 +1,22 @@
-### **Clarificación sobre Uvicorn vs Gunicorn**
+**Plan: Finalización de la Migración a Gunicorn**
 
-Para responder a tus dudas:
+Confirmado que ya tienes Gunicorn instalado y Uvicorn fuera del sistema. Procederé con los cambios técnicos finales:
 
-1.  **¿Es compatible con Linux y Windows?**
-    - **Sí.** Uvicorn funciona perfectamente en ambos sistemas operativos. En Linux es extremadamente rápido porque puede usar una librería llamada `uvloop`, y en Windows usa el sistema estándar de `asyncio`.
-2.  **¿Sirve para producción?**
-    - **Sí, pero con una recomendación.** Uvicorn es un servidor de "proceso único". Esto significa que solo usa un núcleo de tu procesador. 
-    - En **producción (Linux)**, lo ideal es usar **Gunicorn** para que maneje varios "trabajadores" (workers) de Uvicorn. Así, si un proceso falla, Gunicorn lo reinicia, y puedes aprovechar todos los núcleos de tu servidor.
-    - En **Windows**, Uvicorn es una de las mejores opciones disponibles para producción, ya que Gunicorn no funciona allí.
+1.  **Configuración de Gunicorn**:
+    - Crear el archivo [gunicorn.conf.py](file:///d:/myProjects/mcmatias/backend/gunicorn.conf.py) con:
+        - Puerto: `8000`
+        - Aplicación: `config.wsgi:application`
+        - Workers: Cálculo automático (2 * núcleos + 1)
+        - Logs: Activación de logs de acceso y errores en la carpeta `logs/`.
 
----
+2.  **Scripts de Ejecución (Linux/WSL)**:
+    - Crear `run_local.sh`: Script simple para desarrollo con `--reload`.
+    - Crear `run_prod.sh`: Script optimizado para el VPS (sin reload, modo daemon opcional).
 
-### **Propuesta de Plan de Acción**
+3.  **Limpieza de Archivos de Windows**:
+    - Eliminar definitivamente [run_server.bat](file:///d:/myProjects/mcmatias/backend/run_server.bat).
 
-Dado que tu proyecto ya usa **Uvicorn**, tienes dos caminos excelentes:
+4.  **Estructura de Directorios**:
+    - Asegurar la existencia de una carpeta `logs/` para que Gunicorn pueda escribir sus registros.
 
-#### **Opción A: Mantener Uvicorn (Máxima compatibilidad)**
-Si no quieres complicarte y el tráfico de tu aplicación es moderado, Uvicorn es más que suficiente tanto para Windows como para Linux.
-- **Cambio**: Ninguno en el código. Solo asegurar que en producción se corra detrás de un proxy como Nginx.
-
-#### **Opción B: Migrar a Gunicorn + Uvicorn (Recomendado para Producción en Linux)**
-Esta es la configuración "profesional" para servidores Linux. Gunicorn actúa como el "jefe" y Uvicorn hace el trabajo.
-1.  **Instalar Gunicorn**: (Solo para el entorno Linux).
-2.  **Crear script de producción**: Un archivo `.sh` que ejecute:
-    `gunicorn config.asgi:application -w 4 -k uvicorn.workers.UvicornWorker`
-3.  **Mantener Uvicorn para desarrollo**: Seguir usando tu archivo `.bat` actual para trabajar en Windows.
-
-**Mi recomendación:**
-Prepara el proyecto para la **Opción B**. Así, cuando despliegues en Linux, tendrás el máximo rendimiento, pero podrás seguir trabajando en Windows con Uvicorn sin problemas.
-
-**¿Deseas que prepare los archivos para que el proyecto sea capaz de correr con Gunicorn en Linux manteniendo Uvicorn para Windows?**
+**¿Procedo a realizar estos cambios ahora mismo?**
