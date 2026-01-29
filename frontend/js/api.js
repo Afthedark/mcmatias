@@ -3,8 +3,15 @@
  * Handles all HTTP requests to Django backend with JWT authentication
  */
 
-// Base URL for API
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+// --- CONFIGURACIÓN DE URL DEL BACKEND ---
+// Descomenta la URL que desees usar según el entorno:
+
+// 1. DESARROLLO LOCAL
+//const API_BASE_URL = 'http://127.0.0.1:8000/api';
+
+// 2. PRODUCCIÓN / VPS (IP del Servidor)
+const API_BASE_URL = 'http://167.86.66.229:8000/api';
+// ----------------------------------------
 
 // Create Axios instance with default config
 const api = axios.create({
