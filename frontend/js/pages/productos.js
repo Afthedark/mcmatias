@@ -318,7 +318,20 @@ async function saveProducto() {
 
     const fileInput = document.getElementById('fotoProducto');
     if (fileInput.files.length > 0) {
-        formData.append('foto_producto', fileInput.files[0]);
+        try {
+            const originalFile = fileInput.files[0];
+            // Solo comprimir si es mayor a 1.5MB (1.5 * 1024 * 1024 bytes)
+            if (originalFile.size > 1.5 * 1024 * 1024) {
+                const compressedFile = await compressImage(originalFile);
+                formData.append('foto_producto', compressedFile);
+            } else {
+                formData.append('foto_producto', originalFile);
+            }
+        } catch (error) {
+            console.error('Error compressing product image:', error);
+            // Fallback al original si falla la compresión
+            formData.append('foto_producto', fileInput.files[0]);
+        }
     }
 
     try {
@@ -515,7 +528,7 @@ function capturarFoto() {
         input.dispatchEvent(new Event('change'));
 
         cerrarCamara();
-    }, 'image/jpeg', 0.8);
+    }, 'image/jpeg', 0.7);
 }
 
 // ============================================
