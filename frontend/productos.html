@@ -117,9 +117,15 @@
                         </div>
                         <div class="mb-3">
                             <label for="fotoProducto" class="form-label">Foto</label>
-                            <input type="file" class="form-control" id="fotoProducto" accept="image/*">
+                            <div class="input-group">
+                                <input type="file" class="form-control" id="fotoProducto" accept="image/*">
+                                <button class="btn btn-outline-secondary" type="button" onclick="abrirCamara('fotoProducto')">
+                                    <i class="bi bi-camera"></i>
+                                </button>
+                            </div>
                             <div class="mt-2 text-center">
-                                <img id="previewFotoEdit" src="" alt="Vista previa" class="img-thumbnail d-none" style="max-height: 150px;">
+                                <img id="previewFotoEdit" src="" alt="Vista previa" class="img-thumbnail d-none"
+                                    style="max-height: 150px;">
                             </div>
                         </div>
                     </form>
@@ -127,6 +133,29 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="saveProducto()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Cámara -->
+    <div class="modal fade" id="modalCamara" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title"><i class="bi bi-camera-fill"></i> Tomar Foto</h5>
+                    <button type="button" class="btn-close btn-close-white" onclick="cerrarCamara()"></button>
+                </div>
+                <div class="modal-body p-0 text-center bg-black">
+                    <video id="cameraFeed" autoplay playsinline
+                        style="width: 100%; max-height: 50vh; display: block;"></video>
+                    <canvas id="cameraCanvas" style="display: none;"></canvas>
+                </div>
+                <div class="modal-footer bg-dark border-top-0 justify-content-center">
+                    <button type="button" class="btn btn-outline-light" onclick="cerrarCamara()">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="capturarFoto()">
+                        <i class="bi bi-camera"></i> Capturar
+                    </button>
                 </div>
             </div>
         </div>
