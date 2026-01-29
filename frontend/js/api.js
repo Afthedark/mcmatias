@@ -7,10 +7,13 @@
 // Descomenta la URL que desees usar según el entorno:
 
 // 1. DESARROLLO LOCAL
-//const API_BASE_URL = 'http://127.0.0.1:8000/api';
+// const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
-// 2. PRODUCCIÓN / VPS (IP del Servidor)
-const API_BASE_URL = 'http://167.86.66.229:8000/api';
+// 2. PRODUCCIÓN / PROXY NETLIFY (Usa esta para desplegar en Netlify)
+const API_BASE_URL = '/api'; 
+
+// 3. VPS DIRECTO (Solo si no usas HTTPS en el frontend)
+// const API_BASE_URL = 'http://167.86.66.229:8000/api';
 // ----------------------------------------
 
 // Create Axios instance with default config
