@@ -135,7 +135,13 @@ api.interceptors.response.use(
 
         // Forbidden - no permission
         if (error.response?.status === 403) {
-            window.location.href = 'unauthorized.html';
+            // Evitar redirección si estamos en el index o si el error viene de cargar el perfil inicial
+            const isInitialLoad = originalRequest.url.includes('/perfil/');
+            const isLoginPage = window.location.pathname.includes('index.html') || window.location.pathname === '/';
+            
+            if (!isInitialLoad && !isLoginPage) {
+                window.location.href = 'unauthorized.html';
+            }
         }
 
         // Server error

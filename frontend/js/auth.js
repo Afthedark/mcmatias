@@ -23,6 +23,22 @@ async function login(email, password) {
         // Store user email for display
         localStorage.setItem('user_email', email);
 
+        // --- PRE-CARGA DE PERFIL ---
+        // Descargamos el rol inmediatamente para evitar el error de "No Autorizado" al redirigir
+        try {
+            const profileResponse = await axios.get(`${API_BASE_URL}/perfil/`, {
+                headers: { 'Authorization': `Bearer ${response.data.access}` }
+            });
+            const userData = profileResponse.data;
+            if (userData.numero_rol) localStorage.setItem('user_numero_rol', userData.numero_rol);
+            if (userData.nombre_apellido) localStorage.setItem('user_name', userData.nombre_apellido);
+            if (userData.nombre_rol) localStorage.setItem('user_role', userData.nombre_rol);
+            if (userData.nombre_sucursal) localStorage.setItem('user_sucursal', userData.nombre_sucursal);
+        } catch (e) {
+            console.error("Error al pre-cargar perfil tras login:", e);
+        }
+        // ---------------------------
+
         // Redirect to dashboard
         window.location.href = 'dashboard.html';
 

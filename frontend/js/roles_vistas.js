@@ -59,7 +59,14 @@ function canAccessPage(pageName) {
     if (pageName === 'index.html' || pageName === 'unauthorized.html' || pageName === '/') return true;
 
     const roleNum = getUserRoleNumber();
-    if (!roleNum) return false; // No hay rol definido
+    
+    // Si no hay rol, pero acabamos de iniciar sesión, dar un margen de espera
+    // En lugar de devolver false inmediatamente, permitimos el acceso temporal 
+    // mientras components.js descarga el perfil real.
+    if (!roleNum) {
+        const token = localStorage.getItem('access_token');
+        return token !== null; // Si hay token, permitimos el beneficio de la duda
+    }
 
     const permisos = PERMISOS_ROL[roleNum];
     if (!permisos) return false; // Rol no definido en config
