@@ -72,8 +72,13 @@ function canAccessPage(pageName) {
     if (!permisos) return false; // Rol no definido en config
 
     if (permisos.paginas.includes('*')) return true;
+    
+    // Normalizar: buscar coincidencia exacta o con extensión .html
+    const hasExtension = pageName.includes('.');
+    const pageWithHtml = hasExtension ? pageName : pageName + '.html';
+    const pageWithoutHtml = hasExtension ? pageName.split('.')[0] : pageName;
 
-    return permisos.paginas.includes(pageName);
+    return permisos.paginas.includes(pageWithHtml) || permisos.paginas.includes(pageWithoutHtml);
 }
 
 /**
