@@ -385,6 +385,21 @@ async function mostrarEditarServicio(id) {
             }
         }
 
+        // Cargar previsualización de fotos existentes
+        ['foto_1', 'foto_2', 'foto_3'].forEach((campo, index) => {
+            const fotoUrl = servicio[campo];
+            const num = index + 1;
+            const container = document.getElementById(`preview_container_${num}`);
+            const img = document.getElementById(`preview_foto_${num}`);
+
+            if (fotoUrl && container && img) {
+                img.src = getImageUrl(fotoUrl);
+                container.style.display = 'block';
+            } else if (container) {
+                container.style.display = 'none';
+            }
+        });
+
         actualizarResumen();
         window.scrollTo(0, 0);
     } catch (error) {
@@ -440,9 +455,13 @@ function resetFormulario() {
 
     // Fotos
     ['foto_1', 'foto_2', 'foto_3'].forEach((fieldName, index) => {
+        const num = index + 1;
         const input = document.getElementById(fieldName);
         if (input) input.value = '';
-        const container = document.getElementById(`preview_container_${index + 1}`);
+        
+        const container = document.getElementById(`preview_container_${num}`);
+        const img = document.getElementById(`preview_foto_${num}`);
+        if (img) img.src = '';
         if (container) container.style.display = 'none';
     });
 
@@ -879,7 +898,7 @@ function handleImagePreview(event, num) {
     const reader = new FileReader();
     reader.onload = (e) => {
         const container = document.getElementById(`preview_container_${num}`);
-        const img = document.getElementById(`preview_${num}`);
+        const img = document.getElementById(`preview_foto_${num}`);
         if (container && img) {
             img.src = e.target.result;
             container.style.display = 'block';
