@@ -754,8 +754,9 @@ async function verDetalle(id) {
         if (fotos.length > 0) {
             galeria.innerHTML = fotos.map(foto => `
                 <div class="col-4">
-                    <img src="${getImageUrl(foto)}" class="img-fluid rounded" style="cursor:pointer"
-                         onclick="window.open('${getImageUrl(foto)}', '_blank')">
+                    <a href="${getImageUrl(foto)}" target="_blank">
+                        <img src="${getImageUrl(foto)}" class="img-fluid rounded">
+                    </a>
                 </div>
             `).join('');
         } else {

@@ -1,1 +1,2 @@
-/api/*  http://167.86.66.229:8000/api/:splat  200!
+/api/*    http://167.86.66.229:8000/api/:splat    200!
+/media/*  http://167.86.66.229:8000/media/:splat  200!

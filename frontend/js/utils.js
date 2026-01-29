@@ -149,12 +149,31 @@ function getImageUrl(imagePath) {
     if (!imagePath) {
         return 'https://via.placeholder.com/150?text=Sin+Imagen';
     }
-    // If path starts with http, return as is
-    if (imagePath.startsWith('http')) {
-        return imagePath;
+
+    // --- LÓGICA INTELIGENTE DE ENTORNOS (DUAL) ---
+    // 1. Si estamos en LOCAL (API_BASE_URL tiene 'http')
+    if (typeof API_BASE_URL !== 'undefined' && API_BASE_URL.startsWith('http')) {
+        // Si el path ya es absoluto, devolverlo tal cual
+        if (imagePath.startsWith('http')) return imagePath;
+        // Si es relativo, añadir el host local (asumimos 127.0.0.1:8000 para local)
+        const baseUrl = API_BASE_URL.split('/api')[0];
+        return `${baseUrl}${imagePath}`;
     }
-    // Otherwise, prepend backend URL
-    return `http://127.0.0.1:8000${imagePath}`;
+
+    // 2. Si estamos en NETLIFY (API_BASE_URL es '/api')
+    // Necesitamos convertir la URL absoluta que manda Django en una relativa
+    // para obligar a pasar por el proxy seguro de Netlify (/media/*)
+    if (imagePath.startsWith('http')) {
+        try {
+            const urlObj = new URL(imagePath);
+            return urlObj.pathname; // Devuelve solo /media/uploads/...
+        } catch (e) {
+            return imagePath;
+        }
+    }
+
+    // Si ya es relativo, devolverlo tal cual (para que Netlify lo procese)
+    return imagePath;
 }
 
 /**

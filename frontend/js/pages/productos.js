@@ -168,7 +168,7 @@ function renderProductosTable() {
         return `
             <tr class="${rowClass}">
                 <td><strong>${startNumber + index}</strong></td>
-                <td><img src="${getImageUrl(producto.foto_producto)}" class="product-img" alt="${producto.nombre_producto}"></td>
+                <td><img src="${getImageUrl(producto.foto_producto)}" class="product-img" alt="${producto.nombre_producto}" onerror="this.src='https://via.placeholder.com/150?text=Sin+Imagen'"></td>
                 <td>${producto.nombre_producto}</td>
                 <td>${producto.nombre_categoria || '-'}</td>
                 <td>${producto.codigo_barras || '-'}</td>

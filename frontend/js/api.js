@@ -13,7 +13,7 @@
 const API_BASE_URL = '/api'; 
 
 // 3. VPS DIRECTO (Solo si no usas HTTPS en el frontend)
-// const API_BASE_URL = 'http://167.86.66.229:8000/api';
+//const API_BASE_URL = 'http://167.86.66.229:8000/api';
 // ----------------------------------------
 
 // Create Axios instance with default config
