@@ -5,7 +5,7 @@ Este es el proyecto backend para el sistema de gestión **MCMatias**, desarrolla
 ## 🛠 Tecnologías
 
 - **Lenguaje**: Python 3.10+
-- **Framework**: Django 6.0
+- **Framework**: Django 6.0.1
 - **API**: Django REST Framework 3.16+
 - **Autenticación**: JWT (JSON Web Tokens) vía `djangorestframework-simplejwt`
 - **Documentación**: Swagger UI (`drf-spectacular`)
@@ -14,6 +14,9 @@ Este es el proyecto backend para el sistema de gestión **MCMatias**, desarrolla
 - **Archivos**: **Pillow** (Gestión de imágenes para productos y servicios)
 - **Reportes**: **openpyxl** (Excel) y **reportlab** (PDF)
 - **Filtros**: **SearchFilter** de DRF para búsquedas server-side
+- **Variables de Entorno**: `python-dotenv` (carga automática de `.env`)
+- **Producción (VPS)**: `gunicorn` (app server) + `nginx` (proxy inverso para `/static/` y `/media/`)
+- **Opcional**: `uvicorn` (ASGI, útil si se requiere)
 
 ## 📂 Estructura del Proyecto
 
@@ -31,18 +34,54 @@ backend/
 ├── instrucciones/       # Guías: Setup, Despliegue, Endpoints
 │   ├── deployment_cpanel.md # GUÍA PASO A PASO PARA CPANEL
 │   ├── endpoints.md     # Ejemplos de JSON para Testing con RBAC
-│   └── setup_guide.md   # Instalación Local
+│   ├── setup_guide.md   # Instalación Local
+│   └── setup_guide_vps.md # Despliegue en VPS (Gunicorn + Nginx + Systemd)
+├── logs/                # Logs de Gunicorn (se mantiene con .gitkeep)
 ├── media/               # Archivos subidos (Imágenes de productos y servicios)
 │   └── uploads/         # Subdirectorio para uploads
+├── gunicorn.conf.py     # Configuración de Gunicorn (VPS)
+├── run_local.sh         # Script de ejecución local (Linux/WSL)
+├── run_prod.sh          # Script de ejecución producción (VPS)
 └── requirements.txt     # Dependencias Python
 ```
 
-## 🚀 Instalación Rápida
+## Configuración de Entorno (.env)
+
+Este proyecto lee variables desde `backend/.env` usando `python-dotenv`. Se carga automáticamente al ejecutar:
+- Comandos de Django: `manage.py`
+- Servidores WSGI/ASGI: `config/wsgi.py`, `config/asgi.py`
+- Configuración global: `config/settings.py`
+
+Ejemplo de `.env` mínimo:
+```env
+DEBUG=False
+SECRET_KEY=una_clave_larga_y_secreta
+
+DB_NAME=mcmatias_db
+DB_USER=root
+DB_PASSWORD=tu_password
+DB_HOST=127.0.0.1
+DB_PORT=3306
+
+# Lista separada por comas, sin espacios (ej: 127.0.0.1,localhost,167.86.66.229)
+ALLOWED_HOSTS=127.0.0.1,localhost
+```
+
+Notas:
+- `DEBUG` se evalúa como texto: debe ser exactamente `True` para habilitarlo.
+- `ALLOWED_HOSTS` se parsea con comas.
+
+## Instalación Rápida (Local)
 
 ```bash
 # 1. Crear entorno virtual
 python -m venv venv
-.\venv\Scripts\activate  # Windows
+
+# Windows
+.\venv\Scripts\activate
+
+# Linux/WSL
+# source venv/bin/activate
 
 # 2. Instalar dependencias
 pip install -r requirements.txt
@@ -55,7 +94,7 @@ python manage.py migrate
 # 5. Crear superusuario (interactivo)
 python manage.py createsuperuser
 
-# 6. Correr servidor
+# 6. Correr servidor (desarrollo)
 python manage.py runserver
 ```
 
@@ -363,11 +402,39 @@ Aquí verás todos los endpoints documentados automáticamente e interactivos pa
 
 ## ☁️ Despliegue en Producción
 
-Consulta `instrucciones/deployment_cpanel.md` para la guía completa de subida a producción con cPanel.
+Este repositorio incluye dos caminos de despliegue:
+- **VPS (Linux) con Gunicorn + Nginx + Systemd**: ver `instrucciones/setup_guide_vps.md`
+- **cPanel**: ver `instrucciones/deployment_cpanel.md`
+
+### Gunicorn (VPS)
+
+El backend incluye configuración y scripts listos:
+- Configuración: `gunicorn.conf.py`
+- Desarrollo Linux/WSL: `run_local.sh`
+- Producción VPS: `run_prod.sh`
+
+Ejecución mínima:
+```bash
+gunicorn --config gunicorn.conf.py
+```
+
+Logs:
+- Gunicorn escribirá en `backend/logs/access.log` y `backend/logs/error.log` (carpeta `logs/` existe con `.gitkeep`).
+
+### Static/Media en Producción (Importante)
+
+En `config/urls.py` los archivos media se sirven automáticamente solo cuando `DEBUG=True`.
+
+En producción:
+- Ejecuta `python manage.py collectstatic --noinput` para `/static/`.
+- Configura **Nginx** para servir:
+  - `location /static/ { alias .../staticfiles/; }`
+  - `location /media/ { alias .../media/; }`
+- Gunicorn debe encargarse solo de la aplicación Python (API).
 
 **Recomendaciones**:
 - Configura `DEBUG=False` en producción
 - Usa `collectstatic` para archivos estáticos
-- Configura CORS correctamente para tu dominio frontend
+- Configura `ALLOWED_HOSTS` correctamente (incluye tu IP o dominio)
 - Usa HTTPS en producción
 - **Asigna correctamente `numero_rol=1` solo al Super Admin**

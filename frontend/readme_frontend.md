@@ -60,11 +60,16 @@ frontend/
 
 ### Requisitos
 - Servidor web local (Live Server en VS Code recomendado)
-- Backend Django corriendo en `http://127.0.0.1:8000`
+- Backend Django corriendo en:
+  - Local: `http://127.0.0.1:8000`
+  - VPS: `http://167.86.66.229:8000`
 
 ### Abrir en el Navegador
 1. Usa Live Server o abre directamente `index.html`
 2. Credenciales: usa las creadas en el backend
+
+### Nota Importante (Netlify y HTTPS)
+Si tu frontend está desplegado en Netlify (HTTPS) y tu backend está en HTTP, el navegador bloqueará peticiones directas a `http://...` por seguridad (**Mixed Content**). Para resolverlo sin comprar dominio/SSL, el proyecto usa un **proxy de Netlify** mediante el archivo `_redirects` (ver sección “Despliegue en Netlify”).
 
 ## 📄 Módulos Implementados
 
@@ -105,15 +110,16 @@ Todas las tablas principales cuentan con una columna **#** (numerador) en la pri
 - Logout con limpieza de tokens
 - **Auto-refresh** de access token cuando expira
 - **Bloqueo de usuarios inactivos**: Usuarios marcados como inactivos no pueden iniciar sesión
+- **Estabilidad del primer login**: Se pre-carga el perfil del usuario (rol/datos básicos) antes de redirigir para evitar redirecciones erróneas a `unauthorized.html`.
 
-### �️ RBAC (Control de Acceso por Roles)
+### 🛡️ RBAC (Control de Acceso por Roles)
 - **roles_vistas.js**: Módulo de control de acceso client-side
 - **Restricción del módulo Roles**: Solo visible y accesible para Super Admin (numero_rol=1)
 - Botones y acciones dinámicas según permisos del rol
 - Funciones globales: `canPerformAction(action)`, `canAccessModule(moduleName)`
 - Redirección automática a `unauthorized.html` si no tiene permisos
 
-### �👤 Perfil de Usuario
+### 👤 Perfil de Usuario
 - Modal de edición accesible desde "Configuración" en el menú
 - Actualización de nombre y email
 - Cambio de contraseña (opcional con confirmación)
@@ -129,13 +135,13 @@ Todas las tablas principales cuentan con una columna **#** (numerador) en la pri
 - Bootstrap 5.3
 - Bootstrap Icons integrados
 
-### � Reportes (Ventas y Servicios)
+### 📊 Reportes (Ventas y Servicios)
 - KPIs agregados con filtros por fecha (hoy/mes/año + rango manual)
 - Filtro por sucursal visible solo para Super Admin
 - Gráficos con Chart.js
 - Exportación a PDF y Excel desde el frontend
 
-## �🔧 Módulos JavaScript
+## 🔧 Módulos JavaScript
 
 ### Core
 - **api.js**: Axios configurado con interceptores JWT
@@ -406,11 +412,41 @@ renderLatestServices()       // Top 5 servicios técnicos con estado
 
 ## 🔧 Personalización
 
-### Cambiar URL del Backend
-Edita `js/api.js` línea 7:
+### Cambiar URL del Backend (Local / Netlify / VPS)
+La URL base se configura en [api.js](file:///d:/myProjects/mcmatias/frontend/js/api.js) y se alterna comentando/descomentando:
+
 ```javascript
-const API_BASE_URL = 'http://TU_URL:PUERTO/api';
+// 1. DESARROLLO LOCAL
+// const API_BASE_URL = 'http://127.0.0.1:8000/api';
+
+// 2. PRODUCCIÓN / PROXY NETLIFY (recomendado cuando el frontend está en HTTPS)
+const API_BASE_URL = '/api';
+
+// 3. VPS DIRECTO (solo si tu frontend NO está en HTTPS)
+// const API_BASE_URL = 'http://167.86.66.229:8000/api';
 ```
+
+Recomendación:
+- **Netlify (HTTPS)**: usa `'/api'` para evitar Mixed Content.
+- **Local**: usa `http://127.0.0.1:8000/api`.
+
+### Despliegue en Netlify (Proxy para API + Imágenes)
+El archivo [_redirects](file:///d:/myProjects/mcmatias/frontend/_redirects) permite que Netlify actúe como “puente” HTTPS→HTTP para evitar Mixed Content.
+
+Reglas actuales:
+```text
+/api/*    http://167.86.66.229:8000/api/:splat    200!
+/media/*  http://167.86.66.229/media/:splat        200!
+```
+
+Puntos clave:
+- `/api/*` apunta al **puerto 8000** (Gunicorn / API).
+- `/media/*` apunta al **puerto 80** (Nginx) porque es quien sirve los archivos media en producción.
+
+### Imágenes (Media) y compatibilidad Local/Netlify
+Las imágenes (productos/servicios) se devuelven desde el backend como rutas o URLs. El frontend usa `getImageUrl()` en [utils.js](file:///d:/myProjects/mcmatias/frontend/js/utils.js) para que funcionen en ambos entornos:
+- Si `API_BASE_URL` es local (empieza con `http`), construye la URL hacia el backend local.
+- Si `API_BASE_URL` es `'/api'` (Netlify), convierte URLs absolutas a rutas relativas `/media/...` para forzar el proxy de Netlify.
 
 ### Modificar Menú Lateral
 Edita `js/components.js` en `SIDEBAR_CONFIG`:
@@ -460,6 +496,7 @@ async function deleteItem(id) { ... }  // Soft delete donde aplique
 - Todas las páginas requieren autenticación excepto login
 - El modal de perfil está incluido automáticamente en todas las páginas protegidas
 - Las imágenes se suben a `backend/media/uploads/`
+- Si usas **Netlify (HTTPS)**, mantén el archivo `_redirects` en la raíz del frontend para proxy de `/api` y `/media`
 - Paginación se oculta automáticamente si hay menos de 10 items
 - **Ventas anuladas**: No se pueden editar ni volver a anular
 - **Usuarios inactivos**: No pueden iniciar sesión en el sistema
