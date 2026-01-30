@@ -714,26 +714,13 @@ async function guardarServicio() {
             }
         }
 
-        // Fotos con compresión
-        const fields = ['foto_1', 'foto_2', 'foto_3'];
-        for (const fieldName of fields) {
+        // Fotos
+        ['foto_1', 'foto_2', 'foto_3'].forEach(fieldName => {
             const input = document.getElementById(fieldName);
             if (input?.files?.[0]) {
-                const originalFile = input.files[0];
-                // Solo comprimir si es mayor a 1.5MB
-                if (originalFile.size > 1.5 * 1024 * 1024) {
-                    try {
-                        const compressedFile = await compressImage(originalFile);
-                        formData.append(fieldName, compressedFile);
-                    } catch (error) {
-                        console.error(`Error compressing ${fieldName}:`, error);
-                        formData.append(fieldName, originalFile);
-                    }
-                } else {
-                    formData.append(fieldName, originalFile);
-                }
+                formData.append(fieldName, input.files[0]);
             }
-        }
+        });
 
         let result;
         if (editingId) {
@@ -898,7 +885,7 @@ function capturarFoto() {
         input.dispatchEvent(new Event('change'));
 
         cerrarCamara();
-    }, 'image/jpeg', 0.7);
+    }, 'image/jpeg', 0.8);
 }
 
 // ============================================
