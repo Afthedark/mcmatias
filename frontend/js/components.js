@@ -92,15 +92,22 @@ async function renderHeader(containerSelector = '#header-container') {
                 </div>
             </div>
             
-            <div class="header-right">
+            <div class="header-right d-flex align-items-center gap-3">
+                <!-- Theme Toggle -->
+                <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Cambiar Tema">
+                    <i class="bi bi-moon-fill" id="theme-icon"></i>
+                </button>
+
                 <div class="user-menu-dropdown">
                     <button class="user-menu-btn" onclick="toggleUserDropdown(event)" aria-expanded="false" aria-haspopup="true">
-                        <div class="user-avatar">${userInitial}</div>
+                        <div class="user-avatar">
+                            <span>${userInitial}</span>
+                        </div>
                         <div class="user-details d-none d-sm-block">
                             <span class="user-name">${userName}</span>
                             <span class="user-role">${userRole}</span>
                         </div>
-                        <i class="bi bi-chevron-down ms-2 text-muted" style="font-size: 0.8rem;"></i>
+                        <i class="bi bi-chevron-down ms-2 text-muted" style="font-size: 0.7rem;"></i>
                     </button>
                     
                     <div id="userDropdown" class="user-dropdown-menu">
@@ -179,8 +186,13 @@ function renderSidebar(containerSelector = '#sidebar-container', activePage = ''
     const sidebarHTML = `
         <aside class="sidebar">
             <div class="sidebar-brand">
-                <i class="bi bi-shop-window"></i>
-                <h3>MULTICENTRO<br>MATIAS</h3>
+                <div class="brand-icon">
+                    <i class="bi bi-cpu-fill"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-main">MULTICENTRO</span>
+                    <span class="brand-sub">MATIAS</span>
+                </div>
             </div>
             
             <nav class="sidebar-nav">
@@ -218,6 +230,44 @@ function createNavItem(href, icon, text, activePage) {
         </li>
     `;
 }
+
+/**
+ * Toggle between light and dark themes
+ */
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-bs-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    setTheme(newTheme);
+}
+
+/**
+ * Set and persist theme
+ * @param {string} theme - 'light' or 'dark'
+ */
+function setTheme(theme) {
+    const html = document.documentElement;
+    html.setAttribute('data-bs-theme', theme);
+    localStorage.setItem('theme', theme);
+    
+    // Update icon
+    const icon = document.getElementById('theme-icon');
+    if (icon) {
+        icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    }
+}
+
+/**
+ * Initialize theme from localStorage
+ */
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+}
+
+// Call theme initialization immediately
+initializeTheme();
 
 /**
  * Toggle user dropdown menu
@@ -279,14 +329,21 @@ function handleModuleTransition(event, href) {
  * Show loading indicator during navigation
  */
 function showNavigationLoader() {
-    const loader = document.createElement('div');
-    loader.className = 'navigation-loader';
-    loader.innerHTML = '<div class="spinner-border spinner-border-sm text-primary"></div>';
-    document.body.appendChild(loader);
+    let loader = document.querySelector('.navigation-loader');
+    if (!loader) {
+        loader = document.createElement('div');
+        loader.className = 'navigation-loader';
+        loader.innerHTML = `
+            <div class="cpu-heartbeat-loader">
+                <i class="bi bi-cpu-fill"></i>
+            </div>
+        `;
+        document.body.appendChild(loader);
+    }
     
     setTimeout(() => {
         loader.remove();
-    }, 300);
+    }, 1500);
 }
 
 /**

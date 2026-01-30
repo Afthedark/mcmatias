@@ -7,7 +7,7 @@
 // Descomenta la URL que desees usar según el entorno:
 
 // 1. DESARROLLO LOCAL
-// const API_BASE_URL = 'http://127.0.0.1:8000/api';
+//const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 // 2. PRODUCCIÓN / PROXY NETLIFY (Usa esta para desplegar en Netlify)
 const API_BASE_URL = '/api'; 
