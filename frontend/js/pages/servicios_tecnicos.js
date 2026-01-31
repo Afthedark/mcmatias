@@ -766,6 +766,16 @@ async function verDetalle(id) {
         document.getElementById('detalleUsuario').textContent = servicio.nombre_usuario || 'N/A';
         document.getElementById('detalleSucursal').textContent = servicio.nombre_sucursal || 'N/A';
 
+        // Mostrar información de anulación si aplica
+        const groupAnulacion = document.getElementById('detalleAnulacionGroup');
+        if (servicio.estado === 'Anulado') {
+            document.getElementById('detalleMotivoAnulacion').textContent = servicio.motivo_anulacion || 'Sin motivo';
+            document.getElementById('detalleFechaAnulacion').textContent = formatDateTime(servicio.fecha_anulacion);
+            groupAnulacion.style.display = 'block';
+        } else {
+            groupAnulacion.style.display = 'none';
+        }
+
         // Galería
         const galeria = document.getElementById('galeriaFotos');
         const fotos = [servicio.foto_1, servicio.foto_2, servicio.foto_3].filter(f => f);
@@ -799,15 +809,24 @@ let servicioAAnular = null;
 function abrirModalAnular(idServicio, numeroServicio) {
     servicioAAnular = idServicio;
     document.getElementById('anularNumeroServicio').textContent = numeroServicio;
+    document.getElementById('motivoAnulacionServicio').value = '';
     new bootstrap.Modal(document.getElementById('anularServicioModal')).show();
 }
 
 async function confirmarAnulacion() {
     if (!servicioAAnular) return;
 
+    const motivo = document.getElementById('motivoAnulacionServicio').value.trim();
+    if (!motivo) {
+        showToast('Debe ingresar un motivo para la anulación', 'warning');
+        return;
+    }
+
     try {
         showLoader();
-        await apiPatch(`/servicios_tecnicos/${servicioAAnular}/anular/`, {});
+        await apiPatch(`/servicios_tecnicos/${servicioAAnular}/anular/`, {
+            motivo_anulacion: motivo
+        });
 
         showToast('Servicio anulado correctamente', 'success');
         bootstrap.Modal.getInstance(document.getElementById('anularServicioModal')).hide();

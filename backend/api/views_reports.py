@@ -59,13 +59,22 @@ class ReporteVentasDashboardView(ReporteBaseView):
         fecha_desde, fecha_hasta = self.get_fechas_filtro(request)
         sucursal_id = self.get_sucursal_filtro(request)
         
-        queryset = Venta.objects.filter(
-            fecha_venta__range=(fecha_desde, fecha_hasta),
-            estado='Completada' # Solo ventas validas
+        queryset_base = Venta.objects.filter(
+            fecha_venta__range=(fecha_desde, fecha_hasta)
         )
         
         if sucursal_id:
-            queryset = queryset.filter(id_sucursal_id=sucursal_id)
+            queryset_base = queryset_base.filter(id_sucursal_id=sucursal_id)
+
+        # 1. Gráfico de Estados (Completada vs Anulada) - Usamos el queryset base
+        por_estado = queryset_base.values('estado').annotate(cantidad=Count('id_venta')).order_by('-estado') # Completada primero
+        data_estados = {
+            'labels': [item['estado'] for item in por_estado],
+            'data': [item['cantidad'] for item in por_estado]
+        }
+
+        # 2. Filtrar para el resto de KPIs y gráficos (Solo Completadas)
+        queryset = queryset_base.filter(estado='Completada')
             
         ventas_por_dia = defaultdict(lambda: {"total": Decimal("0"), "cantidad": 0})
         for fecha_venta, total_venta in queryset.values_list('fecha_venta', 'total_venta'):
@@ -152,6 +161,7 @@ class ReporteVentasDashboardView(ReporteBaseView):
             'grafico_productos': data_productos,
             'grafico_hora': data_por_hora,
             'grafico_vendedores': data_vendedores,
+            'grafico_estados': data_estados,
             'kpis': {
                 'total_monto': total_acumulado,
                 'total_transacciones': total_transacciones

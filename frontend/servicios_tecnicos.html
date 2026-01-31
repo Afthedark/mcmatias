@@ -471,6 +471,14 @@
                         <h6 class="text-primary">Descripción del Problema:</h6>
                         <p id="detalleDescripcion" class="text-muted"></p>
                     </div>
+                    <div id="detalleAnulacionGroup" style="display: none;">
+                        <hr>
+                        <div class="alert alert-danger mb-0">
+                            <h6 class="alert-heading"><i class="bi bi-x-circle-fill"></i> Información de Anulación:</h6>
+                            <p class="mb-1"><strong>Motivo:</strong> <span id="detalleMotivoAnulacion"></span></p>
+                            <p class="mb-0"><strong>Fecha:</strong> <span id="detalleFechaAnulacion"></span></p>
+                        </div>
+                    </div>
                     <hr>
                     <div>
                         <h6 class="text-primary mb-3">Fotos Adjuntas:</h6>
@@ -494,6 +502,11 @@
                 </div>
                 <div class="modal-body">
                     <p>¿Está seguro de anular el servicio <strong id="anularNumeroServicio"></strong>?</p>
+                    <div class="mb-3">
+                        <label class="form-label">Motivo de anulación *</label>
+                        <textarea class="form-control" id="motivoAnulacionServicio" rows="3"
+                            placeholder="Ingrese el motivo de la anulación..." required></textarea>
+                    </div>
                     <p class="text-muted small">Esta acción no se puede deshacer. El servicio quedará marcado como
                         anulado.</p>
                 </div>

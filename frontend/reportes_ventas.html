@@ -173,9 +173,10 @@
                     </div>
                 </div>
 
-                <!-- Gráfico Racha de Ventas por Usuario -->
+                <!-- Gráficos de Vendedores y Estados -->
                 <div class="row">
-                    <div class="col-12 mb-4">
+                    <!-- Gráfico Racha de Ventas por Usuario -->
+                    <div class="col-lg-6 mb-4">
                         <div class="card shadow-sm h-100">
                             <div class="card-header">
                                 <h5 class="card-title mb-0"><i class="bi bi-person-workspace me-2"></i>Racha de Ventas - Top 10 Vendedores</h5>
@@ -183,6 +184,20 @@
                             <div class="card-body">
                                 <div style="height: 300px; position: relative;">
                                     <canvas id="chartVendedores"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico de Estados de Venta -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0"><i class="bi bi-check-circle me-2"></i>Estado de Ventas</h5>
+                            </div>
+                            <div class="card-body">
+                                <div style="height: 300px; position: relative;">
+                                    <canvas id="chartEstadoVentas"></canvas>
                                 </div>
                             </div>
                         </div>

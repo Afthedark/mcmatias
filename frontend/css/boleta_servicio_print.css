@@ -352,41 +352,39 @@ body {
 
 /* Configuración específica para TICKET 80mm */
 @media print {
-    @page {
-        size: 80mm auto;
-        margin: 2mm;
+    body.formato-ticket {
+        width: 80mm;
     }
-
-    .boleta-a4 {
+    
+    body.formato-ticket .boleta-a4,
+    body.formato-ticket .boleta-panoramica {
         display: none !important;
     }
 
-    .boleta-ticket {
-        position: absolute;
-        left: 0;
-        top: 0;
+    body.formato-ticket .boleta-ticket {
+        position: relative;
         width: 76mm;
         display: block !important;
+        visibility: visible;
     }
 }
 
-/* Override para BOLETA A4 cuando el navegador detecta tamaño grande */
-@media print and (min-width: 190mm) {
-    @page {
-        size: A4;
-        margin: 10mm;
+/* Configuración específica para BOLETA A4 */
+@media print {
+    body.formato-a4 {
+        width: 210mm;
     }
 
-    .boleta-ticket {
+    body.formato-a4 .boleta-ticket,
+    body.formato-a4 .boleta-panoramica {
         display: none !important;
     }
 
-    .boleta-a4 {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 190mm;
+    body.formato-a4 .boleta-a4 {
+        position: relative;
+        width: 100%;
         display: block !important;
+        visibility: visible;
     }
 }
 
@@ -411,7 +409,7 @@ body.formato-a4 .boleta-a4 {
    FORMATO PANORÁMICO (21.5cm x 9cm)
    ========================================= */
 .boleta-panoramica {
-    width: 21.5cm;
+    width: 21cm;
     height: 9cm;
     background: white;
     font-family: Arial, sans-serif;
@@ -495,6 +493,16 @@ body.formato-a4 .boleta-a4 {
     display: flex;
     flex-direction: column;
     position: relative;
+}
+
+.codigo-st-discreto {
+    position: absolute;
+    top: 1.5mm;
+    left: 4mm;
+    font-size: 6pt;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    color: #444;
 }
 
 .header-grid {
@@ -652,14 +660,32 @@ body.formato-panoramica .boleta-panoramica * {
     visibility: visible;
 }
 
-/* Regla @page específica para este formato */
-@page panoramica {
-    size: 21.5cm 9cm;
+/* Reglas @page específicas */
+@page {
     margin: 0;
 }
 
+@page ticket {
+    size: 80mm auto;
+}
+
+@page a4 {
+    size: A4 portrait;
+    margin: 10mm;
+}
+
+@page panoramica {
+    size: A4 portrait;
+    margin: 0;
+}
+
+/* Asignación de páginas */
+.boleta-ticket { page: ticket; }
+.boleta-a4 { page: a4; }
+.boleta-panoramica { page: panoramica; }
+
 body.formato-panoramica {
-    width: 21.5cm;
+    width: 21cm;
     height: 9cm;
 }
 

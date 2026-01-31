@@ -356,12 +356,223 @@ body {
     }
 
     .boleta-a4 {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 190mm;
+        position: relative;
+        width: 100%;
         display: block !important;
+        visibility: visible;
     }
+}
+
+/* =========================================
+   FORMATO PANORÁMICO (21cm x 9cm)
+   ========================================= */
+.boleta-panoramica {
+    width: 21cm;
+    height: 9cm;
+    background: white;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+    page: panoramica;
+}
+
+.panoramica-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.cuerpo-derecho {
+    width: 100%;
+    height: 100%;
+    padding: 3mm 5mm;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.codigo-st-discreto {
+    position: absolute;
+    top: 1.5mm;
+    left: 4mm;
+    font-size: 6pt;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    color: #444;
+}
+
+.header-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    column-gap: 4mm;
+    align-items: center;
+}
+
+.empresa-info-top {
+    text-align: right;
+    font-size: 7pt;
+    line-height: 1.2;
+}
+
+.empresa-nombre {
+    font-weight: bold;
+    font-size: 8pt;
+    text-decoration: underline;
+}
+
+.titulo-principal {
+    font-size: 12pt;
+    font-weight: bold;
+    line-height: 1.1;
+}
+
+.cuerpo-numero {
+    font-size: 14pt;
+    font-weight: bold;
+    margin: 1mm 0;
+}
+
+.subtitulo-fechas {
+    font-size: 8pt;
+    line-height: 1.2;
+}
+
+.divider-black {
+    border: none;
+    border-top: 2px solid black;
+    margin: 2mm 0;
+    width: 100%;
+}
+
+.border-top-black {
+    border-top: 1px solid black;
+}
+
+.row-2col {
+    display: flex;
+    justify-content: space-between;
+    gap: 6mm;
+    font-size: 9pt;
+}
+
+.row-2col .col-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.row-2col .col-right {
+    width: 42%;
+    text-align: right;
+}
+
+.cuerpo-detalle-venta {
+    font-size: 8pt;
+    line-height: 1.2;
+    margin-top: 2mm;
+    flex: 1;
+    overflow: hidden;
+}
+
+.tabla-productos-panoramica {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-productos-panoramica th {
+    border-bottom: 1px solid black;
+    padding: 1mm;
+    font-size: 7.5pt;
+    background-color: #f2f2f2 !important;
+    -webkit-print-color-adjust: exact;
+}
+
+.tabla-productos-panoramica td {
+    padding: 1.5mm 0;
+    text-align: center;
+    border-bottom: 0.1mm solid #eee;
+}
+
+.cuerpo-footer {
+    font-size: 7.5pt;
+    margin-top: auto;
+    padding-top: 2mm;
+}
+
+.firma-linea {
+    display: none;
+}
+
+.label-firma {
+    font-weight: bold;
+    font-size: 7.5pt;
+    margin-bottom: 0.5mm;
+    border-top: 1px solid black;
+    display: inline-block;
+    padding-top: 1mm;
+    width: 150px;
+}
+
+.nombre-firma {
+    font-size: 6.5pt;
+    text-transform: uppercase;
+    color: #333;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: end;
+    gap: 4mm;
+}
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+body.formato-panoramica .boleta-panoramica {
+    display: block !important;
+}
+
+body.formato-panoramica .boleta-ticket,
+body.formato-panoramica .boleta-a4 {
+    display: none !important;
+}
+
+body.formato-panoramica .boleta-panoramica * {
+    visibility: visible;
+}
+
+/* Reglas @page específicas */
+@page panoramica {
+    size: A4 portrait;
+    margin: 0;
+}
+
+.boleta-panoramica { page: panoramica; }
+
+body.formato-panoramica {
+    width: 21cm;
+    height: 9cm;
+}
+
+/* Marca de anulación para Panorámica */
+.anulada-overlay-panoramica {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    border: 3px solid rgba(255, 0, 0, 0.4);
+    padding: 10px 30px;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.anulada-overlay-panoramica .anulada-texto {
+    color: rgba(255, 0, 0, 0.4);
+    font-size: 30pt;
+    font-weight: bold;
+    letter-spacing: 5px;
 }
 
 /* Control adicional basado en clase del body */

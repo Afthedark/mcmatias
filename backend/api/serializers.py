@@ -139,9 +139,10 @@ class ServicioTecnicoSerializer(serializers.ModelSerializer):
             'estado', 'fecha_inicio', 'fecha_entrega',
             'id_tecnico_asignado', 'nombre_tecnico_asignado',
             'foto_1', 'foto_2', 'foto_3',
+            'motivo_anulacion', 'fecha_anulacion',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['numero_servicio', 'id_usuario', 'id_sucursal', 'fecha_entrega', 'created_at', 'updated_at', 'saldo']
+        read_only_fields = ['numero_servicio', 'id_usuario', 'id_sucursal', 'fecha_entrega', 'fecha_anulacion', 'created_at', 'updated_at', 'saldo']
 
 class UserProfileSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False, allow_blank=True)

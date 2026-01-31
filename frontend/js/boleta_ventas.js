@@ -39,35 +39,32 @@ async function cargarDatosVenta(idVenta) {
 // Modal de Selección de Formato
 // ============================================
 function mostrarSelectorFormato(idVenta) {
-    // Crear modal con botones
+    // Crear modal simplificado (solo formato oficial)
     const modalHTML = `
         <div class="modal fade" id="modalFormatoImpresion" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="bi bi-printer me-2"></i>
-                            Seleccionar Formato de Impresión
-                        </h5>
+                    <div class="modal-header border-0 pb-0">
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body text-center">
-                        <p class="mb-4">¿Qué formato desea utilizar para la boleta?</p>
-                        <div class="row mt-4">
-                            <div class="col-6">
-                                <button class="btn btn-outline-primary w-100 p-4" 
-                                        onclick="seleccionarFormato('TICKET', ${idVenta})">
-                                    <i class="bi bi-receipt fs-1 d-block mb-2"></i>
-                                    <strong>Ticket 80mm</strong>
-                                    <small class="d-block text-muted mt-1">Impresora térmica</small>
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button class="btn btn-outline-primary w-100 p-4" 
-                                        onclick="seleccionarFormato('A4', ${idVenta})">
-                                    <i class="bi bi-file-earmark-text fs-1 d-block mb-2"></i>
-                                    <strong>Boleta A4</strong>
-                                    <small class="d-block text-muted mt-1">Impresora estándar</small>
+                    <div class="modal-body text-center pt-0 pb-4">
+                        <div class="mb-4">
+                            <i class="bi bi-printer-fill text-primary" style="font-size: 3rem;"></i>
+                            <h4 class="mt-2">Imprimir Boleta de Venta</h4>
+                            <p class="text-muted">Generar documento en formato oficial</p>
+                        </div>
+                        
+                        <div class="row justify-content-center">
+                            <div class="col-10">
+                                <button class="btn btn-primary w-100 p-3 shadow-sm" 
+                                        onclick="seleccionarFormato('PANORAMICA', ${idVenta})">
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-file-earmark-richtext fs-3 me-3"></i>
+                                        <div class="text-start">
+                                            <div class="fw-bold fs-5">Formato Oficial</div>
+                                            <small class="text-white-50">21cm x 9cm (Panorámico)</small>
+                                        </div>
+                                    </div>
                                 </button>
                             </div>
                         </div>
@@ -146,23 +143,25 @@ function abrirVentanaImpresion(venta, formato) {
     ventanaImpresion.addEventListener('load', function () {
         setTimeout(() => {
             try {
-                // Llenar plantilla según formato
+                // Ocultar todo primero
+                ventanaImpresion.document.getElementById('boletaTicket').style.display = 'none';
+                ventanaImpresion.document.getElementById('boletaA4').style.display = 'none';
+                ventanaImpresion.document.getElementById('boletaPanoramica').style.display = 'none';
+
+                let claseBody = '';
+
                 if (formato === 'TICKET') {
                     llenarBoletaTicket(venta, ventanaImpresion.document);
-                    // Asegurar que solo el ticket sea visible
-                    ventanaImpresion.document.getElementById('boletaTicket').style.display = 'block';
-                    ventanaImpresion.document.getElementById('boletaTicket').style.visibility = 'visible';
-                    ventanaImpresion.document.getElementById('boletaA4').style.display = 'none';
-                } else {
+                    claseBody = 'formato-ticket';
+                } else if (formato === 'A4') {
                     llenarBoletaA4(venta, ventanaImpresion.document);
-                    // Asegurar que solo la boleta A4 sea visible
-                    ventanaImpresion.document.getElementById('boletaA4').style.display = 'block';
-                    ventanaImpresion.document.getElementById('boletaA4').style.visibility = 'visible';
-                    ventanaImpresion.document.getElementById('boletaTicket').style.display = 'none';
+                    claseBody = 'formato-a4';
+                } else if (formato === 'PANORAMICA') {
+                    llenarBoletaPanoramica(venta, ventanaImpresion.document);
+                    claseBody = 'formato-panoramica';
                 }
 
-                // Agregar clase al body para indicar el formato
-                ventanaImpresion.document.body.classList.add(formato === 'TICKET' ? 'formato-ticket' : 'formato-a4');
+                ventanaImpresion.document.body.className = claseBody;
 
                 // Esperar un poco y luego imprimir
                 setTimeout(() => {
@@ -174,6 +173,81 @@ function abrirVentanaImpresion(venta, formato) {
             }
         }, 100);
     });
+}
+
+// ============================================
+// Llenar Plantilla PANORAMICA (21x9)
+// ============================================
+function llenarBoletaPanoramica(venta, doc) {
+    const container = doc.getElementById('boletaPanoramica');
+
+    // Datos comunes
+    const numeroBoleta = venta.numero_boleta || '';
+    container.querySelectorAll('.cuerpo-numero').forEach(el => el.textContent = numeroBoleta);
+    
+    // Código ST Discreto (ej: VTA-2026-00009)
+    container.querySelectorAll('.codigo-st-discreto').forEach(el => {
+        el.textContent = numeroBoleta;
+    });
+
+    const fechaVenta = formatDate(venta.fecha_venta, true);
+    container.querySelectorAll('.fecha-venta-val').forEach(el => el.textContent = fechaVenta);
+
+    container.querySelectorAll('.sucursal-nombre-full').forEach(el => {
+        el.textContent = venta.nombre_sucursal || '';
+    });
+
+    const dirContainer = container.querySelector('.sucursal-direccion');
+    if (dirContainer) dirContainer.textContent = venta.direccion_sucursal || '';
+
+    const fonosContainer = container.querySelector('.sucursal-fonos');
+    if (fonosContainer) {
+        let fonos = [];
+        if (venta.cel1_sucursal) fonos.push(venta.cel1_sucursal);
+        if (venta.cel2_sucursal) fonos.push(venta.cel2_sucursal);
+        fonosContainer.textContent = fonos.join(' - ');
+    }
+
+    container.querySelectorAll('.cliente-nombre').forEach(el => el.textContent = venta.nombre_cliente || 'Cliente General');
+
+    const total = formatCurrency(venta.total_venta || 0);
+    container.querySelectorAll('.monto-total').forEach(el => el.textContent = total);
+    container.querySelectorAll('.tipo-pago').forEach(el => el.textContent = venta.tipo_pago || '-');
+
+    // Firmas y Nombres
+    const vendedorFirma = doc.getElementById('nombreVendedorFirma');
+    if (vendedorFirma) vendedorFirma.textContent = venta.nombre_usuario || '';
+
+    const clienteFirma = doc.getElementById('nombreClienteFirma');
+    if (clienteFirma) {
+        clienteFirma.textContent = (venta.nombre_cliente && venta.nombre_cliente !== 'Cliente General') 
+            ? venta.nombre_cliente 
+            : '';
+    }
+
+    // Tabla de productos cuerpo (Derecho)
+    const cuerpoBody = container.querySelector('.productos-cuerpo-body');
+    cuerpoBody.innerHTML = venta.detalles.map(d => `
+        <tr>
+            <td>${d.cantidad}</td>
+            <td style="text-align: left;">${d.nombre_producto}</td>
+            <td>${formatCurrency(d.precio_venta)}</td>
+            <td>${formatCurrency(d.precio_venta * d.cantidad)}</td>
+        </tr>
+    `).join('');
+
+    // Pie de página
+    const fechaHoy = new Date().toLocaleDateString('es-ES');
+    container.querySelectorAll('.fecha-hoy').forEach(el => el.textContent = fechaHoy);
+
+    // Marca de anulación
+    if (venta.estado === 'Anulada') {
+        doc.getElementById('panoramicaAnulada').style.display = 'block';
+    }
+
+    doc.getElementById('boletaPanoramica').style.display = 'block';
+    doc.getElementById('boletaTicket').style.display = 'none';
+    doc.getElementById('boletaA4').style.display = 'none';
 }
 
 // ============================================

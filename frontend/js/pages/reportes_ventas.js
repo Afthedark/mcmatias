@@ -274,6 +274,36 @@ function renderCharts(data) {
             }
         );
     }
+
+    // 6. Chart Estado de Ventas (Pie/Doughnut)
+    if (data.grafico_estados && data.grafico_estados.labels) {
+        renderChart(
+            'chartEstadoVentas',
+            'doughnut',
+            data.grafico_estados.labels,
+            [{
+                data: data.grafico_estados.data,
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.7)',  // Verde para Completada
+                    'rgba(220, 53, 69, 0.7)',  // Rojo para Anulada
+                    'rgba(255, 193, 7, 0.7)'   // Amarillo para otros si existieran
+                ],
+                borderColor: [
+                    'rgba(40, 167, 69, 1)',
+                    'rgba(220, 53, 69, 1)',
+                    'rgba(255, 193, 7, 1)'
+                ],
+                borderWidth: 1
+            }],
+            {
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        );
+    }
 }
 
 /**

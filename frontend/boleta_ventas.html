@@ -110,6 +110,83 @@
         </div>
     </div>
 
+    <!-- ==========================================
+         FORMATO PANORÁMICO (21cm x 9cm)
+         ========================================== -->
+    <div id="boletaPanoramica" class="boleta-panoramica" style="display: none;">
+        <div class="panoramica-container">
+            <!-- Cuerpo Principal (100%) -->
+            <div class="cuerpo-derecho">
+                <div class="codigo-st-discreto"></div>
+                <div class="cuerpo-header">
+                    <div class="header-grid">
+                        <div class="header-left"></div>
+                        <div class="header-center text-center">
+                            <div class="titulo-principal">BOLETA DE VENTA</div>
+                            <div class="cuerpo-numero"></div>
+                            <div class="subtitulo-fechas"><span class="fecha-venta-val"></span></div>
+                        </div>
+                        <div class="header-right empresa-info-top">
+                            <div class="empresa-nombre">Multicentro Matias</div>
+                            <div>Sucursal: <span class="sucursal-nombre-full"></span></div>
+                            <div class="sucursal-direccion"></div>
+                            <div class="sucursal-fonos"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="divider-black">
+
+                <div class="row-2col">
+                    <div class="col-left">
+                        <div class="linea"><span class="label">CLIENTE:</span><span class="value cliente-nombre"></span></div>
+                    </div>
+                    <div class="col-right">
+                        <div class="linea"><span class="label">TOTAL BS:</span><span class="value monto-total"></span></div>
+                        <div class="linea"><span class="label">METODO PAGO:</span><span class="value tipo-pago"></span></div>
+                    </div>
+                </div>
+
+                <hr class="divider-black">
+
+                <div class="cuerpo-detalle-venta">
+                    <table class="tabla-productos-panoramica">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%;">CANT.</th>
+                                <th style="width: 60%; text-align: left;">DESCRIPCIÓN</th>
+                                <th style="width: 15%;">P. UNIT.</th>
+                                <th style="width: 15%;">SUBTOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody class="productos-cuerpo-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="cuerpo-footer border-top-black">
+                    <div class="footer-grid">
+                        <div class="firma-vendedor text-center">
+                            <div class="label-firma">ATENDIDO POR</div>
+                            <div id="nombreVendedorFirma" class="nombre-firma vendedor-nombre"></div>
+                        </div>
+                        <div class="pie-info text-center">
+                            CCA: Multicentro Matias | <span class="fecha-hoy"></span>
+                        </div>
+                        <div class="firma-cliente text-center">
+                            <div class="label-firma">RECIBÍ CONFORME</div>
+                            <div id="nombreClienteFirma" class="nombre-firma cliente-nombre"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Marca de anulación -->
+                <div id="panoramicaAnulada" class="anulada-overlay-panoramica" style="display: none;">
+                    <div class="anulada-texto">VENTA ANULADA</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="js/api.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/boleta_ventas.js"></script>

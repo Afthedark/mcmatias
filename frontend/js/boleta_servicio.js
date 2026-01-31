@@ -52,7 +52,7 @@ function mostrarSelectorFormato(idServicio) {
                                         <i class="bi bi-file-earmark-richtext fs-3 me-3"></i>
                                         <div class="text-start">
                                             <div class="fw-bold fs-5">Formato Oficial</div>
-                                            <small class="text-white-50">21.5cm x 9cm (Panorámico)</small>
+                                            <small class="text-white-50">21cm x 9cm (Panorámico)</small>
                                         </div>
                                     </div>
                                 </button>
@@ -186,6 +186,11 @@ function llenarBoletaPanoramica(servicio, doc) {
         const lastPart = raw.split('-').pop() || '';
         const orderNum = parseInt(lastPart, 10);
         el.textContent = Number.isFinite(orderNum) ? String(orderNum) : (raw || String(servicio.id_servicio || ''));
+    });
+
+    // Código ST Discreto (ej: ST-2026-00011)
+    container.querySelectorAll('.codigo-st-discreto').forEach(el => {
+        el.textContent = servicio.numero_servicio || '';
     });
 
     // Sucursal

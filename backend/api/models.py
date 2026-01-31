@@ -296,6 +296,9 @@ class ServicioTecnico(models.Model):
     )
     # Fecha de entrega (auto-capturada al cambiar estado a 'Entregado')
     fecha_entrega = models.DateTimeField(null=True, blank=True)
+    # Campos para anulación
+    motivo_anulacion = models.TextField(blank=True, null=True)
+    fecha_anulacion = models.DateTimeField(blank=True, null=True)
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
