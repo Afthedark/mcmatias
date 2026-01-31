@@ -125,7 +125,7 @@ function abrirVentanaImpresion(servicio, formato) {
         setTimeout(() => {
             try {
                 const doc = ventanaImpresion.document;
-                
+
                 // Ocultar todo primero
                 doc.getElementById('boletaTicket').style.display = 'none';
                 doc.getElementById('boletaA4').style.display = 'none';
@@ -166,7 +166,7 @@ function abrirVentanaImpresion(servicio, formato) {
 function llenarBoletaPanoramica(servicio, doc) {
     // Determinar qué sub-formato usar: Orden de Servicio (Recepción) o Nota de Entrega (Salida)
     const esEntrega = servicio.estado === 'Entregado' || servicio.estado === 'Para Retirar';
-    
+
     // Ocultar ambos sub-formatos primero
     doc.getElementById('formatoOrdenServicio').style.display = 'none';
     doc.getElementById('formatoNotaEntrega').style.display = 'none';
@@ -179,7 +179,7 @@ function llenarBoletaPanoramica(servicio, doc) {
     // ==========================================
     // DATOS COMUNES
     // ==========================================
-    
+
     // Números de Orden
     container.querySelectorAll('.talon-numero, .cuerpo-numero').forEach(el => {
         const raw = (servicio.numero_servicio || '').toString();
@@ -231,7 +231,7 @@ function llenarBoletaPanoramica(servicio, doc) {
 
     // Lógica para determinar la fecha de entrega efectiva a mostrar
     let fechaEntregaEfectivaRaw = servicio.fecha_entrega;
-    
+
     // Si no tiene fecha pero el estado indica que ya está listo o entregado, usamos la fecha actual como fallback visual
     if (!fechaEntregaEfectivaRaw && (servicio.estado === 'Entregado' || servicio.estado === 'Para Retirar')) {
         fechaEntregaEfectivaRaw = new Date();
@@ -242,10 +242,10 @@ function llenarBoletaPanoramica(servicio, doc) {
 
     container.querySelectorAll('.fecha-ingreso-val').forEach(el => el.textContent = fechaIngreso);
     container.querySelectorAll('.fecha-ingreso-short').forEach(el => el.textContent = fechaIngresoShort);
-    
+
     container.querySelectorAll('.fecha-entrega-val').forEach(el => el.textContent = fechaEntrega);
     container.querySelectorAll('.fecha-entrega-short').forEach(el => el.textContent = fechaEntregaShort);
-    
+
     // Fecha actual (Pie de página)
     const fechaHoy = new Date().toLocaleDateString('es-ES');
     container.querySelectorAll('.fecha-hoy').forEach(el => el.textContent = fechaHoy);
@@ -282,7 +282,7 @@ function llenarBoletaPanoramica(servicio, doc) {
     // ==========================================
     // DATOS ESPECÍFICOS POR TIPO
     // ==========================================
-    
+
     if (esEntrega) {
         // NOTA DE ENTREGA
         container.querySelectorAll('.fecha-entrega-real').forEach(el => el.textContent = fechaEntrega);
@@ -306,7 +306,7 @@ function llenarBoletaPanoramica(servicio, doc) {
     if (dirContainer && servicio.direccion_sucursal) {
         dirContainer.textContent = servicio.direccion_sucursal;
     }
-    
+
     const fonosContainer = container.querySelector('.sucursal-fonos');
     if (fonosContainer) {
         let fonos = [];
