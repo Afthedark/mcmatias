@@ -100,7 +100,8 @@
         const canvas = document.getElementById('particles-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
-        const particleCount = 80;
+        const particleCount = 100;
+        const mouse = { x: null, y: null, radius: 150 };
 
         function resize() {
             canvas.width = window.innerWidth;
@@ -108,6 +109,15 @@
         }
 
         window.addEventListener('resize', resize);
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
         resize();
 
         class Particle {
@@ -118,24 +128,55 @@
             init() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
+                this.vx = (Math.random() - 0.5) * 0.8;
+                this.vy = (Math.random() - 0.5) * 0.8;
                 this.size = Math.random() * 2 + 1;
+                this.baseX = this.x;
+                this.baseY = this.y;
+                this.density = (Math.random() * 30) + 1;
+                this.type = Math.random() > 0.9 ? 'square' : 'circle';
             }
 
             update() {
+                // Movement
                 this.x += this.vx;
                 this.y += this.vy;
 
+                // Bounce off walls
                 if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
                 if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                // Mouse interaction
+                if (mouse.x !== null && mouse.y !== null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    let forceDirectionX = dx / distance;
+                    let forceDirectionY = dy / distance;
+                    let maxDistance = mouse.radius;
+                    let force = (maxDistance - distance) / maxDistance;
+                    let directionX = forceDirectionX * force * this.density;
+                    let directionY = forceDirectionY * force * this.density;
+
+                    if (distance < mouse.radius) {
+                        this.x -= directionX;
+                        this.y -= directionY;
+                    }
+                }
             }
 
             draw() {
+                ctx.fillStyle = 'rgba(13, 110, 253, 0.6)';
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = '#0d6efd';
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                if (this.type === 'circle') {
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                } else {
+                    ctx.rect(this.x - this.size, this.y - this.size, this.size * 2, this.size * 2);
+                }
                 ctx.fill();
+                ctx.shadowBlur = 0;
             }
         }
 
@@ -150,19 +191,34 @@
                 p.update();
                 p.draw();
 
-                // Draw lines between nearby particles
+                // Connect particles
                 for (let j = index + 1; j < particles.length; j++) {
                     const p2 = particles[j];
                     const dx = p.x - p2.x;
                     const dy = p.y - p2.y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
 
-                    if (dist < 150) {
+                    if (dist < 120) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(13, 110, 253, ${0.1 * (1 - dist / 150)})`;
+                        ctx.strokeStyle = `rgba(13, 110, 253, ${0.2 * (1 - dist / 120)})`;
                         ctx.lineWidth = 0.5;
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+
+                // Connect to mouse
+                if (mouse.x !== null && mouse.y !== null) {
+                    const dx = p.x - mouse.x;
+                    const dy = p.y - mouse.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < mouse.radius) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0, 255, 255, ${0.3 * (1 - dist / mouse.radius)})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(mouse.x, mouse.y);
                         ctx.stroke();
                     }
                 }
