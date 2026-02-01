@@ -237,10 +237,10 @@ function renderServiciosTable() {
         <tr class="${rowClass}">
             <td><strong>${startNumber + index}</strong></td>
             <td class="${textClass}"><strong>${servicio.numero_servicio || '-'}</strong></td>
-            <td class="${textClass}">${servicio.nombre_cliente || 'Sin cliente'}</td>
-            <td class="${textClass}">${servicio.marca_dispositivo || ''} ${servicio.modelo_dispositivo || ''}</td>
-            <td class="${textClass}">${servicio.nombre_categoria || '-'}</td>
-            <td class="${textClass}">${servicio.nombre_tecnico_asignado || '<span class="text-muted">Sin asignar</span>'}</td>
+            <td class="${textClass} text-truncate" style="max-width: 150px;" title="${servicio.nombre_cliente || ''}">${servicio.nombre_cliente || 'Sin cliente'}</td>
+            <td class="${textClass} text-truncate" style="max-width: 120px;" title="${servicio.marca_dispositivo || ''} ${servicio.modelo_dispositivo || ''}">${servicio.marca_dispositivo || ''} ${servicio.modelo_dispositivo || ''}</td>
+            <td class="${textClass} text-truncate" style="max-width: 100px;" title="${servicio.nombre_categoria || ''}">${servicio.nombre_categoria || '-'}</td>
+            <td class="${textClass} text-truncate" style="max-width: 100px;" title="${servicio.nombre_tecnico_asignado || ''}">${servicio.nombre_tecnico_asignado || '<span class="text-muted">Sin asignar</span>'}</td>
             <td>${getEstadoBadge(servicio.estado)}</td>
             <td class="${textClass}">${formatDate(servicio.fecha_inicio)}</td>
             <td class="${textClass}">${formatCurrency(servicio.costo_estimado || 0)}</td>
@@ -458,7 +458,7 @@ function resetFormulario() {
         const num = index + 1;
         const input = document.getElementById(fieldName);
         if (input) input.value = '';
-        
+
         const container = document.getElementById(`preview_container_${num}`);
         const img = document.getElementById(`preview_foto_${num}`);
         if (img) img.src = '';
