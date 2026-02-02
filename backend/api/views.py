@@ -433,7 +433,8 @@ class DetalleVentaViewSet(viewsets.ModelViewSet):
         Al crear un detalle de venta:
         1. Obtiene la sucursal de la venta
         2. Valida que exista stock suficiente en esa sucursal
-        3. Descuenta del inventario automáticamente
+        3. Captura el costo del producto (snapshot)
+        4. Descuenta del inventario automáticamente
         """
         # Obtener datos del request
         id_venta = serializer.validated_data.get('id_venta')
@@ -461,8 +462,11 @@ class DetalleVentaViewSet(viewsets.ModelViewSet):
                 'cantidad': f'Stock insuficiente para "{id_producto.nombre_producto}". Disponible: {inventario.cantidad}, Solicitado: {cantidad}'
             })
         
-        # Guardar el detalle
-        serializer.save()
+        # Capturar snapshot del costo
+        costo_actual = id_producto.precio_compra or 0
+        
+        # Guardar el detalle con el snapshot
+        serializer.save(costo_unitario=costo_actual)
         
         # Descontar del inventario
         inventario.cantidad -= cantidad

@@ -152,8 +152,8 @@ function setupCategoriaSearch() {
 function renderProductosTable() {
     const tbody = document.getElementById('productosTable');
 
-    if (productos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay productos registrados</td></tr>';
+    if (!productos || productos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center">No hay productos registrados</td></tr>';
         return;
     }
 
@@ -165,14 +165,16 @@ function renderProductosTable() {
         const estadoTexto = producto.activo ? 'Activo' : 'Inactivo';
         const rowClass = producto.activo ? '' : 'table-secondary text-decoration-line-through';
 
+        // Internamente: precio_compra y precio (venta)
         return `
             <tr class="${rowClass}">
                 <td><strong>${startNumber + index}</strong></td>
-                <td><img src="${getImageUrl(producto.foto_producto)}" class="product-img" alt="${producto.nombre_producto}" onerror="this.src='https://via.placeholder.com/150?text=Sin+Imagen'"></td>
-                <td>${producto.nombre_producto}</td>
-                <td>${producto.nombre_categoria || '-'}</td>
-                <td>${producto.codigo_barras || '-'}</td>
-                <td>${formatCurrency(producto.precio)}</td>
+                <td><img src="${getImageUrl(producto.foto_producto)}" class="product-img" style="width: 40px; height: 40px; object-fit: cover;" alt="${producto.nombre_producto}" onerror="this.src='https://via.placeholder.com/40?text=IMG'"></td>
+                <td class="text-truncate" style="max-width: 200px;" title="${producto.nombre_producto}">${producto.nombre_producto}</td>
+                <td class="text-truncate" style="max-width: 120px;" title="${producto.nombre_categoria || ''}">${producto.nombre_categoria || '-'}</td>
+                <td class="text-truncate" style="max-width: 100px;" title="${producto.codigo_barras || ''}">${producto.codigo_barras || '-'}</td>
+                <td class="text-muted">${formatCurrency(producto.precio_compra || 0)}</td>
+                <td class="fw-bold">${formatCurrency(producto.precio)}</td>
                 <td><span class="badge bg-${estadoClass}">${estadoTexto}</span></td>
                 <td class="table-actions">
                     ${producto.activo ? `
@@ -238,7 +240,7 @@ function openCreateModal() {
     document.getElementById('idCategoria').value = '';
     document.querySelector('#btnSelectCategoria span').textContent = 'Seleccione...';
     document.getElementById('busquedaCategoria').value = '';
-    
+
     // Reset photo preview
     const imgPreview = document.getElementById('previewFotoEdit');
     if (imgPreview) {
@@ -269,7 +271,8 @@ async function openEditModal(id) {
         document.getElementById('descripcion').value = producto.descripcion || '';
         document.getElementById('codigoBarras').value = producto.codigo_barras || '';
 
-        document.getElementById('precio').value = producto.precio;
+        document.getElementById('precio').value = producto.precio; // Venta
+        document.getElementById('precioCompra').value = producto.precio_compra || ''; // Compra
 
         // Mostrar preview de foto si existe
         const imgPreview = document.getElementById('previewFotoEdit');
@@ -314,7 +317,8 @@ async function saveProducto() {
     formData.append('descripcion', document.getElementById('descripcion').value);
     formData.append('codigo_barras', document.getElementById('codigoBarras').value);
     formData.append('id_categoria', document.getElementById('idCategoria').value);
-    formData.append('precio', document.getElementById('precio').value);
+    formData.append('precio', document.getElementById('precio').value); // Precio Venta
+    formData.append('precio_compra', document.getElementById('precioCompra').value || 0); // Precio Compra
 
     const fileInput = document.getElementById('fotoProducto');
     if (fileInput.files.length > 0) {
@@ -524,7 +528,7 @@ function capturarFoto() {
 function handleImagePreview(event) {
     const file = event.target.files[0];
     const preview = document.getElementById('previewFotoEdit');
-    
+
     if (!file || !preview) return;
 
     const reader = new FileReader();

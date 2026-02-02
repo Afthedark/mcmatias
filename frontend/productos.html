@@ -37,22 +37,24 @@
                     </div>
 
                     <div class="table-responsive">
-                        <table class="table table-hover table-striped">
+                        <!-- El campo precio es internamente el Precio Venta -->
+                        <table class="table table-hover table-striped table-sm">
                             <thead>
                                 <tr>
-                                    <th style="width: 50px;">#</th>
-                                    <th>Foto</th>
+                                    <th style="width: 40px;">#</th>
+                                    <th style="width: 80px;">Foto</th>
                                     <th>Nombre</th>
-                                    <th>Categoría</th>
-                                    <th>Código</th>
-                                    <th>Precio</th>
+                                    <th>Cat.</th>
+                                    <th>Cód.</th>
+                                    <th>Costo</th> <!-- Nuevo campo: precio_compra -->
+                                    <th>Venta</th> <!-- Campo existente: precio -->
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="productosTable">
                                 <tr>
-                                    <td colspan="7" class="text-center">Cargando...</td>
+                                    <td colspan="9" class="text-center">Cargando...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -111,15 +113,26 @@
                                 <div class="invalid-feedback">Debe seleccionar una categoría.</div>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="precio" class="form-label">Precio *</label>
-                            <input type="number" class="form-control" id="precio" step="0.01" required>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <!-- Internamente: precio_compra -->
+                                <label for="precioCompra" class="form-label text-muted">Precio Compra</label>
+                                <input type="number" class="form-control" id="precioCompra" step="0.01" min="0"
+                                    placeholder="Costo">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <!-- Internamente: precio (base de datos) -->
+                                <label for="precio" class="form-label fw-bold">Precio Venta *</label>
+                                <input type="number" class="form-control" id="precio" step="0.01" required
+                                    placeholder="Venta">
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="fotoProducto" class="form-label">Foto</label>
                             <div class="input-group">
                                 <input type="file" class="form-control" id="fotoProducto" accept="image/*">
-                                <button class="btn btn-outline-secondary" type="button" onclick="abrirCamara('fotoProducto')">
+                                <button class="btn btn-outline-secondary" type="button"
+                                    onclick="abrirCamara('fotoProducto')">
                                     <i class="bi bi-camera"></i>
                                 </button>
                             </div>
@@ -137,7 +150,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Modal Cámara -->
     <div class="modal fade" id="modalCamara" tabindex="-1" data-bs-backdrop="static">
         <div class="modal-dialog">

@@ -77,8 +77,9 @@ class ProductoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Producto
+        # precio_compra agregado. 'precio' es el Precio de Venta.
         fields = ['id_producto', 'nombre_producto', 'descripcion', 'codigo_barras', 
-                  'id_categoria', 'nombre_categoria', 'precio', 'foto_producto', 'activo']
+                  'id_categoria', 'nombre_categoria', 'precio', 'precio_compra', 'foto_producto', 'activo']
 
 class InventarioSerializer(serializers.ModelSerializer):
     nombre_producto = serializers.CharField(source='id_producto.nombre_producto', read_only=True)
@@ -112,7 +113,8 @@ class DetalleVentaSerializer(serializers.ModelSerializer):
     class Meta:
         model = DetalleVenta
         fields = ['id_detalle_venta', 'id_venta', 'id_producto', 'nombre_producto', 
-                  'cantidad', 'precio_venta']
+                  'cantidad', 'precio_venta', 'costo_unitario']
+        read_only_fields = ['costo_unitario']
 
 class ServicioTecnicoSerializer(serializers.ModelSerializer):
     # Campos enriquecidos (read-only)

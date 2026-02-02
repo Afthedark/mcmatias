@@ -76,24 +76,45 @@ class ReporteVentasDashboardView(ReporteBaseView):
         # 2. Filtrar para el resto de KPIs y gráficos (Solo Completadas)
         queryset = queryset_base.filter(estado='Completada')
             
-        ventas_por_dia = defaultdict(lambda: {"total": Decimal("0"), "cantidad": 0})
-        for fecha_venta, total_venta in queryset.values_list('fecha_venta', 'total_venta'):
-            dia_local = timezone.localtime(fecha_venta).date()
-            ventas_por_dia[dia_local]["total"] += total_venta or Decimal("0")
+        ventas_por_dia = defaultdict(lambda: {"total": Decimal("0"), "cantidad": 0, "costo": Decimal("0")})
+        
+        # Necesitamos iterar para calcular costos (ya que precio_compra está en Producto, no en DetalleVenta)
+        # Optimizamos con prefetch_related
+        queryset_con_detalle = queryset.prefetch_related('detalleventa_set__id_producto')
+        
+        total_costo_global = Decimal("0")
+        
+        for venta in queryset_con_detalle:
+            dia_local = timezone.localtime(venta.fecha_venta).date()
+            ventas_por_dia[dia_local]["total"] += venta.total_venta or Decimal("0")
             ventas_por_dia[dia_local]["cantidad"] += 1
+            
+            # Calcular costo usando snapshot
+            costo_venta = Decimal("0")
+            for detalle in venta.detalleventa_set.all():
+                costo_venta += detalle.costo_unitario * detalle.cantidad
+            
+            ventas_por_dia[dia_local]["costo"] += costo_venta
+            total_costo_global += costo_venta
 
         labels = []
         data_monto = []
         data_cantidad = []
+        data_ganancia = [] # Nueva serie
         
         for dia in sorted(ventas_por_dia.keys()):
             labels.append(dia.strftime('%d/%m/%Y'))
-            data_monto.append(float(ventas_por_dia[dia]["total"]))
-            data_cantidad.append(ventas_por_dia[dia]["cantidad"])
+            total_dia = float(ventas_por_dia[dia]["total"])
+            costo_dia = float(ventas_por_dia[dia]["costo"])
             
-        # Totales Generales y por Tipo de Pago
+            data_monto.append(total_dia)
+            data_cantidad.append(ventas_por_dia[dia]["cantidad"])
+            data_ganancia.append(total_dia - costo_dia)
+            
+        # Totales Generales
         total_acumulado = queryset.aggregate(Sum('total_venta'))['total_venta__sum'] or 0
         total_transacciones = queryset.count()
+        total_ganancia = total_acumulado - total_costo_global
         
         por_tipo_pago = queryset.values('tipo_pago').annotate(
             total=Count('tipo_pago'),
@@ -102,24 +123,16 @@ class ReporteVentasDashboardView(ReporteBaseView):
         
         data_tipo_pago = {
             'labels': [item['tipo_pago'] for item in por_tipo_pago],
-            'data': [item['monto'] for item in por_tipo_pago] # O count segun preferencia
+            'data': [item['monto'] for item in por_tipo_pago]
         }
         
-        
-        # Productos Más Vendidos (Top 10)
+        # Productos Más Vendidos... (Sin cambios)
         from api.models import DetalleVenta
-        
-        # Obtener los IDs de ventas válidas del queryset
         ventas_ids = queryset.values_list('id_venta', flat=True)
-        
-        productos_vendidos = DetalleVenta.objects.filter(
-            id_venta__in=ventas_ids
-        ).values(
-            'id_producto__nombre_producto'
-        ).annotate(
+        productos_vendidos = DetalleVenta.objects.filter(id_venta__in=ventas_ids).values('id_producto__nombre_producto').annotate(
             cantidad_total=Sum('cantidad'),
             monto_total=Sum(F('cantidad') * F('precio_venta'))
-        ).order_by('-cantidad_total')[:10]  # Top 10
+        ).order_by('-cantidad_total')[:10]
         
         data_productos = {
             'labels': [item['id_producto__nombre_producto'] for item in productos_vendidos],
@@ -127,22 +140,21 @@ class ReporteVentasDashboardView(ReporteBaseView):
             'monto': [float(item['monto_total']) for item in productos_vendidos]
         }
         
+        # Horas... (Sin cambios)
         horas_dict = {i: 0 for i in range(24)}
         for fecha_venta in queryset.values_list('fecha_venta', flat=True):
             hora_local = timezone.localtime(fecha_venta).hour
             horas_dict[hora_local] += 1
-        
         data_por_hora = {
             'labels': [f"{h:02d}:00" for h in range(24)],
             'data': [horas_dict[h] for h in range(24)]
         }
 
-        # Racha de Ventas por Usuario (Top 10)
+        # Vendedores... (Sin cambios)
         racha_vendedores = queryset.values('id_usuario__nombre_apellido').annotate(
             cantidad_ventas=Count('id_venta'),
             monto_total=Sum('total_venta')
-        ).order_by('-cantidad_ventas')[:10]  # Top 10 vendedores
-
+        ).order_by('-cantidad_ventas')[:10]
         data_vendedores = {
             'labels': [item['id_usuario__nombre_apellido'] or 'Sin Usuario' for item in racha_vendedores],
             'data': [item['cantidad_ventas'] for item in racha_vendedores],
@@ -154,6 +166,7 @@ class ReporteVentasDashboardView(ReporteBaseView):
                 'labels': labels,
                 'datasets': [
                     {'label': 'Monto Vendido (Bs)', 'data': data_monto},
+                    {'label': 'Ganancia (Bs)', 'data': data_ganancia}, # Nuevo
                     {'label': 'Cantidad Ventas', 'data': data_cantidad}
                 ]
             },
@@ -164,7 +177,8 @@ class ReporteVentasDashboardView(ReporteBaseView):
             'grafico_estados': data_estados,
             'kpis': {
                 'total_monto': total_acumulado,
-                'total_transacciones': total_transacciones
+                'total_transacciones': total_transacciones,
+                'total_ganancia': total_ganancia # Nuevo KPI
             }
         })
 
@@ -198,17 +212,30 @@ class ReporteVentasPDFView(ReporteBaseView):
         elements.append(Paragraph(f"Desde: {fecha_desde.strftime('%d/%m/%Y')} Hasta: {fecha_hasta.strftime('%d/%m/%Y')}", styles['Normal']))
         elements.append(Spacer(1, 20))
         
-        # Tabla
-        data_tabla = [['#', 'Fecha', 'Boleta', 'Cliente', 'Vendedor', 'Estado', 'Monto (Bs)']]
+        # Tabla con columnas detalladas
+        data_tabla = [['#', 'Fecha', 'Boleta', 'Cliente', 'Vendedor', 'Estado', 
+                       'P. Compra', 'P. Venta', 'Ganancia']]
+        
         total_general = 0
+        total_costo_general = 0
+        
+        queryset = queryset.prefetch_related('detalleventa_set')
         
         for idx, v in enumerate(queryset, start=1):
             estado = "Anulado" if v.estado == 'Anulada' else "Completado"
-            monto = f"{v.total_venta:.2f}"
-            if v.estado == 'Anulada':
-                monto = f"({monto})" # Mostrar entre parentesis si es anulada
-            else:
-                total_general += v.total_venta
+            
+            # Calcular usando snapshots
+            precio_compra = 0
+            precio_venta = 0
+            
+            if v.estado == 'Completada':
+                for det in v.detalleventa_set.all():
+                    precio_compra += (det.costo_unitario * det.cantidad)
+                    precio_venta += (det.precio_venta * det.cantidad)
+                total_general += precio_venta
+                total_costo_general += precio_compra
+            
+            ganancia = precio_venta - precio_compra
             
             row = [
                 idx,
@@ -217,14 +244,19 @@ class ReporteVentasPDFView(ReporteBaseView):
                 v.id_cliente.nombre_apellido if v.id_cliente else 'S/N',
                 v.id_usuario.nombre_apellido if v.id_usuario else 'S/N',
                 estado,
-                monto
+                f"{precio_compra:.2f}" if v.estado == 'Completada' else "0.00",
+                f"{precio_venta:.2f}" if v.estado == 'Completada' else f"({v.total_venta:.2f})",
+                f"{ganancia:.2f}" if v.estado == 'Completada' else "0.00"
             ]
             data_tabla.append(row)
             
         # Fila Total
-        data_tabla.append(['', '', '', '', '', 'TOTAL VÁLIDO:', f"{total_general:.2f}"])
+        data_tabla.append(['', '', '', '', '', 'TOTAL:', 
+                          f"{total_costo_general:.2f}", 
+                          f"{total_general:.2f}", 
+                          f"{total_general - total_costo_general:.2f}"])
             
-        t = Table(data_tabla)
+        t = Table(data_tabla, colWidths=[30, 85, 70, 80, 80, 65, 60, 60, 60])
         t.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -234,6 +266,29 @@ class ReporteVentasPDFView(ReporteBaseView):
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
         ]))
         elements.append(t)
+        
+        # --- RESUMEN FINANCIERO ---
+        elements.append(Spacer(1, 20))
+        elements.append(Paragraph("Resumen Financiero", styles['Heading2']))
+        
+        # Usar totales ya calculados
+        ganancia_total = total_general - total_costo_general
+        
+        data_resumen = [
+            ['Total Ventas (Ingresos)', f"{total_general:.2f} Bs"],
+            ['Costo (Productos)', f"{total_costo_general:.2f} Bs"],
+            ['Ganancia (Utilidad)', f"{ganancia_total:.2f} Bs"]
+        ]
+        
+        t_resumen = Table(data_resumen, colWidths=[200, 100])
+        t_resumen.setStyle(TableStyle([
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+            ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+            ('FONTNAME', (0, 2), (-1, 2), 'Helvetica-Bold'), # Negrita para fila de Ganancia
+            ('TEXTCOLOR', (0, 2), (-1, 2), colors.green),
+        ]))
+        elements.append(t_resumen)
         
         doc.build(elements)
         buffer.seek(0)
@@ -257,10 +312,25 @@ class ReporteVentasExcelView(ReporteBaseView):
         ws.title = "Reporte Ventas"
         
         # Headers
-        headers = ['#', 'Fecha', 'Boleta', 'Cliente', 'Vendedor', 'Sucursal', 'Tipo Pago', 'Estado', 'Motivo Anulacion', 'Monto Total']
+        headers = ['#', 'Fecha', 'Boleta', 'Cliente', 'Vendedor', 'Sucursal', 
+                   'Tipo Pago', 'Estado', 'Motivo Anulacion', 
+                   'Precio Compra', 'Precio Venta', 'Ganancia']
         ws.append(headers)
         
+        # Pre-fetch para optimizar
+        queryset = queryset.prefetch_related('detalleventa_set')
+        
         for idx, v in enumerate(queryset, start=1):
+            precio_compra_total = 0
+            precio_venta_total = 0
+            
+            if v.estado == 'Completada':
+                for det in v.detalleventa_set.all():
+                    precio_compra_total += (det.costo_unitario * det.cantidad)
+                    precio_venta_total += (det.precio_venta * det.cantidad)
+            
+            ganancia = precio_venta_total - precio_compra_total
+
             ws.append([
                 idx,
                 timezone.localtime(v.fecha_venta).strftime('%d/%m/%Y %H:%M'),
@@ -271,7 +341,9 @@ class ReporteVentasExcelView(ReporteBaseView):
                 v.tipo_pago,
                 v.estado,
                 v.motivo_anulacion or '',
-                float(v.total_venta)
+                float(precio_compra_total),
+                float(precio_venta_total),
+                float(ganancia)
             ])
             
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')

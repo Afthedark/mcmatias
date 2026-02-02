@@ -108,6 +108,8 @@ async function loadReporteData() {
 function renderKpis(kpis) {
     document.getElementById('kpiMonto').innerText = formatCurrency(kpis.total_monto);
     document.getElementById('kpiTransacciones').innerText = kpis.total_transacciones;
+    // Nuevo KPI
+    document.getElementById('kpiGanancia').innerText = formatCurrency(kpis.total_ganancia || 0);
 }
 
 /**
@@ -123,16 +125,30 @@ function renderCharts(data) {
             backgroundColor: 'rgba(54, 162, 235, 0.6)',
             borderColor: 'rgba(54, 162, 235, 1)',
             borderWidth: 1,
-            yAxisID: 'y'
+            yAxisID: 'y',
+            order: 2
+        },
+        // Nuevo Dataset: Ganancia
+        {
+            label: 'Ganancia (Bs)',
+            data: data.grafico_dias.datasets[1].data, // Index 1 is Ganancia now
+            backgroundColor: 'rgba(75, 192, 192, 0.4)', // Green
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 2,
+            type: 'line',
+            tension: 0.3,
+            yAxisID: 'y',
+            order: 1
         },
         {
             label: 'Cantidad de Ventas',
-            data: data.grafico_dias.datasets[1].data,
+            data: data.grafico_dias.datasets[2].data, // Index 2 is Cantidad now
             backgroundColor: 'rgba(255, 159, 64, 0.6)',
             borderColor: 'rgba(255, 159, 64, 1)',
             borderWidth: 1,
             type: 'line',
-            yAxisID: 'y1'
+            yAxisID: 'y1',
+            order: 3
         }
     ];
 

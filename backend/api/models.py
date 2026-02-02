@@ -170,7 +170,14 @@ class Producto(models.Model):
     descripcion = models.TextField(blank=True, null=True)
     codigo_barras = models.CharField(max_length=100, unique=True, blank=True, null=True)
     id_categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, db_column='id_categoria')
-    precio = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    # IMPORTANTE: El campo 'precio' se utiliza como PRECIO DE VENTA.
+    # Se mantiene el nombre 'precio' para compatibilidad con código existente.
+    precio = models.DecimalField(max_digits=10, decimal_places=2) 
+    
+    # Nuevo campo para el Costo del producto
+    precio_compra = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
     foto_producto = models.ImageField(upload_to='uploads/images/', blank=True, null=True)
     activo = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -251,6 +258,14 @@ class DetalleVenta(models.Model):
     id_producto = models.ForeignKey(Producto, on_delete=models.RESTRICT, db_column='id_producto')
     cantidad = models.IntegerField()
     precio_venta = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    # Snapshot del costo en el momento de la venta (para reportes históricos precisos)
+    costo_unitario = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0,
+        help_text="Costo del producto al momento de la venta"
+    )
 
     class Meta:
         db_table = 'detalle_venta'
