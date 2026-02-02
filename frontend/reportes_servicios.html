@@ -87,24 +87,38 @@
 
                 <!-- KPIs Financieros -->
                 <div class="row mb-4">
-                    <!-- Ingresos Realizados (Verde) -->
-                    <div class="col-md-6">
+                    <!-- 1. Ingresos Realizados (Entregados) -->
+                    <div class="col-md-4">
                         <div class="card bg-success text-white h-100">
                             <div class="card-body text-center">
-                                <h6 class="text-uppercase mb-2 opacity-75">Ingresos Realizados (Entregados + Para Retirar)</h6>
-                                <h2 class="mb-0 display-6 fw-bold" id="kpiMontoRealizado">Bs 0.00</h2>
-                                <p class="mb-0 mt-2"><i class="bi bi-receipt me-1"></i><span id="kpiTransaccionesRealizado">0</span> transacciones</p>
+                                <h6 class="text-uppercase mb-2 opacity-75">Ingresos Realizados (Entregados)</h6>
+                                <h2 class="mb-0 display-6 fw-bold" id="kpiMontoEntregado">Bs 0.00</h2>
+                                <p class="mb-0 mt-2"><i class="bi bi-check-circle me-1"></i><span
+                                        id="kpiTransaccionesEntregado">0</span> serv. entregados</p>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Ingresos en Proceso (Amarillo/Warning) -->
-                    <div class="col-md-6">
+
+                    <!-- 2. Para Retirar (Listos) -->
+                    <div class="col-md-4">
+                        <div class="card bg-info text-white h-100">
+                            <div class="card-body text-center">
+                                <h6 class="text-uppercase mb-2 opacity-75">Para Retirar (Listos)</h6>
+                                <h2 class="mb-0 display-6 fw-bold" id="kpiMontoRetirar">Bs 0.00</h2>
+                                <p class="mb-0 mt-2"><i class="bi bi-box-seam me-1"></i><span
+                                        id="kpiTransaccionesRetirar">0</span> serv. listos</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. En Proceso (En Reparación) -->
+                    <div class="col-md-4">
                         <div class="card bg-warning text-dark h-100">
                             <div class="card-body text-center">
-                                <h6 class="text-uppercase mb-2 opacity-75">Ingresos en Proceso (En Reparación)</h6>
-                                <h2 class="mb-0 display-6 fw-bold" id="kpiMontoPendiente">Bs 0.00</h2>
-                                <p class="mb-0 mt-2"><i class="bi bi-hourglass-split me-1"></i><span id="kpiTransaccionesPendiente">0</span> transacciones</p>
+                                <h6 class="text-uppercase mb-2 opacity-75">En Proceso (Taller)</h6>
+                                <h2 class="mb-0 display-6 fw-bold" id="kpiMontoReparacion">Bs 0.00</h2>
+                                <p class="mb-0 mt-2"><i class="bi bi-tools me-1"></i><span
+                                        id="kpiTransaccionesReparacion">0</span> serv. en taller</p>
                             </div>
                         </div>
                     </div>
@@ -166,7 +180,8 @@
                     <div class="col-lg-6 mb-4">
                         <div class="card shadow-sm h-100">
                             <div class="card-header">
-                                <h5 class="card-title mb-0"><i class="bi bi-trophy me-2"></i>Racha de Técnicos - Top 10 (Servicios Entregados)</h5>
+                                <h5 class="card-title mb-0"><i class="bi bi-trophy me-2"></i>Racha de Técnicos - Top 10
+                                    (Servicios Entregados)</h5>
                             </div>
                             <div class="card-body">
                                 <div style="height: 300px; position: relative;">
@@ -180,7 +195,8 @@
                     <div class="col-lg-6 mb-4">
                         <div class="card shadow-sm h-100">
                             <div class="card-header">
-                                <h5 class="card-title mb-0"><i class="bi bi-clock me-2"></i>Distribución por Hora del Día</h5>
+                                <h5 class="card-title mb-0"><i class="bi bi-clock me-2"></i>Distribución por Hora del
+                                    Día</h5>
                             </div>
                             <div class="card-body">
                                 <div style="height: 300px; position: relative;">

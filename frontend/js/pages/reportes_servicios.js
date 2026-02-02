@@ -106,11 +106,17 @@ async function loadReporteData() {
  * Render KPIs
  */
 function renderKpis(kpis) {
-    document.getElementById('kpiMontoRealizado').innerText = formatCurrency(kpis.monto_realizado);
-    document.getElementById('kpiTransaccionesRealizado').innerText = kpis.transacciones_realizado;
-    
-    document.getElementById('kpiMontoPendiente').innerText = formatCurrency(kpis.monto_pendiente);
-    document.getElementById('kpiTransaccionesPendiente').innerText = kpis.transacciones_pendiente;
+    // 1. Entregados
+    document.getElementById('kpiMontoEntregado').innerText = formatCurrency(kpis.monto_entregado);
+    document.getElementById('kpiTransaccionesEntregado').innerText = kpis.transacciones_entregado;
+
+    // 2. Para Retirar
+    document.getElementById('kpiMontoRetirar').innerText = formatCurrency(kpis.monto_para_retirar);
+    document.getElementById('kpiTransaccionesRetirar').innerText = kpis.transacciones_para_retirar;
+
+    // 3. En Reparación
+    document.getElementById('kpiMontoReparacion').innerText = formatCurrency(kpis.monto_en_reparacion);
+    document.getElementById('kpiTransaccionesReparacion').innerText = kpis.transacciones_en_reparacion;
 }
 
 /**

@@ -425,10 +425,17 @@ class ReporteServiciosDashboardView(ReporteBaseView):
                 'data': data_por_hora['data']
             },
             'kpis': {
-                'monto_realizado': queryset.filter(Q(estado='Entregado') | Q(estado='Para Retirar')).aggregate(Sum('costo_estimado'))['costo_estimado__sum'] or 0,
-                'transacciones_realizado': queryset.filter(Q(estado='Entregado') | Q(estado='Para Retirar')).count(),
-                'monto_pendiente': queryset.filter(estado='En Reparación').aggregate(Sum('costo_estimado'))['costo_estimado__sum'] or 0,
-                'transacciones_pendiente': queryset.filter(estado='En Reparación').count()
+                # 1. Entregados (Realizados/Cobrados)
+                'monto_entregado': queryset.filter(estado='Entregado').aggregate(Sum('costo_estimado'))['costo_estimado__sum'] or 0,
+                'transacciones_entregado': queryset.filter(estado='Entregado').count(),
+                
+                # 2. Para Retirar (Listos para entrega)
+                'monto_para_retirar': queryset.filter(estado='Para Retirar').aggregate(Sum('costo_estimado'))['costo_estimado__sum'] or 0,
+                'transacciones_para_retirar': queryset.filter(estado='Para Retirar').count(),
+                
+                # 3. En Proceso (En Taller)
+                'monto_en_reparacion': queryset.filter(estado='En Reparación').aggregate(Sum('costo_estimado'))['costo_estimado__sum'] or 0,
+                'transacciones_en_reparacion': queryset.filter(estado='En Reparación').count()
             }
         })
 
